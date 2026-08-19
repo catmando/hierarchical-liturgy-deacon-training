@@ -1,9 +1,13 @@
 # ═══════════════════════════════════════════════════════════════════════
 #  Hierarchical Divine Liturgy — deacon training video
-#  DRAFT FORMAT, round 2. Real content, clips 1–3 only.
+#  DRAFT FORMAT, round 3. Real content, clips 1–3 only.
 #
 #  One block per clip, in order. The clip number IS the block, so it can
 #  never go missing the way it did in the spreadsheet export.
+#
+#  Singular and plural key names mean the same thing everywhere:
+#  annotation/annotations, card/cards, cut/cuts, rubric/rubrics, note/notes.
+#  Write whichever reads better for what you have.
 #
 #  ── Chapters ──────────────────────────────────────────────────────────
 #    chapter: always means "a chapter starts here, titled this".
@@ -14,9 +18,15 @@
 #                with no chapter: folds into the chapter that follows it —
 #                that chapter simply starts earlier, at the card.
 #
+#  ── Cards play BEFORE the clip they are listed under ───────────────────
+#    A card introduces its clip. Use `after: true` for a card that should
+#    trail the clip instead — needed only at the very end of the video.
+#    A `clip: 0` block means "before everything".
+#
 #  ── Where text ends up ────────────────────────────────────────────────
 #    annotations:  on screen, timed — and also in the printed rubric
-#    rubric:       printed rubric ONLY; never on screen
+#    rubrics:      printed rubric ONLY; never on screen.
+#                  Either a block of prose, or a list of separate directives.
 #    notes:        yours alone. Never on screen, never printed.
 #
 #  ── Timing ────────────────────────────────────────────────────────────
@@ -29,52 +39,78 @@
 #    at: next+1.5    → 1.5s after it ends
 #    ("C" and "C+1.5" still work; next is the same thing, spelled out.)
 #
-#  Every time is measured on the ORIGINAL, untouched clip. Cards, cuts and
-#  speed-ups never shift anything — the build maps times through them.
-#  Quote any time containing a colon: "1:27", not 1:27.
+#    Write times bare — no quotes. 1:27, 1:03:23, 0:04, 87 and 4.5 all work.
+#
+#  ── Text ──────────────────────────────────────────────────────────────
+#    Put prose under `text: >` (folds to one line) or `text: |` (keeps your
+#    line breaks). Neither needs quoting or escaping — commas, colons,
+#    apostrophes and quotation marks all pass through untouched.
+#
+#    Never put prose inside { }. There, a comma ends the value and the rest
+#    of your sentence silently becomes a key. Run check_sheet.py to catch it.
 # ═══════════════════════════════════════════════════════════════════════
 
 # ─── Opening card, before everything ───────────────────────────────────
 - clip: 0
-  cards:
+  card:
     - text: |
         Hierarchical Divine Liturgy
         Deacon Training
         20 June 2026
       for: 8
-      # no chapter: → folds into the chapter that follows (chapter 1 starts here, at 0:00)
+      # no chapter: → folds into chapter 1, which then starts here at 0:00
 
 
 # ─── 1 ─────────────────────────────────────────────────────────────────
 - clip: 1
   chapter: Greeting of the Hierarch at the Doors
 
-  annotations:
-    # Your CSV had this at 0 for 20s. Kept as you wrote it, but it is a lot of
-    # text for one overlay — likely wants splitting into two or three.
-    - at: 0
-      for: 20
+  # Plays BEFORE clip 1. No chapter:, so it folds into chapter 1 and becomes
+  # its title card.
+  cards:
+    - for: 8
       text: |
+        Greeting of the Hierarch at the Doors
+
         What is the order of greeting?
         Children — flowers.
         Parish Council President — bread and salt.
 
-    - { at: 0,      for: 4, role: AS1+2,   text: Subdeacons or altar servers place the mantilla }
-    - { at: next,   for: 3, role: DEACONS, text: Continuously cense the bishop }
-    - { at: "1:27", for: 4, role: PRIEST,  text: "At the conclusion, the priest presents the cross" }
+  annotations:
+    - at: 0
+      for: 4
+      role: AS1+2
+      text: Subdeacons or altar servers place the mantilla
+
+    - at: next
+      for: 3
+      role: DEACONS
+      text: Continuously cense the bishop
+
+    - at: 1:27
+      for: 4
+      role: PRIEST
+      text: At the conclusion, the priest presents the cross
 
   speed:
-    - { from: 38, to: "1:20", role: PRIEST, text: Greets Bishop…. }
+    - from: 38
+      to: 1:20
+      role: PRIEST
+      text: Greets Bishop….
 
-  # Read without the video, this fills in what the overlays can only gesture at.
-  rubric: |
-    Rector at center, other priests to south and north sides of the church.
-    (Don't forget to carry the cross handle to priests left.)
-
-    Deacon 1 and 2 ready to cense.
-
-    Subdeacons or altar servers ready at the door to place the Mantiya.
-    One subdeacon or altar server holds the train of the Mantiya.
+  rubrics:
+    - Parish Council President should be prepared with Bread and salt
+    - Children should come with flowers
+    - Priest should be ready with a blessing cross on a tray with handle to the priest's left
+    # Salvaged from the original CSV note — your line above covers rank order
+    # but not the rector-at-center geometry. Delete if it's redundant.
+    - Rector at center, other priests to south and north sides of the church
+    - Other priests present should be lined up in order of rank inside the Nave
+    - Deacons should be ready with censers behind the priests (towards the altar)
+    - Two vested servers should be ready at the doors with the Mantiya
+    # Also salvaged from the original CSV note — not covered by your lines above.
+    - One subdeacon or altar server holds the train of the Mantiya
+    - Two additional servers should be in the narthex ready to follow and assist
 
   notes: |
     This should be practiced the night before.
@@ -87,28 +123,52 @@
   annotations:
     - at: 1
       for: 7
-      text: "The priests in order kiss the cross, and the Bishop's hand and receive the blessing,"
+      text: >
+        The priests in order kiss the cross, and the Bishop's hand and receive
+        the blessing,
 
     - at: 9
       for: 5
-      text: Then the presiding priest does the same, and is given back the cross on his tray
+      text: >
+        Then the presiding priest does the same, and is given back the cross
+        on his tray
 
     - at: 25
       for: 3
       role: D1
-      text: '"Bless, master, the holy incense" - Both Deacons hold up their censers'
+      text: >
+        "Bless, master, the holy incense" - Both Deacons hold up their censers
 
-    - { at: next, for: 2, text: 'First Deacon:  "Wisdom"' }
-    - { at: next, for: 2, text: Deacons turn around and walk forward toward cathedra }
+    - at: next
+      for: 2
+      text: 'First Deacon:  "Wisdom"'
+
+    - at: next
+      for: 2
+      text: Deacons turn around and walk forward toward cathedra
 
     - at: next
       for: 4
       role: CHOIR
-      text: While the first deacon, chants and the choir sings - "it is truly meet…"
+      text: >
+        While the first deacon, chants and the choir sings - "it is truly meet…"
 
-    - { at: 44,     for: 3, text: "Deacons walk past cathedra, turn around and continue to cense the Bishop" }
-    - { at: "1:00", for: 4, role: AS3+4, text: "Deacons turn towards the altar, as Bishop walks past, giving their censers away" }
-    - { at: "1:05", for: 4, role: AS1+2, text: "A server takes the staff, and the Bishop will greet the icons" }
+    - at: 44
+      for: 3
+      text: >
+        Deacons walk past cathedra, turn around and continue to cense the Bishop
+
+    - at: 1:00
+      for: 4
+      role: AS3+4
+      text: >
+        Deacons turn towards the altar, as Bishop walks past, giving their
+        censers away
+
+    - at: 1:05
+      for: 4
+      role: AS1+2
+      text: A server takes the staff, and the Bishop will greet the icons
 
 
 # ─── 3 ─────────────────────────────────────────────────────────────────
@@ -124,7 +184,7 @@
         Deacon 1 reads the entrance prayers quietly.
         As normal, BUT stop before "I will enter thy house"
 
-  notes: |
+  note: |
     TRIM THE END OF THIS OFF
 
 
@@ -138,17 +198,26 @@
 # later times in this sheet still refer to the original — the build maps them.
 - clip: 19
   cuts:
-    - { from: "1:00", to: "2:00" }
+    - from: 1:00
+      to: 2:00
+
 
 # ─── Cards further along, kept here to show the shape ──────────────────
-- clip: 20
-  cards:
-    # chapter: present → this card is its own chapter, and the chapter title
-    # can differ from the words on screen.
-    - { text: Homily, for: 6, chapter: Homily — not shown }
-    # A card may show an image instead of, or behind, its text:
-    # - { image: art/great-entrance.png, for: 6, chapter: The Great Entrance }
 
-- clip: 25
+# Was "after clip 20" in the CSV; before clip 21 is the same gap, and reads as
+# the card that introduces clip 21. chapter: present → its own chapter, and the
+# chapter title can differ from the words on screen.
+- clip: 21
   cards:
-    - { text: The Great Entrance, for: 5 }        # no chapter: → folds into the next
+    - text: Homily
+      for: 6
+      chapter: Homily — not shown
+    # A card may show an image instead of, or behind, its text:
+    # - image: art/great-entrance.png
+    #   for: 6
+    #   chapter: The Great Entrance
+
+- clip: 26
+  cards:
+    - text: The Great Entrance
+      for: 5          # no chapter: → folds into chapter 26

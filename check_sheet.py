@@ -20,11 +20,18 @@ except ModuleNotFoundError:
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build import parse_time            # one definition of a timecode, not two
 
-CLIP_KEYS  = {"clip", "chapter", "annotations", "speed", "cuts", "cards",
-              "rubric", "notes", "skip"}
+# Singular and plural mean the same thing everywhere. Canonical name -> aliases.
+CLIP_FIELDS = {
+    "clip": (), "chapter": ("chapters",), "skip": (),
+    "annotations": ("annotation",), "speed": ("speeds",), "cuts": ("cut",),
+    "cards": ("card",), "rubrics": ("rubric",), "notes": ("note",),
+}
+ALIAS = {a: canon for canon, aliases in CLIP_FIELDS.items() for a in (canon,) + aliases}
+LISTY = {"annotations", "speed", "cuts", "cards"}
+
 ANN_KEYS   = {"at", "from", "for", "to", "role", "text"}
 SPAN_KEYS  = {"at", "from", "for", "to", "role", "text"}
-CARD_KEYS  = {"text", "image", "for", "to", "chapter"}
+CARD_KEYS  = {"text", "image", "for", "to", "chapter", "after"}
 
 errors, warnings = [], []
 def err(where, msg):  errors.append(f"{where}: {msg}")
@@ -99,20 +106,45 @@ for i, b in enumerate(doc):
         warn(where, f"clip {n} also appears at block {seen[n]}")
     seen.setdefault(n, i + 1)
 
-    for k in b:
-        if k not in CLIP_KEYS:
-            err(where, f"unknown key {k!r} (allowed: {', '.join(sorted(CLIP_KEYS))})")
+    canon = {}
+    for k, v in b.items():
+        c = ALIAS.get(k)
+        if c is None:
+            err(where, f"unknown key {k!r} (allowed: {', '.join(sorted(ALIAS))})")
+            continue
+        if c in canon:
+            err(where, f"{k!r} and its synonym both given — keep one")
+            continue
+        canon[c] = v
 
-    for j, e in enumerate(b.get("annotations") or [], 1):
+    def items(field):
+        """A listy field may be written as one entry or a list of them."""
+        v = canon.get(field)
+        if v is None: return []
+        return v if isinstance(v, list) else [v]
+
+    for j, e in enumerate(items("annotations"), 1):
         check_entry(f"{where} annotation {j}", e, ANN_KEYS)
-    for j, e in enumerate(b.get("speed") or [], 1):
+    for j, e in enumerate(items("speed"), 1):
         check_entry(f"{where} speed {j}", e, SPAN_KEYS, need_text=False)
-    for j, e in enumerate(b.get("cuts") or [], 1):
+    for j, e in enumerate(items("cuts"), 1):
         check_entry(f"{where} cut {j}", e, {"at", "from", "to", "for"}, need_text=False)
-    for j, e in enumerate(b.get("cards") or [], 1):
+    for j, e in enumerate(items("cards"), 1):
         check_entry(f"{where} card {j}", e, CARD_KEYS)
 
-n_ann = sum(len(b.get("annotations") or []) for b in doc if isinstance(b, dict))
+    # rubrics/notes may be a block of prose or a list of separate directives
+    for field in ("rubrics", "notes"):
+        v = canon.get(field)
+        if v is None: continue
+        if not isinstance(v, (str, list)):
+            err(where, f"{field}: expected prose or a list, got {type(v).__name__}")
+        elif isinstance(v, list) and not all(isinstance(x, str) for x in v):
+            err(where, f"{field}: every item must be text")
+
+def _n(b):
+    v = b.get("annotations", b.get("annotation"))
+    return len(v) if isinstance(v, list) else (1 if v else 0)
+n_ann = sum(_n(b) for b in doc if isinstance(b, dict))
 print(f"{path}: {len(doc)} clip blocks, {n_ann} annotations")
 for w in warnings: print(f"  warning  {w}")
 for e in errors:   print(f"  ERROR    {e}")
