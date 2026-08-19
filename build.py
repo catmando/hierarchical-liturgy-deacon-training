@@ -779,6 +779,8 @@ def main():
     skip_spans = []       # (clip, orig_start, orig_end, label)
     edited_name = {}      # clip -> filename to use in the sequence
     for n, elist in sorted(edits.items()):
+        if only and n not in only:
+            continue          # a preview must not pay to edit clips it drops
         src = os.path.join(WORK, f"{n:03d}.mp4")
         if not os.path.exists(src):
             warnings.append(f"clip {n:02d}: no normalized file, edits ignored")
@@ -970,9 +972,15 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             f.write(f"Dialogue: 1,{ass_time(st)},{ass_time(en)},Skip,,0,0,0,,{body}\n")
 
     # ---------------- chapters ----------------
-    meta = [";FFMETADATA1",
-            "title=Hierarchical Divine Liturgy - Deacon Training",
-            "date=2026-06-20", ""]
+    # A preview gets no media title. VLC paints that tag over the picture at
+    # playback start and after every seek, landing on top of the annotations
+    # you are trying to read. The finished file keeps it — it belongs there,
+    # and VLC can be told not to draw it (Preferences -> Video -> uncheck
+    # "Show media title on video start", or --no-video-title-show).
+    meta = [";FFMETADATA1"]
+    if not only:
+        meta.append("title=Hierarchical Divine Liturgy - Deacon Training")
+    meta += ["date=2026-06-20", ""]
     yt = []
     chap_spans = []
     pending = None          # start time inherited from a leading title card

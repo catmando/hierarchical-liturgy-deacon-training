@@ -63,6 +63,13 @@ python3 build.py --youtube       # burn subs into youtube.mp4, slow
 Preview mode writes `output/preview.*` instead and leaves the real outputs
 alone.
 
+**How the user works.** One clip at a time with `--cards none`, getting the
+timing right before moving on; then every three or four clips together, with
+cards, to check flow and adjust titles. So single-clip previews are the hot
+path and must stay fast — a preview only edits the clips it will actually
+show, and previews carry no media title, because VLC paints that tag over the
+picture on every seek and it lands on top of the annotations.
+
 **The sheet is validated before every build**, and errors stop it before
 ffmpeg runs; `--no-check` overrides. `--cards none|leading|all` controls which
 cards a `--clip` preview includes — `none` makes preview times equal the
