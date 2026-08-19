@@ -66,6 +66,18 @@ TEXT
   line breaks). Neither needs quoting or escaping. Never put prose inside
   { } — a comma there ends the value and silently swallows the rest.
 
+  Blank lines are kept, and render as a real gap. Leading and trailing ones
+  are dropped, so a block scalar's trailing newline adds nothing.
+
+  A little markdown works:
+
+    **bold**      *italic*      _underline_        anywhere
+    # Heading     ## Smaller    ### Smaller still  on cards
+
+  Headings only mean anything on a card, which has room for more than one
+  size. Chapter names take the text with the markers stripped, so a card
+  headed `# Entrance Prayers` is still called "Entrance Prayers".
+
 CHAPTERS
   chapter: always means "a chapter starts here, titled this". Present, a
   chapter starts; absent, it does not.
@@ -263,6 +275,70 @@ def split_lines(v, keep_blanks=False):
     while lines and not lines[0]:  lines.pop(0)
     while lines and not lines[-1]: lines.pop()
     return lines
+
+
+HEADING_SCALE = {1: 1.55, 2: 1.30, 3: 1.15}
+CARD_FONTSIZE = 64
+
+
+def card_ass(body):
+    """A card's text as a standalone ASS file.
+
+    libass rather than drawtext, because drawtext has one font and one size
+    for the whole block — no bold, no italic, no headings. Alignment 5 centres
+    the block in the frame; every line carries its own size tag.
+    """
+    text = "\\N".join(md_line(ln, CARD_FONTSIZE) if ln.strip() else ""
+                      for ln in body.split("\n"))
+    return f"""[Script Info]
+ScriptType: v4.00+
+PlayResX: {W}
+PlayResY: {H}
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Card,{FONT},{CARD_FONTSIZE},{TEXT_COLOUR},{TEXT_COLOUR},&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,140,140,60,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,9:59:59.99,Card,,0,0,0,,{text}
+"""
+
+
+def md_inline(t):
+    """A small markdown subset as libass override tags.
+
+    **bold**, *italic*, _underline_. Braces and backslashes are neutralised
+    first, so nothing in the sheet can inject an override tag of its own.
+    """
+    t = t.replace("\\", "").replace("{", "(").replace("}", ")")
+    t = re.sub(r"\*\*(.+?)\*\*", r"{\\b1}\1{\\b0}", t)
+    t = re.sub(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)", r"{\\i1}\1{\\i0}", t)
+    t = re.sub(r"(?<!\w)_(.+?)_(?!\w)", r"{\\u1}\1{\\u0}", t)
+    return t
+
+
+def md_line(ln, base):
+    """One line as ASS. `#`, `##`, `###` set the size for that line; every
+    line carries an explicit size so nothing leaks across the break."""
+    m = re.match(r"^(#{1,3})\s+(.*)$", ln)
+    if m:
+        size = int(base * HEADING_SCALE[len(m.group(1))])
+        ln = m.group(2).strip()
+    else:
+        size = base
+    return "{\\fs%d}%s" % (size, md_inline(ln))
+
+
+def md_plain(t):
+    """The same text with the markers removed — for chapter names."""
+    t = re.sub(r"^#{1,3}\s+", "", t.strip())
+    t = re.sub(r"\*\*(.+?)\*\*", r"\1", t)
+    t = re.sub(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)", r"\1", t)
+    t = re.sub(r"(?<!\w)_(.+?)_(?!\w)", r"\1", t)
+    return t
 
 
 def get_dur(row):
@@ -598,13 +674,10 @@ def make_card(path, text, dur, image=None):
                "anullsrc=channel_layout=stereo:sample_rate=48000",
                "-vf", vf]
     else:
-        font = find_font()
-        if not font: die("no usable font found for card text")
-        tmp = path + ".txt"
-        with open(tmp, "w") as f:
-            f.write(body)
-        vf = (f"drawtext=fontfile='{font}':textfile='{tmp}':fontcolor=white:"
-              f"fontsize=64:line_spacing=28:x=(w-text_w)/2:y=(h-text_h)/2,"
+        tmp = path + ".ass"
+        with open(tmp, "w", encoding="utf-8") as f:
+            f.write(card_ass(body))
+        vf = (f"ass={tmp},"
               f"fade=t=in:st=0:d={fade},fade=t=out:st={out_st}:d={fade},setsar=1")
         cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-nostdin",
                "-f", "lavfi", "-i", f"color=c=black:s={W}x{H}:r={FPS}:d={dur}",
@@ -619,8 +692,8 @@ def make_card(path, text, dur, image=None):
             "-shortest", path]
     run(cmd)
     open(sidecar, "w").write(spec)
-    if not image and os.path.exists(path + ".txt"):
-        os.remove(path + ".txt")
+    if not image and os.path.exists(path + ".ass"):
+        os.remove(path + ".ass")
     return True
 
 
@@ -789,7 +862,7 @@ def main():
 
         if typ == "chapter":
             if n and text:
-                chapter_titles[n] = " ".join(split_lines(text))
+                chapter_titles[n] = md_plain(" ".join(split_lines(text)))
             continue
 
         if typ in ("card", "title"):
@@ -897,7 +970,7 @@ def main():
         for dur, text, img, lead, ctitle in cards.get(0, []):
             nm = f"000_card{len(sequence):02d}.mp4"
             make_card(os.path.join(WORK, nm), text, dur, img)
-            lines = split_lines(text)
+            lines = [md_plain(l) for l in split_lines(text)]
             sequence.append((nm, ctitle or (lines[0] if lines else "Card"),
                              True, 0, lead))
 
@@ -909,7 +982,7 @@ def main():
             for j, (dur, text, img, lead, ctitle) in enumerate(cards.get(i, [])):
                 nm = f"{i:03d}_card{j:02d}.mp4"
                 make_card(os.path.join(WORK, nm), text, dur, img)
-                lines = split_lines(text)
+                lines = [md_plain(l) for l in split_lines(text)]
                 sequence.append((nm, ctitle or (lines[0] if lines else "Card"),
                                  True, i, lead))
 
@@ -1003,8 +1076,8 @@ def main():
         for i, (st, en, role, text) in enumerate(items):
             if i + 1 < len(items) and items[i+1][0] < en:
                 warnings.append(f"clip {n:02d}: annotations overlap near {st:.0f}s")
-            body = text.replace("\\", "").replace("{", "(").replace("}", ")")
-            body = "\\N".join(split_lines(body, keep_blanks=True))
+            body = "\\N".join(md_inline(ln) if ln else ""
+                              for ln in split_lines(text, keep_blanks=True))
             events.append((base + st, base + en,
                            role_prefix(role, seen_roles) + body))
     # label each sped-up span. Same screen position as the ordinary

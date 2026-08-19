@@ -145,7 +145,10 @@ the words on screen; a card without `chapter:` folds into the chapter that
 follows.
 
 **Text.** Put prose under `text: >` or `text: |` — no quoting or escaping
-ever. **Never put prose inside `{ }`**: a comma there ends the value and
+ever. Blank lines are kept and render as a gap. `**bold**`, `*italic*` and
+`_underline_` work anywhere; `#`, `##`, `###` set heading sizes on cards.
+Cards render through libass, not drawtext, which is what makes more than one
+size per card possible. Chapter names strip the markers. **Never put prose inside `{ }`**: a comma there ends the value and
 silently swallows the rest of the sentence.
 
 **A key cannot repeat in one block.** Writing `annotations:` twice parses
