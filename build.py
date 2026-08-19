@@ -158,6 +158,17 @@ FONT_CANDIDATES = [
 def die(m): sys.exit("ERROR: " + m)
 
 
+def role_prefix(role, seen_roles):
+    """The bold coloured role tag that opens an annotation. Empty when there
+    is no role. Used by ordinary annotations and by sped-span labels alike."""
+    if not role:
+        return ""
+    colour = ROLE_COLOURS.get(role)
+    if colour is None:
+        colour = FALLBACK[seen_roles.index(role) % len(FALLBACK)]
+    return f"{{\\c{colour}\\b1}}{role}{{\\b0\\c{TEXT_COLOUR}}}  "
+
+
 def run(cmd):
     r = subprocess.run(cmd, capture_output=True, text=True)
     if r.returncode != 0:
@@ -453,7 +464,9 @@ def main():
                         warnings.append(f"line {ln}: --speed must be positive "
                                         f"— skipped")
                         continue
-                    if text: labels_for[(n, est)] = text
+                    srole = row.get("role", "").strip().upper()
+                    if srole and srole not in seen_roles: seen_roles.append(srole)
+                    if text: labels_for[(n, est)] = (srole, text)
                 edits[n].append((est, edur, factor))
                 continue
 
@@ -542,9 +555,9 @@ def main():
         seg_map[n] = segs
         for st, d, f in clean:
             if f is not None:
-                lbl = (labels_for.get((n, st)) or SKIP_LABEL)
+                srole, lbl = labels_for.get((n, st), ("", SKIP_LABEL))
                 if lbl.strip() not in ("-", "none", "None"):
-                    skip_spans.append((n, st, st + d, lbl))
+                    skip_spans.append((n, st, st + d, srole, lbl))
         dst = os.path.join(WORK, f"{n:03d}_edit.mp4")
         if not a.subs_only:
             build_edited_clip(src, dst, segs)
@@ -661,17 +674,13 @@ def main():
         for i, (st, en, role, text) in enumerate(items):
             if i + 1 < len(items) and items[i+1][0] < en:
                 warnings.append(f"clip {n:02d}: annotations overlap near {st:.0f}s")
-            colour = ROLE_COLOURS.get(role)
-            if role and colour is None:
-                colour = FALLBACK[seen_roles.index(role) % len(FALLBACK)]
             body = text.replace("\\", "").replace("{", "(").replace("}", ")")
             body = "\\N".join(split_lines(body))
-            if role:
-                body = f"{{\\c{colour}\\b1}}{role}{{\\b0\\c{TEXT_COLOUR}}}  " + body
-            events.append((base + st, base + en, body))
-    # label each sped-up span, positioned at the top so it never collides
-    # with the ordinary annotations along the bottom
-    for n, o_st, o_en, lbl in skip_spans:
+            events.append((base + st, base + en,
+                           role_prefix(role, seen_roles) + body))
+    # label each sped-up span. Same screen position as the ordinary
+    # annotations, distinguished by the italic Skip style.
+    for n, o_st, o_en, srole, lbl in skip_spans:
         base = starts.get(n)
         segs = seg_map.get(n)
         if base is None or not segs: continue
@@ -679,7 +688,8 @@ def main():
         m_en = time_map(min(o_en, segs[-1][1]), segs)
         if m_st is None or m_en is None or m_en <= m_st: continue
         skip_events.append((base + m_st, base + m_en,
-                            lbl.replace("{", "(").replace("}", ")")))
+                            role_prefix(srole, seen_roles)
+                            + lbl.replace("{", "(").replace("}", ")")))
 
     events.sort()
     skip_events.sort()
