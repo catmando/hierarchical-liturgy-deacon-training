@@ -6,7 +6,7 @@
 #  never go missing the way it did in the spreadsheet export.
 #
 #  Singular and plural key names mean the same thing everywhere:
-#  annotation/annotations, card/cards, cut/cuts, rubric/rubrics, note/notes.
+#  annotation/annotations, card/cards, cut/cuts, note/notes, todo/todos.
 #  Write whichever reads better for what you have.
 #
 #  ── Chapters ──────────────────────────────────────────────────────────
