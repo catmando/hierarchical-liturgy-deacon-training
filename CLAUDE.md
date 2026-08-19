@@ -49,6 +49,7 @@ python3 build.py --help          # flags AND the full sheet-format reference
 python3 build.py --clip 3        # preview one clip (also 3-5 or 3,7,19)
 python3 build.py --clip 3 --cards none   # preview times = the clip's own times
 python3 build.py --clip 3 --draft        # ~4x faster re-encode, blocky
+python3 build.py --clip 3 --play         # open in VLC if the build succeeds
 python3 build.py --subs-only     # regenerate annotations only, fast
 python3 build.py --sheet other.yaml
 python3 build.py --speed 6       # default rate for spans saying speed: true

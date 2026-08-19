@@ -20,6 +20,7 @@ USAGE
     python3 build.py --clip 3-5         # preview a range
     python3 build.py --clip 3 --cards none    # preview times = clip times
     python3 build.py --clip 3 --draft         # fast, blocky re-encode
+    python3 build.py --clip 3 --play          # open it in VLC when it works
 
     The sheet defaults to annotations.yaml. It is validated before anything
     is built, and errors stop the build; --no-check overrides that.
@@ -551,6 +552,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--sheet", dest="sheet", metavar="FILE",
                     help="the edit sheet to read (default annotations.yaml)")
+    ap.add_argument("--play", action="store_true",
+                    help="open the finished file in VLC when the build "
+                         "succeeds — the preview for --clip, otherwise the "
+                         "review copy. Nothing opens if the build fails.")
     ap.add_argument("--draft", action="store_true",
                     help="re-encode edited clips fast and ugly "
                          f"(-preset {DRAFT_PRESET} -crf {DRAFT_CRF} instead of "
@@ -1049,6 +1054,18 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         print("  Paste youtube_chapters.txt into the video description.")
     elif not only:
         print("For YouTube, re-run with --youtube to burn the text in.")
+
+    if a.play:
+        # Whatever this run actually produced, so an old file is never opened
+        # by mistake. VLC because IINA drops the subtitle track when you use
+        # its chapter panel.
+        target = mkv if not a.no_mkv else OUT_VIDEO
+        if not os.path.exists(target):
+            print(f"\n--play: nothing to open, {target} was not built.")
+        else:
+            print(f"\nOpening {target} in VLC. "
+                  f"Press v if the text does not show.")
+            subprocess.run(["open", "-a", "VLC", target], check=False)
 
 
 if __name__ == "__main__":
