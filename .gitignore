@@ -1,0 +1,22 @@
+# ─── Raw source footage ────────────────────────────────────────────────
+# 6.8 GB, 37 clips. NOT in git — published as GitHub release assets.
+# Verify/restore with ./restore_raw_clips.sh against raw_clips.tsv.
+[0-9][0-9] - *.mp4
+
+# ─── Build products (all rebuildable by build.py) ──────────────────────
+_normalized/
+master.mp4
+youtube.mp4
+*.mkv
+annotations.ass
+chapters.txt
+youtube_chapters.txt
+boundaries.tsv
+encode.log
+
+# Preview-mode outputs (build.py --clip N)
+preview.*
+preview_*
+
+# ─── macOS ─────────────────────────────────────────────────────────────
+.DS_Store
