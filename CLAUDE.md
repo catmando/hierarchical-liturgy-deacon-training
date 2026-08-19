@@ -50,6 +50,7 @@ python3 build.py --clip 3        # preview one clip (also 3-5 or 3,7,19)
 python3 build.py --clip 3 --cards none   # preview times = the clip's own times
 python3 build.py --clip 3 --draft        # ~4x faster re-encode, blocky
 python3 build.py --clip 3 --play         # open in VLC if the build succeeds
+python3 build.py --clip 3 --timecode     # burn ORIGINAL clip time on screen
 python3 build.py --subs-only     # regenerate annotations only, fast
 python3 build.py --sheet other.yaml
 python3 build.py --speed 6       # default rate for spans saying speed: true
@@ -62,6 +63,13 @@ python3 build.py --youtube       # burn subs into youtube.mp4, slow
 `annotations.ass`, `chapters.txt`, `youtube_chapters.txt`, `boundaries.tsv`.
 Preview mode writes `output/preview.*` instead and leaves the real outputs
 alone.
+
+**A preview plays EDITED time; the sheet wants ORIGINAL time.** Once a clip
+carries a cut, scrubbing the preview and reading the player's clock gives a
+number that is wrong by however much the edits removed — and the user lost
+work to exactly this on clip 4. `--timecode` burns the original clip time into
+the corner of the preview, so the number on screen is the number to type.
+Reach for it whenever a clip has cuts or speed spans.
 
 **How the user works.** One clip at a time with `--cards none`, getting the
 timing right before moving on; then every three or four clips together, with

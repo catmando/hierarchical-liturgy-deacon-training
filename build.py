@@ -21,6 +21,7 @@ USAGE
     python3 build.py --clip 3 --cards none    # preview times = clip times
     python3 build.py --clip 3 --draft         # fast, blocky re-encode
     python3 build.py --clip 3 --play          # open it in VLC when it works
+    python3 build.py --clip 3 --timecode --draft   # show ORIGINAL clip times
 
     The sheet defaults to annotations.yaml. It is validated before anything
     is built, and errors stop the build; --no-check overrides that.
@@ -502,6 +503,54 @@ def read_sheet(path):
     return rows
 
 
+def burn_timecode(video, rows_out, seg_map):
+    """Overlay each frame with its position in the ORIGINAL clip.
+
+    The edit pipeline maps original time forward; this inverts it. A clip is
+    laid down as pieces (a, b, factor): the piece occupies (b-a)/factor of
+    output time, and output time T inside it corresponds to original time
+    a + (T - S) * factor, where S is where the piece starts in the output.
+    One drawtext per piece, switched on for exactly that span, so the number
+    stays true across cuts, speed changes and inserted cards alike.
+    """
+    font = find_font()
+    if not font:
+        print("--timecode: no usable font found, skipped."); return
+
+    draws = []
+    for t0, nm, label, is_card, cno, d, lead in rows_out:
+        if is_card:
+            continue                      # a card has no place in the original
+        segs = seg_map.get(cno) or [(0.0, d, 1.0, ("", 0.0))]
+        cum = 0.0
+        for seg in segs:
+            aa, bb, ff = seg[0], seg[1], seg[2]
+            piece = (bb - aa) / ff
+            st, en = t0 + cum, t0 + cum + piece
+            cum += piece
+            # seconds in the original clip, as an ffmpeg expression
+            e = f"(({{t}}-{st:.3f})*{ff:.6f}+{aa:.3f})".replace("{t}", "t")
+            mins = f"%{{eif\\:floor(({e})/60)\\:d}}"
+            secs = f"%{{eif\\:mod(floor({e})\\,60)\\:d\\:2}}"
+            draws.append(
+                f"drawtext=fontfile='{font}'"
+                f":text='clip {cno:02d}   {mins}\\:{secs}'"
+                f":fontcolor=white:fontsize=40:box=1:boxcolor=black@0.65"
+                f":boxborderw=12:x=w-tw-32:y=32"
+                f":enable='between(t\\,{st:.3f}\\,{en:.3f})'")
+
+    if not draws:
+        print("--timecode: nothing to label, skipped."); return
+
+    tmp = video + ".tc.mp4"
+    print(f"Burning original-clip timecode into {video} ({len(draws)} spans)")
+    run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-nostdin",
+         "-i", video, "-vf", ",".join(draws),
+         "-c:v", "libx264", "-preset", PRESET, "-crf", str(CRF),
+         "-pix_fmt", "yuv420p", "-c:a", "copy", tmp])
+    os.replace(tmp, video)
+
+
 def clip_num(raw):
     raw = (raw or "").strip()
     if not raw: return None
@@ -570,6 +619,12 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--sheet", dest="sheet", metavar="FILE",
                     help="the edit sheet to read (default annotations.yaml)")
+    ap.add_argument("--timecode", action="store_true",
+                    help="burn the ORIGINAL clip time into the corner of a "
+                         "preview. The number on screen is the number to type "
+                         "into the sheet, so scrubbing a preview never needs "
+                         "converting back through cuts and speed spans. "
+                         "Costs one re-encode — pair it with --draft.")
     ap.add_argument("--play", action="store_true",
                     help="open the finished file in VLC when the build "
                          "succeeds — the preview for --clip, otherwise the "
@@ -888,6 +943,9 @@ def main():
         rows_out.append((t, nm, label, is_card, cno, d, lead))
         t += d
     total = t
+
+    if a.timecode and not a.subs_only:
+        burn_timecode(OUT_VIDEO, rows_out, seg_map)
 
     with open(out("preview_boundaries.tsv" if only else "boundaries.tsv"), "w") as f:
         for st, nm, label, is_card, cno, d, lead in rows_out:

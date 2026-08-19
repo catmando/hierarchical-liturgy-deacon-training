@@ -164,6 +164,7 @@ python3 build.py --help          # flags AND the full edit-sheet reference
 python3 build.py --clip 3        # preview one clip (also 3-5 or 3,7,19)
 python3 build.py --clip 3 --draft  # ~4x faster re-encode while checking timings
 python3 build.py --clip 3 --play   # open the result in VLC when it succeeds
+python3 build.py --clip 3 --timecode --draft   # show ORIGINAL clip times on screen
 python3 build.py --subs-only     # regenerate annotations only — fast
 python3 build.py --speed 6       # global rate for every speed row
 python3 build.py --no-mkv
