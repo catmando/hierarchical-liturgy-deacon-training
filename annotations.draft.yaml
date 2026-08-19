@@ -24,10 +24,19 @@
 #    A `clip: 0` block means "before everything".
 #
 #  ── Speed-ups and cuts ────────────────────────────────────────────────
-#    Write them inline in the annotations list, marked `speed: true` or
+#    Write them inline in the annotations list, marked `speed:` or
 #    `cut: true`, and the list reads in the order things happen. Both ends
 #    must be given (a span cannot continue from whatever preceded it), and a
 #    span never affects where the next annotation picks up.
+#
+#      speed: 4x      four times normal speed. 4 and 2.5x work too.
+#      speed: true    use the global rate from --speed.
+#      mute: false    keep the audio. Defaults to true, because sped-up
+#                     speech and chant are unpleasant.
+#
+#    A span's `text:` is its on-screen label, in the same position as an
+#    annotation but italic. Leave it out for "skipping ahead"; use `-` for
+#    no label at all. `role:` shows on the label like any annotation.
 #
 #    Separate `speed:` and `cuts:` blocks also work if you prefer them.
 #
@@ -113,7 +122,7 @@
     # A span written inline, so the list reads in time order.
     - from: 38
       to: 1:18
-      speed: true          # plays fast, audio muted
+      speed: true          # or a rate: 4x. Audio muted unless mute: false
       role: PRIEST
       text: Greets Bishop….
 

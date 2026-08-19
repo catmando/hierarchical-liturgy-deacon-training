@@ -94,13 +94,30 @@ LISTY = {"annotations", "speed", "cuts", "cards"}
 
 # An entry in the annotations list is a span if it says so; spans may also be
 # written in their own speed:/cuts: blocks.
-ANN_KEYS   = {"at", "from", "for", "to", "role", "text", "speed", "cut",
+ANN_KEYS   = {"at", "from", "for", "to", "role", "text", "speed", "cut", "mute",
               "notes", "note", "todos", "todo"}
 
 
 def is_span(e):
-    return isinstance(e, dict) and (e.get("speed") is True or e.get("cut") is True)
-SPAN_KEYS  = {"at", "from", "for", "to", "role", "text"}
+    """A span is marked `cut: true`, or `speed:` with a rate or true."""
+    if not isinstance(e, dict):
+        return False
+    return e.get("cut") is True or ("speed" in e and e["speed"] is not False)
+
+
+def parse_rate(v):
+    """speed: true → the global --speed rate. 4, 4x and 2.5x → that rate."""
+    if v is True:
+        return None                     # defer to --speed
+    if isinstance(v, (int, float)) and not isinstance(v, bool):
+        return float(v)
+    if isinstance(v, str):
+        t = v.strip().lower().rstrip("x").strip()
+        try: return float(t)
+        except ValueError: pass
+    raise ValueError(f"{v!r} — use true, or a rate like 4 or 4x")
+SPAN_KEYS  = {"at", "from", "for", "to", "role", "text", "speed", "mute",
+              "notes", "note", "todos", "todo"}
 CARD_KEYS  = {"text", "image", "for", "to", "chapter", "after",
               "notes", "note", "todos", "todo"}
 
@@ -214,8 +231,19 @@ for i, b in enumerate(doc):
         w = f"{where} {'span' if is_span(e) else 'annotation'} {j}"
         check_entry(w, e, ANN_KEYS, need_text=not is_span(e))
         if is_span(e):
-            if e.get("speed") is True and e.get("cut") is True:
+            if "speed" in e and e.get("cut") is True:
                 err(w, "marked both speed and cut — pick one")
+            if "speed" in e:
+                try:
+                    rate = parse_rate(e["speed"])
+                    if rate is not None and rate <= 0:
+                        err(w, f"speed: {e['speed']!r} — rate must be positive")
+                except ValueError as ex:
+                    err(w, f"speed: {ex}")
+            if "mute" in e and not isinstance(e["mute"], bool):
+                err(w, f"mute: {e['mute']!r} — use true or false")
+            if e.get("cut") is True and "mute" in e:
+                warn(w, "mute has no effect on a cut")
             if "at" not in e and "from" not in e: err(w, "no start — a span needs from:")
             if "to" not in e and "for" not in e:  err(w, "no end — a span needs to: or for:")
     # A span is a region of the original clip, so unlike an annotation it
