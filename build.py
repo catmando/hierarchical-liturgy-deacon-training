@@ -18,9 +18,11 @@ USAGE
     python3 build.py --speed 6          # default rate for spans saying speed: true
     python3 build.py --clip 3           # preview clip 3 on its own
     python3 build.py --clip 3-5         # preview a range
+    python3 build.py --clip 3 --cards none    # preview times = clip times
 
-    The sheet defaults to annotations.yaml.
-    Validate one without building: python3 check_sheet.py
+    The sheet defaults to annotations.yaml. It is validated before anything
+    is built, and errors stop the build; --no-check overrides that.
+    To check without building: python3 check_sheet.py
 
 REQUIRES
     normalized/001.mp4 ... from normalize_and_join.sh
@@ -503,6 +505,17 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--sheet", dest="sheet", metavar="FILE",
                     help="the edit sheet to read (default annotations.yaml)")
+    ap.add_argument("--no-check", action="store_true",
+                    help="build even if the sheet fails validation. The check "
+                         "runs first by default and stops the build on errors.")
+    ap.add_argument("--cards", choices=("none", "leading", "all"),
+                    default="leading",
+                    help="which cards a --clip preview includes. 'leading' "
+                         "(default) keeps only a folding title card running "
+                         "into a selected clip; 'all' keeps standalone cards "
+                         "too, matching the finished video; 'none' drops them "
+                         "so preview times equal the clip's own times. "
+                         "Ignored for a full build, which always has them.")
     ap.add_argument("--subs-only", action="store_true",
                     help="only regenerate the annotation track; skip "
                          "reassembling the video. Fast, for timing work.")
@@ -549,6 +562,20 @@ def main():
         else:
             die("no edit sheet found — expected annotations.yaml")
     if not os.path.exists(a.sheet): die(f"not found: {a.sheet}")
+
+    # Validate before spending anything on ffmpeg.
+    import check_sheet
+    sheet_errors, sheet_warnings, sheet_summary = check_sheet.validate(a.sheet)
+    if sheet_errors or sheet_warnings:
+        check_sheet.report(sheet_errors, sheet_warnings, sheet_summary)
+        print()
+    if sheet_errors:
+        if a.no_check:
+            print(f"{len(sheet_errors)} error(s) in {a.sheet} — "
+                  f"building anyway because --no-check was given.\n")
+        else:
+            die(f"{len(sheet_errors)} error(s) in {a.sheet} — nothing built. "
+                f"Fix them, or pass --no-check to build regardless.")
     if not os.path.isdir(WORK): die(f"{WORK}/ not found — run normalize_and_join.sh first")
 
     clips = sorted(f for f in os.listdir(WORK)
@@ -738,11 +765,15 @@ def main():
             if not is_card:
                 if cno in only: kept.append(entry)
                 continue
-            # a leading title card comes along if the clip it introduces
-            # is in the selection
+            if a.cards == "none":
+                continue          # preview times then equal the clip's own
+            # the clip this card runs into; cno is the one it follows
             j = i + 1
             while j < len(sequence) and sequence[j][2]: j += 1
-            if lead and j < len(sequence) and sequence[j][3] in only:
+            nxt = sequence[j][3] if j < len(sequence) else None
+            if a.cards == "all":
+                if nxt in only or cno in only: kept.append(entry)
+            elif lead and nxt in only:
                 kept.append(entry)
         if not kept:
             die(f"--clip {a.clip} matched no clips "

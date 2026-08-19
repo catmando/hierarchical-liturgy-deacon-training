@@ -47,6 +47,7 @@ what to hold, which hand, what to say, and what cues trigger movement.
 python3 build.py                 # full build
 python3 build.py --help          # flags AND the full sheet-format reference
 python3 build.py --clip 3        # preview one clip (also 3-5 or 3,7,19)
+python3 build.py --clip 3 --cards none   # preview times = the clip's own times
 python3 build.py --subs-only     # regenerate annotations only, fast
 python3 build.py --sheet other.yaml
 python3 build.py --speed 6       # default rate for spans saying speed: true
@@ -60,9 +61,15 @@ python3 build.py --youtube       # burn subs into youtube.mp4, slow
 Preview mode writes `output/preview.*` instead and leaves the real outputs
 alone.
 
+**The sheet is validated before every build**, and errors stop it before
+ffmpeg runs; `--no-check` overrides. `--cards none|leading|all` controls which
+cards a `--clip` preview includes — `none` makes preview times equal the
+clip's own times, which is what you want while timing text; `all` matches the
+finished video.
+
 Four supporting scripts, none of which touch the video: `check_sheet.py`
-(validate the edit sheet — syntax, unknown keys, annotations past the end of
-their clip, overlaps), `check_environment.sh` (verify a machine can build —
+(the same validation, standalone — syntax, unknown keys, annotations past the
+end of their clip, overlaps), `check_environment.sh` (verify a machine can build —
 run it before committing hours to a normalize pass), `restore_raw_clips.sh`
 (fetch and SHA-256 verify the footage), `make_manifest.sh` (regenerate
 `raw_clips.tsv`).

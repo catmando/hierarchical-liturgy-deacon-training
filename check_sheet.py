@@ -180,175 +180,201 @@ def check_entry(where, e, allowed, need_text=True):
         err(where, "no text")
 
 
-path = sys.argv[1] if len(sys.argv) > 1 else "annotations.yaml"
-if not os.path.exists(path):
-    sys.exit(f"ERROR: {path} not found")
+def validate(path):
+    """Check a sheet without building. Returns (errors, warnings, summary)."""
+    global errors, warnings
+    errors, warnings = [], []
 
-try:
-    doc = yaml.safe_load(open(path, encoding="utf-8"))
-except yaml.YAMLError as e:
-    m = getattr(e, "problem_mark", None)
-    sys.exit(f"YAML SYNTAX ERROR in {path}"
-             + (f", line {m.line + 1}, column {m.column + 1}" if m else "")
-             + f"\n  {getattr(e, 'problem', e)}")
+    if not os.path.exists(path):
+        return [f"{path}: not found"], [], ""
+    try:
+        with open(path, encoding="utf-8") as f:
+            doc = yaml.safe_load(f)
+    except yaml.YAMLError as e:
+        m = getattr(e, "problem_mark", None)
+        where = (f"{path}, line {m.line + 1}, column {m.column + 1}"
+                 if m else path)
+        return [f"YAML syntax error in {where}: "
+                f"{getattr(e, 'problem', e)}"], [], ""
+    if not isinstance(doc, list):
+        return [f"{path}: must be a list of clip blocks, "
+                f"each starting with '- clip:'"], [], ""
 
-if not isinstance(doc, list):
-    sys.exit(f"ERROR: {path} must be a list of clip blocks (each starting with '- clip:')")
+    seen = {}
+    for i, b in enumerate(doc):
+        where = f"block {i + 1}"
+        if not isinstance(b, dict):
+            err(where, f"expected a clip block, got {type(b).__name__}"); continue
+        if "clip" not in b:
+            err(where, "no 'clip:' key"); continue
+        n = b["clip"]
+        where = f"clip {n}"
+        if not isinstance(n, int):
+            err(where, f"clip must be a whole number, got {n!r}")
+        if n in seen and n != 0:
+            warn(where, f"clip {n} also appears at block {seen[n]}")
+        seen.setdefault(n, i + 1)
 
-seen = {}
-for i, b in enumerate(doc):
-    where = f"block {i + 1}"
-    if not isinstance(b, dict):
-        err(where, f"expected a clip block, got {type(b).__name__}"); continue
-    if "clip" not in b:
-        err(where, "no 'clip:' key"); continue
-    n = b["clip"]
-    where = f"clip {n}"
-    if not isinstance(n, int):
-        err(where, f"clip must be a whole number, got {n!r}")
-    if n in seen and n != 0:
-        warn(where, f"clip {n} also appears at block {seen[n]}")
-    seen.setdefault(n, i + 1)
+        canon = {}
+        for k, v in b.items():
+            c = ALIAS.get(k)
+            if c is None:
+                err(where, f"unknown key {k!r} (allowed: {', '.join(sorted(ALIAS))})")
+                continue
+            if c in canon:
+                err(where, f"{k!r} and its synonym both given — keep one")
+                continue
+            canon[c] = v
 
-    canon = {}
-    for k, v in b.items():
-        c = ALIAS.get(k)
-        if c is None:
-            err(where, f"unknown key {k!r} (allowed: {', '.join(sorted(ALIAS))})")
-            continue
-        if c in canon:
-            err(where, f"{k!r} and its synonym both given — keep one")
-            continue
-        canon[c] = v
+        def items(field):
+            """A listy field may be written as one entry or a list of them."""
+            v = canon.get(field)
+            if v is None: return []
+            return v if isinstance(v, list) else [v]
 
-    def items(field):
-        """A listy field may be written as one entry or a list of them."""
-        v = canon.get(field)
-        if v is None: return []
-        return v if isinstance(v, list) else [v]
+        for j, e in enumerate(items("annotations"), 1):
+            w = f"{where} {'span' if is_span(e) else 'annotation'} {j}"
+            check_entry(w, e, ANN_KEYS, need_text=not is_span(e))
+            if is_span(e):
+                if "speed" in e and e.get("cut") is True:
+                    err(w, "marked both speed and cut — pick one")
+                if "speed" in e:
+                    try:
+                        rate = parse_rate(e["speed"])
+                        if rate is not None and rate <= 0:
+                            err(w, f"speed: {e['speed']!r} — rate must be positive")
+                    except ValueError as ex:
+                        err(w, f"speed: {ex}")
+                if "mute" in e and not isinstance(e["mute"], bool):
+                    err(w, f"mute: {e['mute']!r} — use true or false")
+                if e.get("cut") is True and "mute" in e:
+                    warn(w, "mute has no effect on a cut")
+                if "at" not in e and "from" not in e: err(w, "no start — a span needs from:")
+                if "to" not in e and "for" not in e:  err(w, "no end — a span needs to: or for:")
+        # A span is a region of the original clip, so unlike an annotation it
+        # cannot inherit its start from whatever came before.
+        for j, e in enumerate(items("speed"), 1):
+            w = f"{where} speed {j}"
+            check_entry(w, e, SPAN_KEYS, need_text=False)
+            if isinstance(e, dict):
+                if "at" not in e and "from" not in e: err(w, "no start — a span needs from:")
+                if "to" not in e and "for" not in e:  err(w, "no end — a span needs to: or for:")
+        for j, e in enumerate(items("cuts"), 1):
+            w = f"{where} cut {j}"
+            check_entry(w, e, {"at", "from", "to", "for"}, need_text=False)
+            if isinstance(e, dict):
+                if "at" not in e and "from" not in e: err(w, "no start — a cut needs from:")
+                if "to" not in e and "for" not in e:  err(w, "no end — a cut needs to: or for:")
+        for j, e in enumerate(items("cards"), 1):
+            check_entry(f"{where} card {j}", e, CARD_KEYS)
 
-    for j, e in enumerate(items("annotations"), 1):
-        w = f"{where} {'span' if is_span(e) else 'annotation'} {j}"
-        check_entry(w, e, ANN_KEYS, need_text=not is_span(e))
-        if is_span(e):
-            if "speed" in e and e.get("cut") is True:
-                err(w, "marked both speed and cut — pick one")
-            if "speed" in e:
-                try:
-                    rate = parse_rate(e["speed"])
-                    if rate is not None and rate <= 0:
-                        err(w, f"speed: {e['speed']!r} — rate must be positive")
-                except ValueError as ex:
-                    err(w, f"speed: {ex}")
-            if "mute" in e and not isinstance(e["mute"], bool):
-                err(w, f"mute: {e['mute']!r} — use true or false")
-            if e.get("cut") is True and "mute" in e:
-                warn(w, "mute has no effect on a cut")
-            if "at" not in e and "from" not in e: err(w, "no start — a span needs from:")
-            if "to" not in e and "for" not in e:  err(w, "no end — a span needs to: or for:")
-    # A span is a region of the original clip, so unlike an annotation it
-    # cannot inherit its start from whatever came before.
-    for j, e in enumerate(items("speed"), 1):
-        w = f"{where} speed {j}"
-        check_entry(w, e, SPAN_KEYS, need_text=False)
-        if isinstance(e, dict):
-            if "at" not in e and "from" not in e: err(w, "no start — a span needs from:")
-            if "to" not in e and "for" not in e:  err(w, "no end — a span needs to: or for:")
-    for j, e in enumerate(items("cuts"), 1):
-        w = f"{where} cut {j}"
-        check_entry(w, e, {"at", "from", "to", "for"}, need_text=False)
-        if isinstance(e, dict):
-            if "at" not in e and "from" not in e: err(w, "no start — a cut needs from:")
-            if "to" not in e and "for" not in e:  err(w, "no end — a cut needs to: or for:")
-    for j, e in enumerate(items("cards"), 1):
-        check_entry(f"{where} card {j}", e, CARD_KEYS)
+        for field in PROSE:
+            if field in canon: check_prose(where, field, canon[field])
 
-    for field in PROSE:
-        if field in canon: check_prose(where, field, canon[field])
+    # ---------------- timing: past the end of a clip, and overlaps -------------
+    DURS = clip_durations()
+    if not DURS:
+        warnings.append("could not read clip durations "
+                        "(no normalized/ and no raw_clips.tsv) — skipped end-of-clip checks")
 
-# ---------------- timing: past the end of a clip, and overlaps -------------
-DURS = clip_durations()
-if not DURS:
-    warnings.append("could not read clip durations "
-                    "(no normalized/ and no raw_clips.tsv) — skipped end-of-clip checks")
+    for b in doc:
+        if not isinstance(b, dict) or "clip" not in b: continue
+        n = b["clip"]
+        if not isinstance(n, int) or n == 0: continue
+        where = f"clip {n}"
+        entries = b.get("annotations", b.get("annotation")) or []
+        if isinstance(entries, dict): entries = [entries]
+        anns   = [e for e in entries if not is_span(e)]
+        inline = [e for e in entries if is_span(e)]
+        spans  = resolve(anns)
+        dur    = DURS.get(n)
 
-for b in doc:
-    if not isinstance(b, dict) or "clip" not in b: continue
-    n = b["clip"]
-    if not isinstance(n, int) or n == 0: continue
-    where = f"clip {n}"
-    entries = b.get("annotations", b.get("annotation")) or []
-    if isinstance(entries, dict): entries = [entries]
-    anns   = [e for e in entries if not is_span(e)]
-    inline = [e for e in entries if is_span(e)]
-    spans  = resolve(anns)
-    dur    = DURS.get(n)
-
-    for i, ((st, en), e) in enumerate(zip(spans, anns), 1):
-        if st is None: continue
-        label = str(e.get("text", ""))[:40].replace("\n", " ") if isinstance(e, dict) else ""
-        if dur is not None:
-            if st >= dur:
-                how = ("starts exactly at the clip's end"
-                       if abs(st - dur) < 0.05 else
-                       f"starts at {fmt(st)}, past the clip's end")
-                err(f"{where} annotation {i}",
-                    f"{how} ({st:.3f}s vs {dur:.3f}s) — nothing of this clip is "
-                    f"left to show it over, so it will caption the following "
-                    f"clip  ({label})")
-            elif en > dur:
-                warn(f"{where} annotation {i}",
-                     f"runs to {fmt(en)}, past the clip's {fmt(dur)} end "
-                     f"— it will spill into the next clip  ({label})")
-
-    # annotations sharing screen time land on top of each other
-    for i in range(len(spans)):
-        for j in range(i + 1, len(spans)):
-            a, bb = spans[i], spans[j]
-            if None in a or None in bb: continue
-            lo, hi = max(a[0], bb[0]), min(a[1], bb[1])
-            if hi - lo > 0.01:
-                warn(f"{where} annotations {i+1} and {j+1}",
-                     f"overlap {fmt(lo)}–{fmt(hi)} — they share the same screen position")
-
-    # a speed label sits in the annotation position for its whole span
-    sp = b.get("speed", b.get("speeds")) or []
-    if isinstance(sp, dict): sp = [sp]
-    sp = list(sp) + [e for e in inline if e.get("speed") is True]
-    for k, e in enumerate(sp, 1):
-        if not isinstance(e, dict): continue
-        try:
-            sst = parse_time(str(e.get("at", e.get("from"))))
-            sen = parse_time(str(e["to"])) if "to" in e else sst + parse_time(str(e["for"]))
-        except Exception:
-            continue
-        for i, (st, en) in enumerate(spans, 1):
+        for i, ((st, en), e) in enumerate(zip(spans, anns), 1):
             if st is None: continue
-            lo, hi = max(st, sst), min(en, sen)
-            if hi - lo > 0.01:
-                warn(f"{where} annotation {i} and speed {k}",
-                     f"overlap {fmt(lo)}–{fmt(hi)} — the speed label shares that position")
+            label = str(e.get("text", ""))[:40].replace("\n", " ") if isinstance(e, dict) else ""
+            if dur is not None:
+                if st >= dur:
+                    how = ("starts exactly at the clip's end"
+                           if abs(st - dur) < 0.05 else
+                           f"starts at {fmt(st)}, past the clip's end")
+                    err(f"{where} annotation {i}",
+                        f"{how} ({st:.3f}s vs {dur:.3f}s) — nothing of this clip is "
+                        f"left to show it over, so it will caption the following "
+                        f"clip  ({label})")
+                elif en > dur:
+                    warn(f"{where} annotation {i}",
+                         f"runs to {fmt(en)}, past the clip's {fmt(dur)} end "
+                         f"— it will spill into the next clip  ({label})")
+
+        # annotations sharing screen time land on top of each other
+        for i in range(len(spans)):
+            for j in range(i + 1, len(spans)):
+                a, bb = spans[i], spans[j]
+                if None in a or None in bb: continue
+                lo, hi = max(a[0], bb[0]), min(a[1], bb[1])
+                if hi - lo > 0.01:
+                    warn(f"{where} annotations {i+1} and {j+1}",
+                         f"overlap {fmt(lo)}–{fmt(hi)} — they share the same screen position")
+
+        # a speed label sits in the annotation position for its whole span
+        sp = b.get("speed", b.get("speeds")) or []
+        if isinstance(sp, dict): sp = [sp]
+        sp = list(sp) + [e for e in inline if e.get("speed") is True]
+        for k, e in enumerate(sp, 1):
+            if not isinstance(e, dict): continue
+            try:
+                sst = parse_time(str(e.get("at", e.get("from"))))
+                sen = parse_time(str(e["to"])) if "to" in e else sst + parse_time(str(e["for"]))
+            except Exception:
+                continue
+            for i, (st, en) in enumerate(spans, 1):
+                if st is None: continue
+                lo, hi = max(st, sst), min(en, sen)
+                if hi - lo > 0.01:
+                    warn(f"{where} annotation {i} and speed {k}",
+                         f"overlap {fmt(lo)}–{fmt(hi)} — the speed label shares that position")
 
 
-def _entries(b):
-    v = b.get("annotations", b.get("annotation"))
-    if isinstance(v, dict): return [v]
-    return v if isinstance(v, list) else []
-def _spans(b):
-    v = b.get("speed", b.get("speeds")) or []
-    if isinstance(v, dict): v = [v]
-    w = b.get("cuts", b.get("cut")) or []
-    if isinstance(w, dict): w = [w]
-    return list(v) + list(w)
-blocks = [b for b in doc if isinstance(b, dict)]
-n_ann  = sum(len([e for e in _entries(b) if not is_span(e)]) for b in blocks)
-n_span = sum(len([e for e in _entries(b) if is_span(e)]) + len(_spans(b)) for b in blocks)
-print(f"{path}: {len(doc)} clip blocks, {n_ann} annotations"
-      + (f", {n_span} span(s)" if n_span else ""))
-for w in warnings: print(f"  warning  {w}")
-for e in errors:   print(f"  ERROR    {e}")
-print()
-if errors:
-    print(f"{len(errors)} error(s).")
-    sys.exit(1)
-print("Syntax is valid." + (f" {len(warnings)} warning(s)." if warnings else ""))
+
+    def _entries(b):
+        v = b.get("annotations", b.get("annotation"))
+        if isinstance(v, dict): return [v]
+        return v if isinstance(v, list) else []
+
+    def _spans(b):
+        v = b.get("speed", b.get("speeds")) or []
+        if isinstance(v, dict): v = [v]
+        w = b.get("cuts", b.get("cut")) or []
+        if isinstance(w, dict): w = [w]
+        return list(v) + list(w)
+
+    blocks = [b for b in doc if isinstance(b, dict)]
+    n_ann  = sum(len([e for e in _entries(b) if not is_span(e)]) for b in blocks)
+    n_span = sum(len([e for e in _entries(b) if is_span(e)]) + len(_spans(b))
+                 for b in blocks)
+    summary = (f"{path}: {len(doc)} clip blocks, {n_ann} annotations"
+               + (f", {n_span} span(s)" if n_span else ""))
+    return errors, warnings, summary
+
+
+def report(errors, warnings, summary, stream=sys.stdout):
+    """Print a validation result the same way wherever it is run from."""
+    if summary: print(summary, file=stream)
+    for w in warnings: print(f"  warning  {w}", file=stream)
+    for e in errors:   print(f"  ERROR    {e}", file=stream)
+
+
+def main():
+    path = sys.argv[1] if len(sys.argv) > 1 else "annotations.yaml"
+    errors, warnings, summary = validate(path)
+    report(errors, warnings, summary)
+    print()
+    if errors:
+        print(f"{len(errors)} error(s).")
+        return 1
+    print("Syntax is valid." + (f" {len(warnings)} warning(s)." if warnings else ""))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
