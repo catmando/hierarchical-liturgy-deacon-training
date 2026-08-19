@@ -299,6 +299,7 @@ Respect that.**
 | `normalize_and_join.sh` | raw → normalized → master; already run, don't re-run |
 | `restore_raw_clips.sh` | download the footage from the release and verify it |
 | `check_environment.sh` | verify a machine can build before committing hours |
+| `check_sheet.py` | validate a YAML edit sheet without building |
 | `make_manifest.sh` | regenerate `raw_clips.tsv` |
 | `README.md` | recovery runbook: bare Mac → finished video |
 | `CLAUDE.md` | this file |

@@ -18,7 +18,67 @@ except ModuleNotFoundError:
     sys.exit("ERROR: PyYAML missing — run: pip3 install --break-system-packages pyyaml")
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from build import parse_time            # one definition of a timecode, not two
+from build import parse_time, CONT_GAP, DEFAULT_DUR   # one definition, not two
+
+
+def clip_durations():
+    """Length of each clip, keyed by clip number.
+
+    Prefers the normalized clips the build actually concatenates; falls back to
+    raw_clips.tsv so the sheet can be checked on a machine with no footage.
+    """
+    import csv as _csv, subprocess, glob
+    durs = {}
+    for path in sorted(glob.glob("normalized/[0-9][0-9][0-9].mp4")):
+        n = int(os.path.basename(path)[:3])
+        try:
+            durs[n] = float(subprocess.run(
+                ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+                 "-of", "csv=p=0", path],
+                capture_output=True, text=True, check=True).stdout.strip())
+        except Exception:
+            pass
+    if durs:
+        return durs
+    try:
+        with open("raw_clips.tsv", encoding="utf-8") as f:
+            for i, row in enumerate(_csv.DictReader(f, delimiter="\t"), start=1):
+                durs[i] = float(row["duration_s"])
+    except Exception:
+        pass
+    return durs
+
+
+def resolve(entries):
+    """Resolve each annotation to (start, end), mirroring build.py exactly:
+    an explicit time wins, otherwise continue CONT_GAP after the previous end.
+    """
+    out, prev_end = [], None
+    for e in entries:
+        if not isinstance(e, dict):
+            out.append((None, None)); continue
+        raw = e.get("at", e.get("from"))
+        try:
+            if raw is None:
+                st = 0.0 if prev_end is None else prev_end + CONT_GAP
+            elif isinstance(raw, str) and raw.strip().lower().startswith(("next", "c")):
+                tail = raw.strip().lstrip("nextNEXTcC").strip().lstrip("+").strip()
+                gap = float(tail) if tail else CONT_GAP
+                st = 0.0 if prev_end is None else prev_end + gap
+            else:
+                st = parse_time(str(raw))
+            if "for" in e:   en = st + parse_time(str(e["for"]))
+            elif "to" in e:  en = parse_time(str(e["to"]))
+            else:            en = st + DEFAULT_DUR
+        except Exception:
+            out.append((None, None)); continue
+        out.append((st, en))
+        prev_end = en
+    return out
+
+
+def fmt(t):
+    return f"{int(t // 60)}:{t % 60:05.2f}" if t >= 60 else f"{t:.2f}s"
 
 # Singular and plural mean the same thing everywhere. Canonical name -> aliases.
 CLIP_FIELDS = {
@@ -150,6 +210,67 @@ for i, b in enumerate(doc):
             err(where, f"{field}: expected prose or a list, got {type(v).__name__}")
         elif isinstance(v, list) and not all(isinstance(x, str) for x in v):
             err(where, f"{field}: every item must be text")
+
+# ---------------- timing: past the end of a clip, and overlaps -------------
+DURS = clip_durations()
+if not DURS:
+    warnings.append("could not read clip durations "
+                    "(no normalized/ and no raw_clips.tsv) — skipped end-of-clip checks")
+
+for b in doc:
+    if not isinstance(b, dict) or "clip" not in b: continue
+    n = b["clip"]
+    if not isinstance(n, int) or n == 0: continue
+    where = f"clip {n}"
+    anns = b.get("annotations", b.get("annotation")) or []
+    if isinstance(anns, dict): anns = [anns]
+    spans = resolve(anns)
+    dur = DURS.get(n)
+
+    for i, ((st, en), e) in enumerate(zip(spans, anns), 1):
+        if st is None: continue
+        label = str(e.get("text", ""))[:40].replace("\n", " ") if isinstance(e, dict) else ""
+        if dur is not None:
+            if st >= dur:
+                how = ("starts exactly at the clip's end"
+                       if abs(st - dur) < 0.05 else
+                       f"starts at {fmt(st)}, past the clip's end")
+                err(f"{where} annotation {i}",
+                    f"{how} ({st:.3f}s vs {dur:.3f}s) — nothing of this clip is "
+                    f"left to show it over, so it will caption the following "
+                    f"clip  ({label})")
+            elif en > dur:
+                warn(f"{where} annotation {i}",
+                     f"runs to {fmt(en)}, past the clip's {fmt(dur)} end "
+                     f"— it will spill into the next clip  ({label})")
+
+    # annotations sharing screen time land on top of each other
+    for i in range(len(spans)):
+        for j in range(i + 1, len(spans)):
+            a, bb = spans[i], spans[j]
+            if None in a or None in bb: continue
+            lo, hi = max(a[0], bb[0]), min(a[1], bb[1])
+            if hi - lo > 0.01:
+                warn(f"{where} annotations {i+1} and {j+1}",
+                     f"overlap {fmt(lo)}–{fmt(hi)} — they share the same screen position")
+
+    # a speed label sits in the annotation position for its whole span
+    sp = b.get("speed", b.get("speeds")) or []
+    if isinstance(sp, dict): sp = [sp]
+    for k, e in enumerate(sp, 1):
+        if not isinstance(e, dict): continue
+        try:
+            sst = parse_time(str(e.get("at", e.get("from"))))
+            sen = parse_time(str(e["to"])) if "to" in e else sst + parse_time(str(e["for"]))
+        except Exception:
+            continue
+        for i, (st, en) in enumerate(spans, 1):
+            if st is None: continue
+            lo, hi = max(st, sst), min(en, sen)
+            if hi - lo > 0.01:
+                warn(f"{where} annotation {i} and speed {k}",
+                     f"overlap {fmt(lo)}–{fmt(hi)} — the speed label shares that position")
+
 
 def _n(b):
     v = b.get("annotations", b.get("annotation"))

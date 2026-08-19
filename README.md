@@ -158,6 +158,7 @@ chapters embedded), and the chapter and subtitle sidecar files.
 ## Everyday use
 
 ```bash
+python3 check_sheet.py           # validate the edit sheet, build nothing
 python3 build.py                 # full build
 python3 build.py --help          # flags AND the full edit-sheet reference
 python3 build.py --clip 3        # preview one clip (also 3-5 or 3,7,19)
@@ -195,6 +196,7 @@ Directories are named for the order the pipeline runs them.
 | `normalize_and_join.sh` | raw → normalized → master | ✅ |
 | `restore_raw_clips.sh` | fetch and verify footage | ✅ |
 | `check_environment.sh` | machine readiness check | ✅ |
+| `check_sheet.py` | validate the edit sheet without building | ✅ |
 | `make_manifest.sh` | regenerate `raw_clips.tsv` | ✅ |
 | `annotations.csv` | the edit sheet | ✅ |
 | `raw_clips.tsv` | manifest: sizes and SHA-256 | ✅ |
