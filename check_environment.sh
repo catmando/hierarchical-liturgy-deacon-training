@@ -48,6 +48,14 @@ else
 fi
 
 echo
+echo "Python packages"
+if python3 -c 'import yaml' 2>/dev/null; then
+  ok "PyYAML $(python3 -c 'import yaml; print(yaml.__version__)')"
+else
+  bad "PyYAML missing — run: pip3 install --break-system-packages pyyaml"
+fi
+
+echo
 echo "Fonts"
 # build.py's FONT_CANDIDATES are all macOS system paths; card rendering dies
 # without one of them.

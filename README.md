@@ -55,6 +55,29 @@ Silicon that's `eval "$(/opt/homebrew/bin/brew shellenv)"`).
 brew install git gh python
 ```
 
+Then the one Python package the build needs, **PyYAML**, which reads the edit
+sheet:
+
+```bash
+pip3 install --break-system-packages pyyaml
+```
+
+The `--break-system-packages` flag looks alarming and isn't. Homebrew's Python
+is marked "externally managed" under [PEP 668][pep668], so `pip3 install`
+refuses by default to protect Homebrew-managed packages. PyYAML is pure Python
+with no dependencies, so this is safe; the flag only tells pip you meant it.
+Undo any time with `pip3 uninstall pyyaml`.
+
+If you'd rather keep the system Python untouched, a virtualenv works equally
+well — just remember to run the build with it:
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install pyyaml
+.venv/bin/python build.py          # instead of python3 build.py
+```
+
+[pep668]: https://peps.python.org/pep-0668/
+
 ### 3. Install ffmpeg — from the tap, not the default formula
 
 ```bash
@@ -67,8 +90,6 @@ brew install homebrew-ffmpeg/ffmpeg/ffmpeg
 shipped without them, which is why this project uses the
 `homebrew-ffmpeg/ffmpeg` tap. If cards or annotations come out blank, this is
 almost always why. `check_environment.sh` (step 6) tests for exactly this.
-
-No Python packages are needed — `build.py` uses only the standard library.
 
 ### 4. Authenticate with GitHub
 
