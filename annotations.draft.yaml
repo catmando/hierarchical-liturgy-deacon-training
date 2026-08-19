@@ -23,6 +23,18 @@
 #    trail the clip instead — needed only at the very end of the video.
 #    A `clip: 0` block means "before everything".
 #
+#  ── Speed-ups and cuts ────────────────────────────────────────────────
+#    Write them inline in the annotations list, marked `speed: true` or
+#    `cut: true`, and the list reads in the order things happen. Both ends
+#    must be given (a span cannot continue from whatever preceded it), and a
+#    span never affects where the next annotation picks up.
+#
+#    Separate `speed:` and `cuts:` blocks also work if you prefer them.
+#
+#    NOTE: a key cannot repeat in one clip. Writing `annotations:` twice
+#    silently discards the first list — YAML does not complain. Keep one list
+#    per clip and put spans inside it.
+#
 #  ── Where text ends up ────────────────────────────────────────────────
 #    annotations:  on screen, timed — and also in the printed rubric
 #    rubrics:      printed rubric ONLY; never on screen.
@@ -94,16 +106,17 @@
       role: DEACONS
       text: Continuously cense the bishop
 
-    - at: 1:27
+    # A span written inline, so the list reads in time order.
+    - from: 38
+      to: 1:18
+      speed: true          # plays fast, audio muted
+      role: PRIEST
+      text: Greets Bishop….
+
+    - at: 1:22
       for: 4
       role: PRIEST
       text: At the conclusion, the priest presents the cross
-
-  speed:
-    - from: 38
-      to: 1:20
-      role: PRIEST
-      text: Greets Bishop….
 
   rubrics:
     - Parish Council President should be prepared with Bread and salt

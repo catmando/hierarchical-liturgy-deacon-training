@@ -89,7 +89,13 @@ CLIP_FIELDS = {
 ALIAS = {a: canon for canon, aliases in CLIP_FIELDS.items() for a in (canon,) + aliases}
 LISTY = {"annotations", "speed", "cuts", "cards"}
 
-ANN_KEYS   = {"at", "from", "for", "to", "role", "text"}
+# An entry in the annotations list is a span if it says so; spans may also be
+# written in their own speed:/cuts: blocks.
+ANN_KEYS   = {"at", "from", "for", "to", "role", "text", "speed", "cut"}
+
+
+def is_span(e):
+    return isinstance(e, dict) and (e.get("speed") is True or e.get("cut") is True)
 SPAN_KEYS  = {"at", "from", "for", "to", "role", "text"}
 CARD_KEYS  = {"text", "image", "for", "to", "chapter", "after"}
 
@@ -184,7 +190,13 @@ for i, b in enumerate(doc):
         return v if isinstance(v, list) else [v]
 
     for j, e in enumerate(items("annotations"), 1):
-        check_entry(f"{where} annotation {j}", e, ANN_KEYS)
+        w = f"{where} {'span' if is_span(e) else 'annotation'} {j}"
+        check_entry(w, e, ANN_KEYS, need_text=not is_span(e))
+        if is_span(e):
+            if e.get("speed") is True and e.get("cut") is True:
+                err(w, "marked both speed and cut — pick one")
+            if "at" not in e and "from" not in e: err(w, "no start — a span needs from:")
+            if "to" not in e and "for" not in e:  err(w, "no end — a span needs to: or for:")
     # A span is a region of the original clip, so unlike an annotation it
     # cannot inherit its start from whatever came before.
     for j, e in enumerate(items("speed"), 1):
@@ -222,10 +234,12 @@ for b in doc:
     n = b["clip"]
     if not isinstance(n, int) or n == 0: continue
     where = f"clip {n}"
-    anns = b.get("annotations", b.get("annotation")) or []
-    if isinstance(anns, dict): anns = [anns]
-    spans = resolve(anns)
-    dur = DURS.get(n)
+    entries = b.get("annotations", b.get("annotation")) or []
+    if isinstance(entries, dict): entries = [entries]
+    anns   = [e for e in entries if not is_span(e)]
+    inline = [e for e in entries if is_span(e)]
+    spans  = resolve(anns)
+    dur    = DURS.get(n)
 
     for i, ((st, en), e) in enumerate(zip(spans, anns), 1):
         if st is None: continue
@@ -257,6 +271,7 @@ for b in doc:
     # a speed label sits in the annotation position for its whole span
     sp = b.get("speed", b.get("speeds")) or []
     if isinstance(sp, dict): sp = [sp]
+    sp = list(sp) + [e for e in inline if e.get("speed") is True]
     for k, e in enumerate(sp, 1):
         if not isinstance(e, dict): continue
         try:
@@ -272,11 +287,21 @@ for b in doc:
                      f"overlap {fmt(lo)}–{fmt(hi)} — the speed label shares that position")
 
 
-def _n(b):
+def _entries(b):
     v = b.get("annotations", b.get("annotation"))
-    return len(v) if isinstance(v, list) else (1 if v else 0)
-n_ann = sum(_n(b) for b in doc if isinstance(b, dict))
-print(f"{path}: {len(doc)} clip blocks, {n_ann} annotations")
+    if isinstance(v, dict): return [v]
+    return v if isinstance(v, list) else []
+def _spans(b):
+    v = b.get("speed", b.get("speeds")) or []
+    if isinstance(v, dict): v = [v]
+    w = b.get("cuts", b.get("cut")) or []
+    if isinstance(w, dict): w = [w]
+    return list(v) + list(w)
+blocks = [b for b in doc if isinstance(b, dict)]
+n_ann  = sum(len([e for e in _entries(b) if not is_span(e)]) for b in blocks)
+n_span = sum(len([e for e in _entries(b) if is_span(e)]) + len(_spans(b)) for b in blocks)
+print(f"{path}: {len(doc)} clip blocks, {n_ann} annotations"
+      + (f", {n_span} span(s)" if n_span else ""))
 for w in warnings: print(f"  warning  {w}")
 for e in errors:   print(f"  ERROR    {e}")
 print()
