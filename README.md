@@ -198,7 +198,7 @@ Directories are named for the order the pipeline runs them.
 | `check_environment.sh` | machine readiness check | ✅ |
 | `check_sheet.py` | validate the edit sheet without building | ✅ |
 | `make_manifest.sh` | regenerate `raw_clips.tsv` | ✅ |
-| `annotations.csv` | the edit sheet | ✅ |
+| `annotations.yaml` | the edit sheet | ✅ |
 | `raw_clips.tsv` | manifest: sizes and SHA-256 | ✅ |
 | `CLAUDE.md` | project state and working notes | ✅ |
 | `raw/` | 37 source clips · 6.8 GB | ❌ release |

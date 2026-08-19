@@ -2,7 +2,7 @@
 """
 build.py — build the whole video from one edit sheet.
 
-Reads a single edit sheet (YAML, or the older CSV) and writes into output/:
+Reads a single YAML edit sheet and writes into output/:
     master.mp4          the assembled video (cards inserted, clips skipped)
     liturgy_training.mkv  the same, with annotations and chapters embedded
     annotations.ass     the annotation track
@@ -19,12 +19,12 @@ USAGE
     python3 build.py --clip 3           # preview clip 3 on its own
     python3 build.py --clip 3-5         # preview a range
 
-    The sheet defaults to annotations.yaml, falling back to annotations.csv.
+    The sheet defaults to annotations.yaml.
     Validate one without building: python3 check_sheet.py
 
 REQUIRES
     normalized/001.mp4 ... from normalize_and_join.sh
-    ffmpeg, ffprobe, and PyYAML for a .yaml sheet
+    ffmpeg, ffprobe, PyYAML
 
 ------------------------------------------------------------------
 THE SHEET
@@ -137,23 +137,9 @@ EXAMPLE
 
   - clip: 13
     skip: true
-
-------------------------------------------------------------------
-THE OLDER CSV
-------------------------------------------------------------------
-A .csv sheet still loads, with columns type, clip, start, dur, role,
-text and an optional image. Its type column carries what is now
-structure: annotation (the default), card, title (a folding card),
-chapter, skip, cut, speed, and # for a comment. For cut and speed rows
-the 4th column is an END TIME, not a duration.
-
-Two things the CSV cannot express, because they were added afterwards:
-a per-span speed rate, and mute. It also has no equivalent of notes: or
-todos:, and it is vulnerable to spreadsheet exports blanking the clip
-column, which is why the YAML format exists.
 """
 
-import argparse, csv, hashlib, os, re, subprocess, sys
+import argparse, hashlib, os, re, subprocess, sys
 from collections import defaultdict
 
 WORK = "normalized"          # build.py working files, from normalize_and_join.sh
@@ -248,8 +234,9 @@ def split_lines(v):
 
 
 def get_dur(row):
-    """Duration column. Accepts dur, duration, or legacy end."""
-    for k in ("dur", "duration", "length", "end"):
+    """A row's length or end time. Annotations and cards carry dur; spans
+    carry end, which the span branch reads as an absolute position."""
+    for k in ("dur", "end"):
         if row.get(k, "").strip():
             return row[k]
     return ""
@@ -325,21 +312,6 @@ def build_edited_clip(src, dst, segs):
     return True
 
 
-def read_sheet(path):
-    """Rows from an edit sheet, as (label, row) pairs.
-
-    YAML and CSV both reduce to the same flat rows, so everything downstream
-    is shared. A row's keys are lowercase; its values are strings, except for
-    the underscore-prefixed extras that only YAML can express.
-    """
-    if path.lower().endswith((".yaml", ".yml")):
-        return read_yaml_sheet(path)
-    with open(path, newline="", encoding="utf-8-sig") as f:
-        return [(f"line {ln}",
-                 {(k or "").strip().lower(): (v or "") for k, v in raw.items()})
-                for ln, raw in enumerate(csv.DictReader(f), start=2)]
-
-
 def _first(d, *names):
     for n in names:
         if n in d and d[n] is not None:
@@ -355,7 +327,7 @@ def _text(v):
     return str(v)
 
 
-def read_yaml_sheet(path):
+def read_sheet(path):
     """Flatten the YAML sheet into rows.
 
     Cards listed under a clip play BEFORE it, so a card in block N is emitted
@@ -529,10 +501,8 @@ def main():
         description="Build the training video from one edit sheet.",
         epilog=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--sheet", "--csv", dest="sheet", metavar="FILE",
-                    help="the edit sheet to read. Defaults to annotations.yaml, "
-                         "falling back to annotations.csv. --csv is an old "
-                         "name for this flag and still works.")
+    ap.add_argument("--sheet", dest="sheet", metavar="FILE",
+                    help="the edit sheet to read (default annotations.yaml)")
     ap.add_argument("--subs-only", action="store_true",
                     help="only regenerate the annotation track; skip "
                          "reassembling the video. Fast, for timing work.")
@@ -573,12 +543,11 @@ def main():
     os.makedirs(OUT, exist_ok=True)
 
     if a.sheet is None:
-        for cand in ("annotations.yaml", "annotations.yml", "annotations.csv"):
+        for cand in ("annotations.yaml", "annotations.yml"):
             if os.path.exists(cand):
                 a.sheet = cand; break
         else:
-            die("no edit sheet found — expected annotations.yaml "
-                "(or annotations.csv)")
+            die("no edit sheet found — expected annotations.yaml")
     if not os.path.exists(a.sheet): die(f"not found: {a.sheet}")
     if not os.path.isdir(WORK): die(f"{WORK}/ not found — run normalize_and_join.sh first")
 
@@ -596,22 +565,10 @@ def main():
     last_end = {}          # clip -> end of the most recent row, for "C"
     warnings = []
     seen_roles = []
-    inherited = []
-
-    last_clip_seen = None
     for ln, row in read_sheet(a.sheet):
         typ = row.get("type", "").strip().lower() or "annotation"
-        if typ.startswith("#"): continue
         n = clip_num(row.get("clip", ""))
         text = row.get("text", "").strip()
-        if n is not None:
-            last_clip_seen = n
-        elif typ == "annotation" and text and last_clip_seen is not None:
-            # Spreadsheets sometimes blank a clip column on export.
-            # Inherit from the last row that did carry a clip number.
-            n = last_clip_seen
-            inherited.append(ln)
-
         if typ == "skip":
             if n: skips.add(n)
             continue
@@ -979,9 +936,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
           + (f"  (+{len(skip_events)} skip labels)" if skip_events else ""))
     if seen_roles: print("Roles: " + ", ".join(seen_roles))
     print(f"Total length: {ass_time(total)}")
-    if inherited:
-        print(f"\nNote: {len(inherited)} annotation row(s) had a blank clip "
-              f"column and inherited the clip above them.")
     if warnings:
         print(f"\n{len(warnings)} warning(s):")
         for w in warnings[:40]: print("  " + w)

@@ -4,7 +4,7 @@ Claude Code reads this file automatically at the start of every session.
 
 Last updated: 19 August 2026. Encode complete. Now in git, with the raw
 footage archived off-machine; directories reorganized; annotation work in
-progress; the edit sheet is still CSV and migrating to YAML.
+progress; the edit sheet is YAML and CSV support is gone.
 
 ---
 
@@ -26,15 +26,15 @@ what to hold, which hand, what to say, and what cues trigger movement.
 | | |
 |---|---|
 | Version control | **DONE.** github.com/catmando/hierarchical-liturgy-deacon-training (public) |
-| Raw footage backup | **DONE.** 37 clips on the `raw-footage-v1` release; restore verified (§14) |
-| Directory layout | **DONE.** `raw/` → `normalized/` → `output/` (§14) |
+| Raw footage backup | **DONE.** 37 clips on the `raw-footage-v1` release; restore verified (§12) |
+| Directory layout | **DONE.** `raw/` → `normalized/` → `output/` (§12) |
 | Normalize encode | **DONE.** 37 clips → `normalized/001.mp4`…`037.mp4` |
 | `master.mp4` | built, 1:03:23, now at `output/master.mp4` |
 | Annotation timings | **clips 1–2 done; 35 to go** |
 | Roles vocabulary | evolving by design (§6) |
 | Roles chart | **still not uploaded** (§6) |
 | Chapter titles in MKV | **VERIFIED WORKING** on real footage (§8) |
-| Edit sheet format | CSV now; user wants to move to **YAML** (§9) |
+| Edit sheet format | **DONE.** `annotations.yaml`; CSV removed entirely (§4) |
 
 ---
 
@@ -48,7 +48,8 @@ python3 build.py                 # full build
 python3 build.py --help          # flags AND the full sheet-format reference
 python3 build.py --clip 3        # preview one clip (also 3-5 or 3,7,19)
 python3 build.py --subs-only     # regenerate annotations only, fast
-python3 build.py --speed 6       # global rate for every speed row
+python3 build.py --sheet other.yaml
+python3 build.py --speed 6       # default rate for spans saying speed: true
 python3 build.py --no-mkv
 python3 build.py --youtube       # burn subs into youtube.mp4, slow
 ```
@@ -59,61 +60,83 @@ python3 build.py --youtube       # burn subs into youtube.mp4, slow
 Preview mode writes `output/preview.*` instead and leaves the real outputs
 alone.
 
-Three supporting scripts, none of which touch the video:
-`check_environment.sh` (verify a machine can build — run it before committing
-hours to a normalize pass), `restore_raw_clips.sh` (fetch and SHA-256 verify
-the footage), `make_manifest.sh` (regenerate `raw_clips.tsv`).
+Four supporting scripts, none of which touch the video: `check_sheet.py`
+(validate the edit sheet — syntax, unknown keys, annotations past the end of
+their clip, overlaps), `check_environment.sh` (verify a machine can build —
+run it before committing hours to a normalize pass), `restore_raw_clips.sh`
+(fetch and SHA-256 verify the footage), `make_manifest.sh` (regenerate
+`raw_clips.tsv`).
 
 `normalize_and_join.sh` already ran. Do not run it again unless the source
 clips change.
 
 **`--help` is authoritative for the sheet format** — it prints the module
-docstring, which documents every row type. Read it before changing the parser.
+docstring, which documents every key. Read it before changing the parser.
 
 ---
 
-## 4. The edit sheet
+## 4. The edit sheet — `annotations.yaml`
 
-Columns: `type, clip, start, dur, role, text, image, notes`
+**`python3 build.py --help` is authoritative** — it prints the module
+docstring, which documents every key. Read it before changing the parser.
+`python3 check_sheet.py` validates a sheet without building anything.
 
-| type | meaning |
-|---|---|
-| `annotation` (or blank) | text overlay. `start` = seconds from THAT CLIP's start; `dur` = how long it stays up (**a length, not an end time**; default 4). |
-| `card` | title card inserted AFTER that clip; becomes **its own chapter**. `clip=0` = very front. `dur` = seconds (default 6). |
-| `title` | same but **folds into the following chapter**. For section-title cards. |
-| `chapter` | renames the chapter starting at that clip. |
-| `skip` | omits that clip entirely. |
-| `cut` | removes a span. **4th column is an END TIME.** `cut,19,1:00,2:00` |
-| `speed` | speeds a span up. **4th column is an END TIME.** `text` = the on-screen label. |
-| `#` | comment. |
+A list of clip blocks, in order. The clip number **is** the block, so it
+cannot go missing.
 
-**`start` accepts `C`** — continue 0.2s after the previous annotation on that
-clip; `C+1.5` for a longer gap. Resolves in **CSV row order**.
+```yaml
+- clip: 1
+  chapter: Greeting of the Hierarch at the Doors
+  cards:        # played BEFORE this clip; `after: true` puts one after
+  annotations:  # on-screen text and speed/cut spans, in time order
+  notes:        # published — for the written document
+  todos:        # the user's own; never on screen, never printed
+  skip: true    # leave this clip out
+```
 
-**Times** accept plain seconds, `M:SS`, or `H:MM:SS`.
-**Keywords are case-insensitive.** **Role codes are uppercased.**
-**Line breaks:** a Return inside a cell, or `||`. Chapter titles collapse to
-one line.
+Singular and plural are synonyms throughout: `annotation`/`annotations`,
+`card`/`cards`, `cut`/`cuts`, `note`/`notes`, `todo`/`todos`.
 
-### Speed rows
-Rate is global via `--speed` (default 4), deliberately **not per row** — the
-user wants to tune overall feel, not vary it by section. Audio is **muted**
-in sped spans. A label sits in the normal annotation position, italic, for
-the whole span. Text goes in the `text` column, e.g.
-`speed,3,1:10,3:40,,...Deacon 1 continues the entrance prayers...`
-Blank → "skipping ahead". `-` → no label.
+**Timing.** Write times bare — `1:27`, `1:03:23`, `0:04`, `87`, `4.5`. On an
+annotation `at:` (or `from:`) is the start and may be **left out**, in which
+case it picks up 0.2s after the previous annotation ends, or at 0 if it is
+the first in the clip. `for:` is a duration (default 4); `to:` is an absolute
+end. `at: next+1.5` waits longer. Resolves in sheet order.
 
----
+**Spans.** `speed:` and `cut: true` entries sit inline in the annotations
+list so a clip reads in time order. Both ends must be given, and a span never
+advances where the next annotation picks up. `speed: 4x` sets a rate;
+`speed: true` defers to `--speed`. `mute:` defaults true.
 
+**Chapters.** `chapter:` always means "a chapter starts here, titled this".
+On a card it makes the card its own chapter, with a title that need not match
+the words on screen; a card without `chapter:` folds into the chapter that
+follows.
+
+**Text.** Put prose under `text: >` or `text: |` — no quoting or escaping
+ever. **Never put prose inside `{ }`**: a comma there ends the value and
+silently swallows the rest of the sentence.
+
+**A key cannot repeat in one block.** Writing `annotations:` twice parses
+without error and discards the first list.
 ## 5. Everything is written against the ORIGINAL clip
 
 Annotation times, cut times and speed times are all measured on the untouched
 footage. The script maps them through the edits. So in a 3:00 clip:
 
-```
-cut,7,1:00,2:00
-annotation,7,2:30,4,D1,text
-cut,7,2:45,2:55
+```yaml
+- clip: 7
+  annotations:
+    - from: 1:00
+      to: 2:00
+      cut: true
+    - at: 2:30
+      for: 4
+      role: D1
+      text: …
+    - from: 2:45
+      to: 2:55
+      cut: true
 ```
 
 the annotation lands at 1:30 and the second cut at 1:45. **Nothing is ever
@@ -159,11 +182,11 @@ outstanding item that could change annotation *text* rather than timings.
 
 - macOS, zsh, Apple Silicon. ffmpeg 9.0.1 from the **`homebrew-ffmpeg/ffmpeg`
   tap** — the default brew formula lacked `drawtext` and `libass`.
-- **Numbers blanks the `clip` column on export.** Hit twice: first silently
-  dropping 84 of 98 annotations, then blanking 34 of 38 **chapter** rows.
-  `build.py` inherits blank clips on *annotation* rows only. **This is the
-  single biggest reason to move to YAML.**
-- **Numbers does not save as CSV** — File → Export To → CSV every time.
+- **The sheet is edited in VS Code, not a spreadsheet.** The CSV era ended
+  because Numbers blanked the `clip` column on export — twice — silently
+  dropping most annotations and then most chapter rows. In YAML the clip
+  number is the block, so that class of failure is gone. Do not reintroduce
+  a spreadsheet.
 - **IINA bug:** opening the playlist/chapter panel and jumping chapters kills
   the subtitle track, and you cannot return to 0:00 without restarting. Use
   VLC, or `ffplay -ss N -vf "ass=annotations.ass" master.mp4`.
@@ -199,48 +222,7 @@ ffprobe -v error -show_chapters output/preview.mkv | grep -i title
 
 ---
 
-## 9. Planned: move the sheet to YAML
-
-The user is switching to VS Code + Claude Code and wants YAML instead of CSV —
-multi-line text without quoting, no spreadsheet export step, and immune to the
-Numbers column-blanking bug.
-
-Keep the same field names so the logic carries over. Suggested shape:
-
-```yaml
-- type: chapter
-  clip: 1
-  text: Greeting of the Hierarch at the Doors
-  notes: |
-    What is the order of greeting?
-    Children - flowers; Council President - bread and salt.
-
-- type: annotation
-  clip: 1
-  start: 0
-  dur: 4
-  role: AS1+2
-  text: Subdeacons or altar servers place the mantiya
-```
-
-Ideally accept both formats, switching on file extension.
-
----
-
-## 10. Known data issues in the current sheet
-
-- **Clip 4 has two `chapter` rows** — the user's "Conclusion of the Entrance
-  Prayers and the Vesting" and a leftover template row "Ton Despotin; Blessing
-  of the Clergy". The second wins. Delete one.
-- **Chapter 1's title contains the user's working notes**, which collapse into
-  one very long chapter name. Move them to `notes`.
-- The "Homily — not shown" card is **6s**; YouTube needs ≥10s.
-- Clips 3–37 still carry template placeholder annotation timings, which now
-  read as durations and overlap. They resolve as each clip is rewritten.
-
----
-
-## 11. Coverage gaps
+## 9. Coverage gaps
 
 - **~18m after clip 20** — the homily. Deliberate. Card planned.
 - **~27m after clip 33** — Lord's Prayer, elevation, fraction, communion of
@@ -251,7 +233,7 @@ Respect that.**
 
 ---
 
-## 12. Editorial cleanup, outstanding
+## 10. Editorial cleanup, outstanding
 
 - Source notes skip section 11 and use 20 twice.
 - Transliterations vary: *Ton Des Postin / Ton Despotin*; *Eis Polla Eti Thes
@@ -264,7 +246,7 @@ Respect that.**
 
 ---
 
-## 13. Notes for whoever picks this up
+## 11. Notes for whoever picks this up
 
 - **Claude cannot watch video** — only metadata and extracted stills. Never ask
   for the clips.
@@ -285,7 +267,7 @@ Respect that.**
   actually run. Follow that: prove the round trip, diff the output, check the
   real file.
 - The user works on a **Mac laptop** (Apple Silicon, macOS). Cross-machine
-  continuity means another Mac or a fresh clone after a disk failure — see §14.
+  continuity means another Mac or a fresh clone after a disk failure — see §12.
 
 ---
 
@@ -294,12 +276,12 @@ Respect that.**
 | file | what |
 |---|---|
 | `build.py` | the entire toolchain |
-| `annotations.csv` | the edit sheet (repaired; migrating to YAML) |
+| `annotations.yaml` | the edit sheet |
 | `raw_clips.tsv` | manifest: size, SHA-256, duration, codec of all 37 clips |
 | `normalize_and_join.sh` | raw → normalized → master; already run, don't re-run |
 | `restore_raw_clips.sh` | download the footage from the release and verify it |
 | `check_environment.sh` | verify a machine can build before committing hours |
-| `check_sheet.py` | validate a YAML edit sheet without building |
+| `check_sheet.py` | validate the edit sheet without building |
 | `make_manifest.sh` | regenerate `raw_clips.tsv` |
 | `README.md` | recovery runbook: bare Mac → finished video |
 | `CLAUDE.md` | this file |
@@ -313,7 +295,7 @@ don't ask the user to re-supply them.
 
 ---
 
-## 14. The repository and disaster recovery
+## 12. The repository and disaster recovery
 
 **github.com/catmando/hierarchical-liturgy-deacon-training** — public, owned
 by `catmando` (not the `catprintlabs` org, to keep it off company billing).
@@ -325,7 +307,7 @@ by git lives in a subdirectory, so ffmpeg can write freely without ever
 showing up in `git status`.
 
 ```
-build.py, *.sh, annotations.csv, raw_clips.tsv, README.md, CLAUDE.md
+build.py, *.py, *.sh, annotations.yaml, raw_clips.tsv, README.md, CLAUDE.md
 raw/          37 source clips · 6.8 GB   — not in git; on the release
 normalized/   build.py working files     — not in git; rebuildable
 output/       master, mkv, subs, chapters — not in git; rebuildable
