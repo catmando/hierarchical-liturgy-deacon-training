@@ -36,10 +36,14 @@
 #    per clip and put spans inside it.
 #
 #  ── Where text ends up ────────────────────────────────────────────────
-#    annotations:  on screen, timed — and also in the printed rubric
-#    rubrics:      printed rubric ONLY; never on screen.
-#                  Either a block of prose, or a list of separate directives.
-#    notes:        yours alone. Never on screen, never printed.
+#    annotations:  on screen, timed — and also in the printed document
+#    notes:        printed document ONLY; never on screen.
+#    todos:        yours alone. Never on screen, never printed.
+#
+#    notes: and todos: may each be a block of prose or a list of separate
+#    points, and may be attached to a clip, to a card, or to a single
+#    annotation. The written document is an outline built from these fields
+#    in order, so put a note where the thing it explains lives.
 #
 #  ── Timing ────────────────────────────────────────────────────────────
 #    End:    for: = how long it stays up, counted from the start
@@ -117,8 +121,11 @@
       for: 4
       role: PRIEST
       text: At the conclusion, the priest presents the cross
+      # notes: and todos: attach to a single annotation too, not just the clip.
+      # notes: The cross is returned to the tray afterwards.
+      # todos: Confirm which priest presents when the rector is absent.
 
-  rubrics:
+  notes:
     - Parish Council President should be prepared with Bread and salt
     - Children should come with flowers
     - Priest should be ready with a blessing cross on a tray with handle to the priest's left
@@ -132,7 +139,7 @@
     - One subdeacon or altar server holds the train of the Mantiya
     - Two additional servers should be in the narthex ready to follow and assist
 
-  notes: |
+  todos: |
     This should be practiced the night before.
 
 
@@ -201,7 +208,7 @@
         Deacon 1 reads the entrance prayers quietly.
         As normal, BUT stop before "I will enter thy house"
 
-  note: |
+  todos: |
     TRIM THE END OF THIS OFF
 
 
@@ -229,6 +236,7 @@
     - text: Homily
       for: 6
       chapter: Homily — not shown
+      notes: The homily is not filmed; roughly 18 minutes of the service.
     # A card may show an image instead of, or behind, its text:
     # - image: art/great-entrance.png
     #   for: 6

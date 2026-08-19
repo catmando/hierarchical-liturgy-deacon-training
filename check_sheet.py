@@ -84,20 +84,25 @@ def fmt(t):
 CLIP_FIELDS = {
     "clip": (), "chapter": ("chapters",), "skip": (),
     "annotations": ("annotation",), "speed": ("speeds",), "cuts": ("cut",),
-    "cards": ("card",), "rubrics": ("rubric",), "notes": ("note",),
+    "cards": ("card",), "notes": ("note",), "todos": ("todo",),
 }
+# notes: is published prose; todos: is private. Both may hang off a clip, a
+# card or a single annotation, and both take prose or a list of points.
+PROSE = {"notes": "note", "todos": "todo"}
 ALIAS = {a: canon for canon, aliases in CLIP_FIELDS.items() for a in (canon,) + aliases}
 LISTY = {"annotations", "speed", "cuts", "cards"}
 
 # An entry in the annotations list is a span if it says so; spans may also be
 # written in their own speed:/cuts: blocks.
-ANN_KEYS   = {"at", "from", "for", "to", "role", "text", "speed", "cut"}
+ANN_KEYS   = {"at", "from", "for", "to", "role", "text", "speed", "cut",
+              "notes", "note", "todos", "todo"}
 
 
 def is_span(e):
     return isinstance(e, dict) and (e.get("speed") is True or e.get("cut") is True)
 SPAN_KEYS  = {"at", "from", "for", "to", "role", "text"}
-CARD_KEYS  = {"text", "image", "for", "to", "chapter", "after"}
+CARD_KEYS  = {"text", "image", "for", "to", "chapter", "after",
+              "notes", "note", "todos", "todo"}
 
 errors, warnings = [], []
 def err(where, msg):  errors.append(f"{where}: {msg}")
@@ -121,10 +126,26 @@ def check_time(where, field, v):
     except Exception: err(where, f"{field}: {v!r} is not a time")
 
 
+def check_prose(where, field, v):
+    """notes:/todos: — a block of prose, or a list of separate points."""
+    if isinstance(v, str) or v is None:
+        return
+    if isinstance(v, list):
+        if not all(isinstance(x, str) for x in v):
+            err(where, f"{field}: every item must be text")
+    else:
+        err(where, f"{field}: expected prose or a list, got {type(v).__name__}")
+
+
 def check_entry(where, e, allowed, need_text=True):
     if not isinstance(e, dict):
         err(where, f"expected a mapping, got {type(e).__name__}: {e!r}")
         return
+    for canon, alias in PROSE.items():
+        if canon in e and alias in e:
+            err(where, f"{canon!r} and {alias!r} both given — keep one")
+        for k in (canon, alias):
+            if k in e: check_prose(where, k, e[k])
     for k in e:
         if k not in allowed:
             hint = ""
@@ -214,14 +235,8 @@ for i, b in enumerate(doc):
     for j, e in enumerate(items("cards"), 1):
         check_entry(f"{where} card {j}", e, CARD_KEYS)
 
-    # rubrics/notes may be a block of prose or a list of separate directives
-    for field in ("rubrics", "notes"):
-        v = canon.get(field)
-        if v is None: continue
-        if not isinstance(v, (str, list)):
-            err(where, f"{field}: expected prose or a list, got {type(v).__name__}")
-        elif isinstance(v, list) and not all(isinstance(x, str) for x in v):
-            err(where, f"{field}: every item must be text")
+    for field in PROSE:
+        if field in canon: check_prose(where, field, canon[field])
 
 # ---------------- timing: past the end of a clip, and overlaps -------------
 DURS = clip_durations()
