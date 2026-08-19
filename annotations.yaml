@@ -63,7 +63,9 @@
 #
 #  ── Timing ────────────────────────────────────────────────────────────
 #    End:    for: = how long it stays up, counted from the start
-#            to:  = an absolute position in the clip
+#            to:  = an absolute position in the clip. `to: end` runs to
+#                   the end of the clip — on spans too, so a cut
+#                   `from: 60, to: end` trims the tail.
 #            Give one or the other, never both.
 #
 #    Start:  LEAVE IT OUT and the annotation picks up 0.2s after the previous
