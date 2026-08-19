@@ -1,10 +1,10 @@
 # Hierarchical Divine Liturgy — Deacon Training Video
 
-> Rename this file to **`CLAUDE.md`** in the project root. Claude Code reads it
-> automatically at the start of every session.
+Claude Code reads this file automatically at the start of every session.
 
-Last updated: 19 August 2026, ~01:00. Encode complete; annotation work in
-progress; user is migrating the edit sheet from CSV to YAML.
+Last updated: 19 August 2026. Encode complete. Now in git, with the raw
+footage archived off-machine; directories reorganized; annotation work in
+progress; the edit sheet is still CSV and migrating to YAML.
 
 ---
 
@@ -25,12 +25,15 @@ what to hold, which hand, what to say, and what cues trigger movement.
 
 | | |
 |---|---|
-| Normalize encode | **DONE.** 37 clips → `_normalized/001.mp4`…`037.mp4` |
-| `master.mp4` | built, 1:03:23 |
+| Version control | **DONE.** github.com/catmando/hierarchical-liturgy-deacon-training (public) |
+| Raw footage backup | **DONE.** 37 clips on the `raw-footage-v1` release; restore verified (§14) |
+| Directory layout | **DONE.** `raw/` → `normalized/` → `output/` (§14) |
+| Normalize encode | **DONE.** 37 clips → `normalized/001.mp4`…`037.mp4` |
+| `master.mp4` | built, 1:03:23, now at `output/master.mp4` |
 | Annotation timings | **clips 1–2 done; 35 to go** |
 | Roles vocabulary | evolving by design (§6) |
 | Roles chart | **still not uploaded** (§6) |
-| Chapter titles in MKV | fix applied, **NOT VERIFIED** (§8) |
+| Chapter titles in MKV | **VERIFIED WORKING** on real footage (§8) |
 | Edit sheet format | CSV now; user wants to move to **YAML** (§9) |
 
 ---
@@ -50,10 +53,16 @@ python3 build.py --no-mkv
 python3 build.py --youtube       # burn subs into youtube.mp4, slow
 ```
 
-**Outputs:** `master.mp4`, `liturgy_training.mkv` (chapters + annotations
-embedded, subtitle track flagged default), `annotations.ass`, `chapters.txt`,
-`youtube_chapters.txt`, `boundaries.tsv`. Preview mode writes `preview.*`
-instead and leaves the real outputs alone.
+**Outputs, all into `output/`:** `master.mp4`, `liturgy_training.mkv`
+(chapters + annotations embedded, subtitle track flagged default),
+`annotations.ass`, `chapters.txt`, `youtube_chapters.txt`, `boundaries.tsv`.
+Preview mode writes `output/preview.*` instead and leaves the real outputs
+alone.
+
+Three supporting scripts, none of which touch the video:
+`check_environment.sh` (verify a machine can build — run it before committing
+hours to a normalize pass), `restore_raw_clips.sh` (fetch and SHA-256 verify
+the footage), `make_manifest.sh` (regenerate `raw_clips.tsv`).
 
 `normalize_and_join.sh` already ran. Do not run it again unless the source
 clips change.
@@ -128,8 +137,10 @@ Two deacons, treated as the normal case.
 > dialogues, censing of the bishop, the Gospel, the great commemoration, the
 > diskos. **Litanies alternate beginning with D2.**
 
-Full table in Part Zero of `hierarchical_liturgy_cue_sheet.md`, inferred items
-marked `[verify]`. Clip 24 confirms D2 is last in the shoulder-kissing.
+Clip 24 confirms D2 is last in the shoulder-kissing. (An earlier
+`hierarchical_liturgy_cue_sheet.md` held a fuller table, but it was written
+before the 37 clips were in hand and the user has confirmed it is no longer
+needed — the footage supersedes it. Do not go looking for it.)
 
 **The vocabulary is deliberately unsettled** — the user is working out which
 roles are worth highlighting. Seen so far: `D1`, `D2`, `AS1+2`, `AS3+4`,
@@ -167,7 +178,7 @@ outstanding item that could change annotation *text* rather than timings.
 
 ---
 
-## 8. ⚠ Unfinished: chapter titles
+## 8. ✅ Resolved: chapter titles
 
 Symptom: `liturgy_training.mkv` had 38 chapters with correct start times and
 **no titles at all**.
@@ -175,16 +186,16 @@ Symptom: `liturgy_training.mkv` had 38 chapters with correct start times and
 Cause: `-map_metadata` copies *global* metadata; chapter titles are
 per-chapter and need **`-map_chapters`**. The mux was missing it.
 
-Fix applied to `build.py`, verified in a synthetic test, **but never confirmed
-on the user's real footage.** First thing to check:
+Fix applied to `build.py` and **now confirmed on the real footage** — a
+`build.py --clip 3` preview mux produced `TAG:title=Entrance Prayers`, with
+the subtitle track present and flagged default. Nothing further to do.
+
+To re-check after any change to the mux:
 
 ```bash
-grep -c map_chapters build.py          # expect 1
-python3 build.py
-ffprobe -v error -show_chapters liturgy_training.mkv | grep -i title | head -5
+python3 build.py --clip 3
+ffprobe -v error -show_chapters output/preview.mkv | grep -i title
 ```
-
-Expect `TAG:title=Greeting of the Hierarch at the Doors`.
 
 ---
 
@@ -266,6 +277,15 @@ Respect that.**
 - Don't guess at causes. Twice tonight a confident diagnosis was wrong and the
   real cause only appeared after running the user's actual file. **Reproduce
   before explaining.**
+- **State the plan before executing it.** The user asked for this explicitly.
+  Say what you intend to do and wait for a go, especially for anything slow,
+  outward-facing, or hard to undo. Read-only inspection to inform the plan is
+  fine and expected.
+- **Verify, don't assume.** Every claim in this file that says DONE was
+  actually run. Follow that: prove the round trip, diff the output, check the
+  real file.
+- The user works on a **Mac laptop** (Apple Silicon, macOS). Cross-machine
+  continuity means another Mac or a fresh clone after a disk failure — see §14.
 
 ---
 
@@ -275,7 +295,85 @@ Respect that.**
 |---|---|
 | `build.py` | the entire toolchain |
 | `annotations.csv` | the edit sheet (repaired; migrating to YAML) |
-| `hierarchical_liturgy_cue_sheet.md` | 23 chapters from the priest's notes, D1/D2 role table, draft annotation text |
-| `clip_to_chapter_map.md` | all 37 clips mapped to a 30-chapter structure |
-| `normalize_and_join.sh` | reference only; already run |
-| `notes_for_hierarchical_divine_liturgy.pdf` | the priest's original rubrics |
+| `raw_clips.tsv` | manifest: size, SHA-256, duration, codec of all 37 clips |
+| `normalize_and_join.sh` | raw → normalized → master; already run, don't re-run |
+| `restore_raw_clips.sh` | download the footage from the release and verify it |
+| `check_environment.sh` | verify a machine can build before committing hours |
+| `make_manifest.sh` | regenerate `raw_clips.tsv` |
+| `README.md` | recovery runbook: bare Mac → finished video |
+| `CLAUDE.md` | this file |
+
+Three files this document used to list —
+`hierarchical_liturgy_cue_sheet.md`, `clip_to_chapter_map.md`, and
+`notes_for_hierarchical_divine_liturgy.pdf` — **no longer exist and are not
+needed.** They were scaffolding from before the 37 clips were in hand. The
+user has confirmed the footage supersedes them. Don't hunt for them, and
+don't ask the user to re-supply them.
+
+---
+
+## 14. The repository and disaster recovery
+
+**github.com/catmando/hierarchical-liturgy-deacon-training** — public, owned
+by `catmando` (not the `catprintlabs` org, to keep it off company billing).
+
+### Layout
+
+Directories are named for the order the pipeline runs them. Nothing tracked
+by git lives in a subdirectory, so ffmpeg can write freely without ever
+showing up in `git status`.
+
+```
+build.py, *.sh, annotations.csv, raw_clips.tsv, README.md, CLAUDE.md
+raw/          37 source clips · 6.8 GB   — not in git; on the release
+normalized/   build.py working files     — not in git; rebuildable
+output/       master, mkv, subs, chapters — not in git; rebuildable
+junk/         parked, deliberately not deleted
+```
+
+`junk/` exists because the user asked that nothing be deleted. Park things
+there rather than removing them. It currently holds `test.mkv` and
+`check.mkv`, 7.1 GB each.
+
+### Why the footage isn't in git
+
+6.8 GB, with 27 clips over GitHub's 100 MB per-file hard limit. Git LFS was
+rejected deliberately: **LFS bandwidth is billed to the repo owner and
+downloads by strangers count**, which on a public repo is an uncapped bill.
+Release assets have no bandwidth metering and a 2 GB per-file ceiling, which
+every clip clears comfortably.
+
+### Recovery
+
+Full runbook in `README.md`. The short version:
+
+```bash
+git clone https://github.com/catmando/hierarchical-liturgy-deacon-training.git
+cd hierarchical-liturgy-deacon-training
+./check_environment.sh          # tools, ffmpeg filters, font, disk, auth
+./restore_raw_clips.sh          # 6.8 GB into raw/, SHA-256 verified
+./normalize_and_join.sh         # hours; overnight; resumable
+python3 build.py
+```
+
+**This path is tested, not theoretical.** Clip 01 was moved aside, recovered
+from the release, and confirmed byte-identical; `make_manifest.sh` was
+confirmed to reproduce the committed manifest exactly.
+
+### Two traps worth knowing
+
+- **GitHub rewrites release asset names**, turning spaces into dots:
+  `01 - Greeting….mp4` is stored as `01.-.Greeting….mp4`.
+  `restore_raw_clips.sh` maps them back via the manifest. Verified against
+  the live API, not assumed.
+- **ffmpeg must come from the `homebrew-ffmpeg/ffmpeg` tap.** The stock
+  formula has shipped without `drawtext` and `libass`, which the title cards
+  and the annotation overlay respectively depend on. `check_environment.sh`
+  probes for exactly these.
+
+### The source clips are not uniformly 30 fps
+
+25 are 30 fps, six are 179/6 (≈29.83), five are 119/4 (≈29.75), and one is
+120 fps. All 1920×1080 h264/aac, 63.4 minutes total. This is precisely why
+`normalize_and_join.sh` exists — concatenating them raw produces broken
+timing.
