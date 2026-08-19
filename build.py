@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-build.py — build the whole video from one CSV.
+build.py — build the whole video from one edit sheet.
 
-Reads a single edit sheet and produces:
+Reads a single edit sheet (YAML, or the older CSV) and writes into output/:
     master.mp4          the assembled video (cards inserted, clips skipped)
+    liturgy_training.mkv  the same, with annotations and chapters embedded
     annotations.ass     the annotation track
     chapters.txt        FFMETADATA chapter marks
     youtube_chapters.txt
@@ -13,113 +14,143 @@ USAGE
     python3 build.py                    # full build
     python3 build.py --subs-only        # only rebuild annotations.ass
                                         # (fast; use while timing text)
-    python3 build.py --csv edit.csv
-    python3 build.py --speed 6          # tune the speed-up rate
+    python3 build.py --sheet edit.yaml  # a different sheet
+    python3 build.py --speed 6          # default rate for spans saying speed: true
     python3 build.py --clip 3           # preview clip 3 on its own
     python3 build.py --clip 3-5         # preview a range
 
+    The sheet defaults to annotations.yaml, falling back to annotations.csv.
+    Validate one without building: python3 check_sheet.py
+
 REQUIRES
     normalized/001.mp4 ... from normalize_and_join.sh
-    ffmpeg, ffprobe
+    ffmpeg, ffprobe, and PyYAML for a .yaml sheet
 
 ------------------------------------------------------------------
-THE CSV
+THE SHEET
 ------------------------------------------------------------------
-Header row must include: type, clip, start, dur, role, text
-(dur may also be called duration or length. A column named end is
-accepted and treated as a duration.)
-An optional  image  column may hold a path to a PNG for card rows.
+A list of clip blocks, in order. The clip number IS the block, so it
+cannot go missing.
 
-  type          what the row does
-  ------------  --------------------------------------------------
-  annotation    text overlaid on the video. This is the default,
-  (or blank)    so existing annotation rows keep working unchanged.
-                start is seconds from THAT CLIP's beginning.
-                dur    is how long it stays up, in seconds
-                       (default 4). It is a LENGTH, not an end time.
-                Put C in start to continue 0.2s after the previous
-                annotation on that clip, or at the clip's start if
-                it is the first. C+1.5 uses a 1.5s gap instead.
-                A Return inside the cell makes a second line.
+  - clip: 5
+    chapter: Vesting of the Hierarch
+    cards:        played BEFORE this clip
+    annotations:  on-screen text, and speed/cut spans, in time order
+    notes:        published — goes into the written document
+    todos:        yours alone; never on screen, never printed
+    skip: true    leave this clip out of the build entirely
 
-  card          a standalone card inserted AFTER the given clip
-                number. It becomes its OWN chapter, titled with its
-                first line. Use this for things like
-                "Homily -- not shown".
-                Use clip = 0 for a card before everything.
-                dur   = card duration in seconds (default 6).
-                text  = card text. Break lines either by typing a
-                        Return inside the cell (Option-Return in
-                        Numbers, Alt-Enter in Excel) or with ||.
-                image = optional PNG to use instead of drawn text.
-                Several cards after the same clip keep CSV order.
+Singular and plural key names mean the same thing everywhere:
+annotation/annotations, card/cards, cut/cuts, note/notes, todo/todos.
 
-  title         same as card, but it LEADS INTO the next segment's
-                chapter instead of forming its own. The chapter
-                starts at the card, so a viewer jumping to that
-                chapter sees the card first, then the footage.
-                Use this for section-title cards.
+TIMES
+  Write them bare — 1:27, 1:03:23, 0:04, 87 and 4.5 all work.
 
-  chapter       renames the chapter that starts at that clip.
-                text = the chapter title.
+  On an annotation:
+    at: (or from:)  when it appears. LEAVE IT OUT and it picks up 0.2s
+                    after the previous annotation ends, or at 0 if it is
+                    the first in the clip.
+    for:            how long it stays up (default 4)
+    to:             an absolute end instead of a duration
+    at: next+1.5    continue, but wait 1.5s. "C" and "C+1.5" also work.
 
-  skip          leaves that clip out of the master entirely.
+TEXT
+  Put prose under `text: >` (folds to one line) or `text: |` (keeps your
+  line breaks). Neither needs quoting or escaping. Never put prose inside
+  { } — a comma there ends the value and silently swallows the rest.
 
-  cut           removes a section from inside a clip.
-                For cut and speed rows the 4th column is an END TIME,
-                not a duration -- you write "from X to Y".
-                e.g.  cut,19,1:00,2:00   removes 1:00-2:00 of clip 19
+CHAPTERS
+  chapter: always means "a chapter starts here, titled this". Present, a
+  chapter starts; absent, it does not.
+    on a clip  names the chapter beginning at that clip
+    on a card  the card becomes its own chapter with that title, which
+               need not match the words on screen
 
-  speed         speeds a section up instead of removing it.
-                start / end as above.
-                e.g.  speed,19,0:22,0:42,,Skipping the long censing
-                      plays 22s-42s faster, and labels it
+CARDS
+  Played before the clip they are listed under, so they introduce it.
+  `after: true` puts one after instead. A `clip: 0` block means "before
+  everything".
+    for:     card duration in seconds (default 6)
+    text:    card text
+    image:   optional PNG shown instead of drawn text
+  A card with no chapter: folds into the chapter that follows — that
+  chapter simply starts earlier, at the card.
 
-                The rate is set once for the whole video with --speed
-                (default 4), not per row, so you can tune the overall
-                feel without editing the sheet.
+SPEED AND CUT SPANS
+  Written inline in the annotations list so a clip reads in time order:
 
-                Audio in a sped section is MUTED -- sped-up chant is
-                unpleasant -- and a label sits in the usual annotation
-                position for the whole span, in italics, so the viewer
-                knows time is being skipped. Put your wording in the
-                TEXT column, e.g.
+    - from: 38
+      to: 1:18
+      speed: 4x        4 and 2.5x also parse; true = the --speed rate
+      mute: false      keep the audio. Defaults to true, because
+                       sped-up speech and chant are unpleasant.
+      role: PRIEST
+      text: Greets the bishop
 
-                  speed,3,1:10,3:40,,...Deacon 1 continues the entrance
-                  prayers...
+    - from: 1:00
+      to: 2:00
+      cut: true        removes the span entirely
 
-                Leave the text blank for "skipping ahead", or write "-"
-                for no label. Ordinary annotations inside a sped span
-                are warned about, since they flash past and would sit
-                on top of the skip label.
+  Both ends must be given: a span marks a region of the original clip and
+  cannot continue from whatever preceded it. A span never advances the
+  point where the next annotation picks up.
 
-  IMPORTANT -- everything is written against the ORIGINAL clip.
-  Annotation times, cut times and speed times are all measured on the
-  untouched footage, and the script works out where they land after the
-  edits. So in a 3:00 clip you can write:
+  A span's text is its label, in the usual annotation position but
+  italic. Blank gives "skipping ahead"; "-" gives no label. Ordinary
+  annotations inside a sped span are warned about, since they flash past
+  and would sit on top of the label.
 
-        cut,7,1:00,2:00           remove the second minute
-        annotation,7,2:30,4,D1,   text at the original 2:30
-        cut,7,2:45,2:55           remove another ten seconds
+  Separate speed: and cuts: blocks also work. A key cannot repeat in one
+  block, though — writing annotations: twice silently discards the first.
 
-  and the annotation ends up at 1:30 in the finished clip, with the
-  second cut landing at 1:45. You never recalculate anything: add,
-  remove or resize an edit and every other row follows automatically.
+IMPORTANT — everything is written against the ORIGINAL clip.
+  Annotation, cut and speed times are all measured on the untouched
+  footage; the script works out where they land after the edits. In a
+  3:00 clip you can write a cut at 1:00-2:00, an annotation at 2:30 and
+  another cut at 2:45, and the annotation ends up at 1:30 with the second
+  cut at 1:45. You never recalculate anything: add, remove or resize an
+  edit and everything else follows.
 
-  Annotations that fall inside a cut are dropped, with a warning.
-  Only clips carrying edits are re-encoded; the rest are untouched.
-
-  #             ignored, use for comments.
+  Annotations falling inside a cut are dropped, with a warning. Only
+  clips carrying edits are re-encoded.
 
 EXAMPLE
-  type,clip,start,dur,role,text
-  title,0,,8,,Hierarchical Divine Liturgy||Deacon Training
-  annotation,1,1,4,D1,Deacon greets last: censer and trikirion
-  annotation,1,C,5,D1,Bless master the holy incense
-  annotation,1,C+2,4,,Censer must already be lit
-  chapter,7,,,,It is Time for the Lord to Act
-  card,20,,6,,Homily||not shown
-  skip,13,,,,
+  - clip: 0
+    cards:
+      - text: |
+          Hierarchical Divine Liturgy
+          Deacon Training
+        for: 8
+
+  - clip: 1
+    chapter: Greeting of the Hierarch at the Doors
+    annotations:
+      - for: 4
+        role: D1
+        text: Deacon greets last: censer and trikirion
+      - for: 5
+        role: D1
+        text: Bless master, the holy incense
+      - at: next+2
+        text: Censer must already be lit
+    todos: Check the transliteration here.
+
+  - clip: 13
+    skip: true
+
+------------------------------------------------------------------
+THE OLDER CSV
+------------------------------------------------------------------
+A .csv sheet still loads, with columns type, clip, start, dur, role,
+text and an optional image. Its type column carries what is now
+structure: annotation (the default), card, title (a folding card),
+chapter, skip, cut, speed, and # for a comment. For cut and speed rows
+the 4th column is an END TIME, not a duration.
+
+Two things the CSV cannot express, because they were added afterwards:
+a per-span speed rate, and mute. It also has no equivalent of notes: or
+todos:, and it is vulnerable to spreadsheet exports blanking the clip
+column, which is why the YAML format exists.
 """
 
 import argparse, csv, hashlib, os, re, subprocess, sys
@@ -237,16 +268,16 @@ def atempo_chain(f):
 
 
 def edit_segments(dur, edits):
-    """Turn a clip duration + edit list into (start, end, factor) spans.
+    """Turn a clip duration + edit list into (start, end, factor, mute) spans.
     factor 1.0 = untouched, >1 = sped up. Cut spans are omitted."""
     segs, prev = [], 0.0
-    for st, d, factor in sorted(edits):
+    for st, d, factor, mute in sorted(edits):
         st = max(st, 0.0); en = min(st + d, dur)
         if en <= prev: continue
-        if st > prev: segs.append((prev, st, 1.0))
-        if factor is not None: segs.append((st, en, float(factor)))
+        if st > prev: segs.append((prev, st, 1.0, False))
+        if factor is not None: segs.append((st, en, float(factor), mute))
         prev = en
-    if prev < dur: segs.append((prev, dur, 1.0))
+    if prev < dur: segs.append((prev, dur, 1.0, False))
     return [sg for sg in segs if sg[1] - sg[0] > 0.01]
 
 
@@ -254,7 +285,7 @@ def time_map(t, segs):
     """Map a time in the ORIGINAL clip to its position in the edited clip.
     Returns None if t falls inside a cut."""
     out = 0.0
-    for a, b, f in segs:
+    for a, b, f, _ in segs:
         if t < a: return None          # inside a removed span
         if t <= b: return out + (t - a) / f
         out += (b - a) / f
@@ -263,20 +294,21 @@ def time_map(t, segs):
 
 def build_edited_clip(src, dst, segs):
     """Re-encode one clip with cuts and speed changes applied."""
-    spec = hashlib.md5((src + repr([(round(a,3), round(b,3), round(f,4))
-                                    for a, b, f in segs])).encode()).hexdigest()
+    spec = hashlib.md5((src + repr([(round(a,3), round(b,3), round(f,4), m)
+                                    for a, b, f, m in segs])).encode()).hexdigest()
     sidecar = dst + ".spec"
     if os.path.exists(dst) and os.path.exists(sidecar):
         if open(sidecar).read().strip() == spec:
             return False
     parts, labels = [], []
-    for i, (a, b, f) in enumerate(segs):
+    for i, (a, b, f, mute) in enumerate(segs):
         parts.append(f"[0:v]trim=start={a:.3f}:end={b:.3f},"
                      f"setpts=(PTS-STARTPTS)/{f:.6f}[v{i}]")
-        # atempo keeps audio the same length as the sped video, and
-        # volume=0 silences it -- sped-up speech and chant is unpleasant.
+        # atempo keeps audio the same length as the sped video. Sped-up
+        # speech and chant is unpleasant, so a sped span is silenced unless
+        # the sheet says mute: false.
         chain = ["asetpts=PTS-STARTPTS"] + atempo_chain(f)
-        if abs(f - 1.0) > 1e-6:
+        if abs(f - 1.0) > 1e-6 and mute:
             chain.append("volume=0")
         ach = ",".join(chain)
         parts.append(f"[0:a]atrim=start={a:.3f}:end={b:.3f},{ach}[a{i}]")
@@ -291,6 +323,145 @@ def build_edited_clip(src, dst, segs):
          "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2", dst])
     open(sidecar, "w").write(spec)
     return True
+
+
+def read_sheet(path):
+    """Rows from an edit sheet, as (label, row) pairs.
+
+    YAML and CSV both reduce to the same flat rows, so everything downstream
+    is shared. A row's keys are lowercase; its values are strings, except for
+    the underscore-prefixed extras that only YAML can express.
+    """
+    if path.lower().endswith((".yaml", ".yml")):
+        return read_yaml_sheet(path)
+    with open(path, newline="", encoding="utf-8-sig") as f:
+        return [(f"line {ln}",
+                 {(k or "").strip().lower(): (v or "") for k, v in raw.items()})
+                for ln, raw in enumerate(csv.DictReader(f), start=2)]
+
+
+def _first(d, *names):
+    for n in names:
+        if n in d and d[n] is not None:
+            return d[n]
+    return None
+
+
+def _text(v):
+    """A YAML scalar, or a list of points, as one string."""
+    if v is None: return ""
+    if isinstance(v, (list, tuple)):
+        return "\n".join(str(x).strip() for x in v if str(x).strip())
+    return str(v)
+
+
+def read_yaml_sheet(path):
+    """Flatten the YAML sheet into rows.
+
+    Cards listed under a clip play BEFORE it, so a card in block N is emitted
+    against clip N-1 -- and for clip 1 that is clip 0, which build.py already
+    treats as the very front. `after: true` keeps it on clip N.
+
+    Annotation start times are resolved here rather than downstream: an
+    explicit time wins, otherwise the annotation picks up CONT_GAP after the
+    previous one ended, or at 0 if it is the first in its clip.
+    """
+    try:
+        import yaml
+    except ModuleNotFoundError:
+        die("PyYAML is needed to read a .yaml sheet — "
+            "pip3 install --break-system-packages pyyaml")
+    with open(path, encoding="utf-8") as f:
+        doc = yaml.safe_load(f)
+    if not isinstance(doc, list):
+        die(f"{path}: expected a list of clip blocks, each starting with '- clip:'")
+
+    def is_span(e):
+        return isinstance(e, dict) and (
+            e.get("cut") is True or ("speed" in e and e["speed"] is not False))
+
+    def rate_of(v):
+        if v is True: return None
+        if isinstance(v, str): return float(v.strip().lower().rstrip("x").strip())
+        return float(v)
+
+    rows = []
+    for bi, b in enumerate(doc, 1):
+        if not isinstance(b, dict): die(f"{path}: block {bi} is not a clip block")
+        n = b.get("clip")
+        if not isinstance(n, int): die(f"{path}: block {bi} has no whole-number clip:")
+        where = f"clip {n}"
+
+        if b.get("skip") is True:
+            rows.append((where, {"type": "skip", "clip": str(n)}))
+            continue
+
+        title = _first(b, "chapter", "chapters")
+        if title:
+            rows.append((where, {"type": "chapter", "clip": str(n),
+                                 "text": _text(title)}))
+
+        cards = _first(b, "cards", "card") or []
+        if isinstance(cards, dict): cards = [cards]
+        for ci, c in enumerate(cards, 1):
+            ctitle = _first(c, "chapter", "chapters")
+            dur = _first(c, "for", "to")
+            target = n if c.get("after") is True else n - 1
+            rows.append((f"{where} card {ci}", {
+                "type":  "card" if ctitle else "title",
+                "clip":  str(max(target, 0)),
+                "end":   "" if dur is None else str(dur),
+                "text":  _text(c.get("text")),
+                "image": _text(c.get("image")),
+                "_chapter": _text(ctitle) if ctitle else "",
+            }))
+
+        entries = _first(b, "annotations", "annotation") or []
+        if isinstance(entries, dict): entries = [entries]
+        spans = list(_first(b, "speed", "speeds") or [])
+        spans += list(_first(b, "cuts", "cut") or [])
+        spans = [e for e in spans if isinstance(e, dict)]
+
+        prev_end, ai, si = None, 0, 0
+        for e in entries:
+            if not isinstance(e, dict): continue
+            if is_span(e):
+                si += 1
+                spans.append(e)
+                continue
+            ai += 1
+            raw_at = _first(e, "at", "from")
+            if raw_at is None:
+                st = 0.0 if prev_end is None else prev_end + CONT_GAP
+            elif isinstance(raw_at, str) and raw_at.strip().lower().startswith(("next", "c")):
+                tail = raw_at.strip().lstrip("nextNEXTcC").strip().lstrip("+").strip()
+                gap = float(tail) if tail else CONT_GAP
+                st = 0.0 if prev_end is None else prev_end + gap
+            else:
+                st = parse_time(str(raw_at))
+            if "for" in e:   dur = parse_time(str(e["for"]))
+            elif "to" in e:  dur = parse_time(str(e["to"])) - st
+            else:            dur = DEFAULT_DUR
+            prev_end = st + dur
+            rows.append((f"{where} annotation {ai}", {
+                "type": "annotation", "clip": str(n),
+                "start": f"{st:.6f}", "dur": f"{dur:.6f}",
+                "role": _text(e.get("role")), "text": _text(e.get("text")),
+            }))
+
+        for k, e in enumerate(spans, 1):
+            st = parse_time(str(_first(e, "at", "from")))
+            en = (parse_time(str(e["to"])) if "to" in e
+                  else st + parse_time(str(e["for"])))
+            cut = e.get("cut") is True
+            rows.append((f"{where} {'cut' if cut else 'speed'} {k}", {
+                "type": "cut" if cut else "speed", "clip": str(n),
+                "start": f"{st:.6f}", "end": f"{en:.6f}",
+                "role": _text(e.get("role")), "text": _text(e.get("text")),
+                "_rate": None if cut else rate_of(e.get("speed", True)),
+                "_mute": bool(e.get("mute", True)),
+            }))
+    return rows
 
 
 def clip_num(raw):
@@ -355,11 +526,13 @@ def make_card(path, text, dur, image=None):
 def main():
     ap = argparse.ArgumentParser(
         prog="build.py",
-        description="Build the training video from one CSV edit sheet.",
+        description="Build the training video from one edit sheet.",
         epilog=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--csv", default="annotations.csv", metavar="FILE",
-                    help="the edit sheet to read (default annotations.csv)")
+    ap.add_argument("--sheet", "--csv", dest="sheet", metavar="FILE",
+                    help="the edit sheet to read. Defaults to annotations.yaml, "
+                         "falling back to annotations.csv. --csv is an old "
+                         "name for this flag and still works.")
     ap.add_argument("--subs-only", action="store_true",
                     help="only regenerate the annotation track; skip "
                          "reassembling the video. Fast, for timing work.")
@@ -369,7 +542,8 @@ def main():
                          "one. Writes preview.mkv and leaves master.mp4 and "
                          "the chapter files untouched.")
     ap.add_argument("--speed", type=float, default=4.0, metavar="N",
-                    help="playback rate for every 'speed' row (default 4). "
+                    help="default rate for spans that say speed: true "
+                         "(default 4). A span may state its own, e.g. 4x. "
                          "Changing this re-encodes only the affected clips.")
     ap.add_argument("--no-mkv", action="store_true",
                     help="skip building the .mkv review copy")
@@ -398,7 +572,14 @@ def main():
 
     os.makedirs(OUT, exist_ok=True)
 
-    if not os.path.exists(a.csv): die(f"not found: {a.csv}")
+    if a.sheet is None:
+        for cand in ("annotations.yaml", "annotations.yml", "annotations.csv"):
+            if os.path.exists(cand):
+                a.sheet = cand; break
+        else:
+            die("no edit sheet found — expected annotations.yaml "
+                "(or annotations.csv)")
+    if not os.path.exists(a.sheet): die(f"not found: {a.sheet}")
     if not os.path.isdir(WORK): die(f"{WORK}/ not found — run normalize_and_join.sh first")
 
     clips = sorted(f for f in os.listdir(WORK)
@@ -418,114 +599,114 @@ def main():
     inherited = []
 
     last_clip_seen = None
-    with open(a.csv, newline="", encoding="utf-8-sig") as f:
-        for ln, raw in enumerate(csv.DictReader(f), start=2):
-            row = {(k or "").strip().lower(): (v or "") for k, v in raw.items()}
-            typ = row.get("type", "").strip().lower() or "annotation"
-            if typ.startswith("#"): continue
-            n = clip_num(row.get("clip", ""))
-            text = row.get("text", "").strip()
-            if n is not None:
-                last_clip_seen = n
-            elif typ == "annotation" and text and last_clip_seen is not None:
-                # Spreadsheets sometimes blank a clip column on export.
-                # Inherit from the last row that did carry a clip number.
-                n = last_clip_seen
-                inherited.append(ln)
+    for ln, row in read_sheet(a.sheet):
+        typ = row.get("type", "").strip().lower() or "annotation"
+        if typ.startswith("#"): continue
+        n = clip_num(row.get("clip", ""))
+        text = row.get("text", "").strip()
+        if n is not None:
+            last_clip_seen = n
+        elif typ == "annotation" and text and last_clip_seen is not None:
+            # Spreadsheets sometimes blank a clip column on export.
+            # Inherit from the last row that did carry a clip number.
+            n = last_clip_seen
+            inherited.append(ln)
 
-            if typ == "skip":
-                if n: skips.add(n)
-                continue
+        if typ == "skip":
+            if n: skips.add(n)
+            continue
 
-            if typ in ("cut", "speed"):
-                if n is None or not (1 <= n <= n_clips):
-                    warnings.append(f"line {ln}: {typ} on unknown clip "
-                                    f"{row.get('clip','')!r} — skipped")
-                    continue
-                try:
-                    est = parse_time(row.get("start", ""))
-                    een = parse_time(get_dur(row))
-                except ValueError as e:
-                    warnings.append(f"line {ln}: {e} — skipped"); continue
-                if est is None or een is None:
-                    warnings.append(f"line {ln}: {typ} needs a start and an "
-                                    f"end time — skipped")
-                    continue
-                if een <= est:
-                    warnings.append(f"line {ln}: {typ} end ({een:g}) must be "
-                                    f"after start ({est:g}) — skipped")
-                    continue
-                edur = een - est
-                if typ == "cut":
-                    factor = None
-                else:
-                    factor = a.speed
-                    if factor <= 0:
-                        warnings.append(f"line {ln}: --speed must be positive "
-                                        f"— skipped")
-                        continue
-                    srole = row.get("role", "").strip().upper()
-                    if srole and srole not in seen_roles: seen_roles.append(srole)
-                    if text: labels_for[(n, est)] = (srole, text)
-                edits[n].append((est, edur, factor))
-                continue
-
-            if typ == "chapter":
-                if n and text:
-                    chapter_titles[n] = " ".join(split_lines(text))
-                continue
-
-            if typ in ("card", "title"):
-                if n is None: n = 0
-                raw_cd = ""
-                for key in ("dur", "duration", "length", "end"):
-                    if row.get(key, "").strip():
-                        raw_cd = row[key].strip(); break
-                try: dur = parse_time(raw_cd) or CARD_DUR
-                except ValueError: dur = CARD_DUR
-                img = (row.get("image", "") or "").strip() or None
-                if not text and not img:
-                    warnings.append(f"line {ln}: card with no text or image — skipped")
-                    continue
-                cards[n].append((dur, text, img, typ == "title"))
-                continue
-
-            # annotation
-            if not text: continue
+        if typ in ("cut", "speed"):
             if n is None or not (1 <= n <= n_clips):
-                warnings.append(f"line {ln}: unknown clip {row.get('clip','')!r} — skipped")
+                warnings.append(f"{ln}: {typ} on unknown clip "
+                                f"{row.get('clip','')!r} — skipped")
                 continue
-            raw_start = (row.get("start", "") or "").strip()
-            raw_dur = ""
+            try:
+                est = parse_time(row.get("start", ""))
+                een = parse_time(get_dur(row))
+            except ValueError as e:
+                warnings.append(f"{ln}: {e} — skipped"); continue
+            if est is None or een is None:
+                warnings.append(f"{ln}: {typ} needs a start and an "
+                                f"end time — skipped")
+                continue
+            if een <= est:
+                warnings.append(f"{ln}: {typ} end ({een:g}) must be "
+                                f"after start ({est:g}) — skipped")
+                continue
+            edur = een - est
+            if typ == "cut":
+                factor = None
+            else:
+                factor = row.get("_rate") or a.speed
+                if factor <= 0:
+                    warnings.append(f"{ln}: --speed must be positive "
+                                    f"— skipped")
+                    continue
+                srole = row.get("role", "").strip().upper()
+                if srole and srole not in seen_roles: seen_roles.append(srole)
+                if text: labels_for[(n, est)] = (srole, text)
+            edits[n].append((est, edur, factor,
+                             bool(row.get("_mute", True))))
+            continue
+
+        if typ == "chapter":
+            if n and text:
+                chapter_titles[n] = " ".join(split_lines(text))
+            continue
+
+        if typ in ("card", "title"):
+            if n is None: n = 0
+            raw_cd = ""
             for key in ("dur", "duration", "length", "end"):
                 if row.get(key, "").strip():
-                    raw_dur = row[key].strip(); break
-
-            try:
-                if raw_start[:1].upper() == "C":
-                    # continue from the previous annotation in this clip
-                    gap = CONT_GAP
-                    tail = raw_start[1:].strip().lstrip("+").strip()
-                    if tail:
-                        gap = float(tail)
-                    prev = last_end.get(n)
-                    st = 0.0 if prev is None else prev + gap
-                else:
-                    st = parse_time(raw_start)
-                dur = parse_time(raw_dur)
-            except ValueError as e:
-                warnings.append(f"line {ln}: {e} — skipped"); continue
-            if st is None:
-                warnings.append(f"line {ln}: no start time — skipped ({text[:40]})")
+                    raw_cd = row[key].strip(); break
+            try: dur = parse_time(raw_cd) or CARD_DUR
+            except ValueError: dur = CARD_DUR
+            img = (row.get("image", "") or "").strip() or None
+            if not text and not img:
+                warnings.append(f"{ln}: card with no text or image — skipped")
                 continue
-            if dur is None: dur = DEFAULT_DUR
-            if dur <= 0:
-                warnings.append(f"line {ln}: duration must be positive — skipped"); continue
-            en = st + dur
-            last_end[n] = en
-            role = row.get("role", "").strip().upper()
-            if role and role not in seen_roles: seen_roles.append(role)
-            anns[n].append((st, en, role, text))
+            cards[n].append((dur, text, img, typ == "title",
+                             (row.get("_chapter") or "").strip()))
+            continue
+
+        # annotation
+        if not text: continue
+        if n is None or not (1 <= n <= n_clips):
+            warnings.append(f"{ln}: unknown clip {row.get('clip','')!r} — skipped")
+            continue
+        raw_start = (row.get("start", "") or "").strip()
+        raw_dur = ""
+        for key in ("dur", "duration", "length", "end"):
+            if row.get(key, "").strip():
+                raw_dur = row[key].strip(); break
+
+        try:
+            if raw_start[:1].upper() == "C":
+                # continue from the previous annotation in this clip
+                gap = CONT_GAP
+                tail = raw_start[1:].strip().lstrip("+").strip()
+                if tail:
+                    gap = float(tail)
+                prev = last_end.get(n)
+                st = 0.0 if prev is None else prev + gap
+            else:
+                st = parse_time(raw_start)
+            dur = parse_time(raw_dur)
+        except ValueError as e:
+            warnings.append(f"{ln}: {e} — skipped"); continue
+        if st is None:
+            warnings.append(f"{ln}: no start time — skipped ({text[:40]})")
+            continue
+        if dur is None: dur = DEFAULT_DUR
+        if dur <= 0:
+            warnings.append(f"{ln}: duration must be positive — skipped"); continue
+        en = st + dur
+        last_end[n] = en
+        role = row.get("role", "").strip().upper()
+        if role and role not in seen_roles: seen_roles.append(role)
+        anns[n].append((st, en, role, text))
 
     # ---------------- apply cuts and speed changes ----------------
     seg_map = {}          # clip -> segment list, for remapping annotations
@@ -540,7 +721,7 @@ def main():
         elist = sorted(elist)
         # reject overlapping edits, which would corrupt the mapping
         clean, last_end = [], 0.0
-        for st, d, f in elist:
+        for st, d, f, mu in elist:
             if st < last_end:
                 warnings.append(f"clip {n:02d}: edit at {st:.1f}s overlaps the "
                                 f"previous one — skipped")
@@ -549,11 +730,11 @@ def main():
                 warnings.append(f"clip {n:02d}: edit at {st:.1f}s is past the "
                                 f"end of the clip ({dur0:.1f}s) — skipped")
                 continue
-            clean.append((st, d, f)); last_end = st + d
+            clean.append((st, d, f, mu)); last_end = st + d
         if not clean: continue
         segs = edit_segments(dur0, clean)
         seg_map[n] = segs
-        for st, d, f in clean:
+        for st, d, f, mu in clean:
             if f is not None:
                 srole, lbl = labels_for.get((n, st), ("", SKIP_LABEL))
                 if lbl.strip() not in ("-", "none", "None"):
@@ -562,8 +743,8 @@ def main():
         if not a.subs_only:
             build_edited_clip(src, dst, segs)
         edited_name[n] = f"{n:03d}_edit.mp4"
-        newdur = sum((b - aa) / f for aa, b, f in segs)
-        cuts = sum(1 for st, d, f in clean if f is None)
+        newdur = sum((b - aa) / f for aa, b, f, _ in segs)
+        cuts = sum(1 for st, d, f, _ in clean if f is None)
         sps = len(clean) - cuts
         bits = []
         if cuts: bits.append(f"{cuts} cut{'s' if cuts>1 else ''}")
@@ -574,22 +755,24 @@ def main():
     # ---------------- assemble the sequence ----------------
     sequence = []          # (path_in_work, label, is_card, clip_no)
     if not a.subs_only:
-        for dur, text, img, lead in cards.get(0, []):
+        for dur, text, img, lead, ctitle in cards.get(0, []):
             nm = f"000_card{len(sequence):02d}.mp4"
             make_card(os.path.join(WORK, nm), text, dur, img)
             lines = split_lines(text)
-            sequence.append((nm, lines[0] if lines else "Card", True, 0, lead))
+            sequence.append((nm, ctitle or (lines[0] if lines else "Card"),
+                             True, 0, lead))
 
     for i in range(1, n_clips + 1):
         if i in skips: continue
         sequence.append((edited_name.get(i, f"{i:03d}.mp4"),
                          f"Clip {i:02d}", False, i, False))
         if not a.subs_only:
-            for j, (dur, text, img, lead) in enumerate(cards.get(i, [])):
+            for j, (dur, text, img, lead, ctitle) in enumerate(cards.get(i, [])):
                 nm = f"{i:03d}_card{j:02d}.mp4"
                 make_card(os.path.join(WORK, nm), text, dur, img)
                 lines = split_lines(text)
-                sequence.append((nm, lines[0] if lines else "Card", True, i, lead))
+                sequence.append((nm, ctitle or (lines[0] if lines else "Card"),
+                                 True, i, lead))
 
     if only:
         kept = []
@@ -658,7 +841,7 @@ def main():
                                     f"falls inside a cut — dropped "
                                     f"({text[:32]})")
                     continue
-                for sa, sb, sf in segs:
+                for sa, sb, sf, _ in segs:
                     if sa <= st < sb and abs(sf - 1.0) > 1e-6:
                         warnings.append(
                             f"clip {n:02d}: annotation at {st:.1f}s is inside "
