@@ -49,6 +49,13 @@ def clip_durations():
     return durs
 
 
+def _first(d, *names):
+    for n in names:
+        if n in d and d[n] is not None:
+            return d[n]
+    return None
+
+
 def resolve(entries, dur=None):
     """Resolve each annotation to (start, end), mirroring build.py exactly:
     an explicit time wins, otherwise continue CONT_GAP after the previous end.
@@ -316,9 +323,41 @@ def validate(path):
         dur    = DURS.get(n)
         spans  = resolve(anns, dur)
 
+        # cuts remove footage, so an annotation over one has nothing to sit on
+        cuts = []
+        for c in list(inline) + list(b.get("cuts", b.get("cut")) or []):
+            if not isinstance(c, dict) or c.get("cut") is not True: continue
+            try:
+                cst = parse_time(str(_first(c, "at", "from")))
+                t = c.get("to")
+                if isinstance(t, str) and t.strip().lower() == "end":
+                    cen = dur
+                elif t is not None:
+                    cen = parse_time(str(t))
+                else:
+                    cen = cst + parse_time(str(c["for"]))
+                if cst is not None and cen is not None:
+                    cuts.append((cst, cen))
+            except Exception:
+                pass
+
         for i, ((st, en), e) in enumerate(zip(spans, anns), 1):
             if st is None: continue
             label = str(e.get("text", ""))[:40].replace("\n", " ") if isinstance(e, dict) else ""
+            if en is not None and en <= st:
+                err(f"{where} annotation {i}",
+                    f"ends at {fmt(en)} but starts at {fmt(st)} — a 'to:' "
+                    f"earlier than the start. Did you mean 'for:'?  ({label})")
+                continue
+            hidden = next(((cs, ce) for cs, ce in cuts if cs <= st < ce), None)
+            if hidden:
+                # A warning, not an error: mid-edit this is often transient,
+                # and the build still succeeds without the annotation.
+                warn(f"{where} annotation {i}",
+                     f"starts at {fmt(st)}, inside the cut "
+                     f"{fmt(hidden[0])}-{fmt(hidden[1])} — that footage is "
+                     f"removed, so it will not appear  ({label})")
+                continue
             if dur is not None:
                 if st >= dur:
                     how = ("starts exactly at the clip's end"

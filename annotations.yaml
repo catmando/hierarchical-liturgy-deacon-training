@@ -109,7 +109,7 @@
   # Plays BEFORE clip 1. No chapter:, so it folds into chapter 1 and becomes
   # its title card.
   cards:
-    - for: 8
+    - for: 4
       text: |
         Greeting of the Hierarch at the Doors
 
@@ -178,7 +178,7 @@
 - clip: 2
   chapter: The Bishop Enters the Nave
   card: 
-    for: 8
+    for: 4
     text: The Bishop Greets the Clergy, and Enters the Nave
 
   annotations:
@@ -240,7 +240,7 @@
   chapter: Entrance Prayers
 
   card:
-    for: 8
+    for: 4
     text:  Entrance Prayers
 
   annotations:
@@ -254,6 +254,52 @@
     - from: 30
       to: 2:40
       cut: true 
+
+- clip: 4
+  chapter: Preparing to Vest the Bishop
+
+  card: 
+    for: 4
+    text: Preparing to Vest the Bishop
+  
+  annotations:
+    - from: 0
+      to: 1:00
+      cut: true
+
+    - at: 1:05
+      for: 4
+      role: FIRST DEACON
+      text: |
+        Ton Despótēn kaì Archiaréa hēmōn, Kýrie phýlatte: eis pollà étē, Déspota!
+    - to: 1:48
+      text: |
+        Prouncation: 
+        ton thes-PO-teen keh ar-hee-eh-REH-ah ee-MON, 
+        KEE-ree-eh FEE-lah-teh: ees poh-LAH EH-tee, THES-poh-tah!
+      notes: |
+        Practice pronouncing: Ton Despótēn kaì Archiaréa hēmōn, Kýrie phýlatte: eis pollà étē, Déspota!
+       
+        Ton: sounds like "tawn" (rhymes with "on")
+        Despótēn: thon-thes-PO-teen (the "th" sounds like the "th" in "the")
+        kaì: keh (rhymes with "get")
+        Archiaréa: ar-hee-eh-REH-ah (the "ch" is a soft, breathy "h" sound like in "loch")
+        hēmōn: ee-MON (rhymes with "cone")
+        Kýrie: KEE-ree-eh
+        phýlatte: FEE-lah-teh
+        eis: ees (rhymes with "geese")
+        pollà: poh-LAH
+        étē: EH-tee
+        Déspota: THES-poh-tah (the "th" sounds like the "th" in "the")
+
+        "ton thes-PO-teen keh ar-hee-eh-REH-ah ee-MON, KEE-ree-eh FEE-lah-teh: ees poh-LAH EH-tee, THES-poh-tah!"
+    - from: 0:54
+      for: 4
+      role: SERVERS
+      text: have censers ready at both deacon's doors
+    - for: 4
+      role: DEACONS
+      text: retrieve loaded censers from north and south doors
 
 # ─── The remaining row types, for completeness ─────────────────────────
 
