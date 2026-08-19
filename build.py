@@ -249,8 +249,20 @@ def norm_lines(v):
     return (v or "").replace("\r\n", "\n").replace("\r", "\n").replace("||", "\n")
 
 
-def split_lines(v):
-    return [ln.strip() for ln in norm_lines(v).split("\n") if ln.strip()]
+def split_lines(v, keep_blanks=False):
+    """Text as a list of lines.
+
+    keep_blanks preserves interior blank lines, which both drawtext and libass
+    render as a real gap — leading and trailing ones are dropped, so a YAML
+    block scalar's trailing newline never adds space. Chapter titles use the
+    default and collapse, since a chapter name has to be one line.
+    """
+    lines = [ln.strip() for ln in norm_lines(v).split("\n")]
+    if not keep_blanks:
+        return [ln for ln in lines if ln]
+    while lines and not lines[0]:  lines.pop(0)
+    while lines and not lines[-1]: lines.pop()
+    return lines
 
 
 def get_dur(row):
@@ -562,7 +574,11 @@ def clip_num(raw):
 
 def make_card(path, text, dur, image=None):
     """Render a card, skipping if an identical one already exists."""
-    spec = hashlib.md5(f"{text}|{dur}|{image}|{W}x{H}|{FPS}".encode()).hexdigest()
+    # Key on the laid-out lines rather than the raw text, so a change in how
+    # text is broken up invalidates the cache by itself.
+    body = "\n".join(split_lines(text, keep_blanks=True))
+    spec = hashlib.md5(
+        f"{body}|{dur}|{image}|{W}x{H}|{FPS}|{PRESET}|{CRF}".encode()).hexdigest()
     sidecar = path + ".spec"
     if os.path.exists(path) and os.path.exists(sidecar):
         if open(sidecar).read().strip() == spec:
@@ -586,7 +602,7 @@ def make_card(path, text, dur, image=None):
         if not font: die("no usable font found for card text")
         tmp = path + ".txt"
         with open(tmp, "w") as f:
-            f.write("\n".join(split_lines(text)))
+            f.write(body)
         vf = (f"drawtext=fontfile='{font}':textfile='{tmp}':fontcolor=white:"
               f"fontsize=64:line_spacing=28:x=(w-text_w)/2:y=(h-text_h)/2,"
               f"fade=t=in:st=0:d={fade},fade=t=out:st={out_st}:d={fade},setsar=1")
@@ -988,7 +1004,7 @@ def main():
             if i + 1 < len(items) and items[i+1][0] < en:
                 warnings.append(f"clip {n:02d}: annotations overlap near {st:.0f}s")
             body = text.replace("\\", "").replace("{", "(").replace("}", ")")
-            body = "\\N".join(split_lines(body))
+            body = "\\N".join(split_lines(body, keep_blanks=True))
             events.append((base + st, base + en,
                            role_prefix(role, seen_roles) + body))
     # label each sped-up span. Same screen position as the ordinary

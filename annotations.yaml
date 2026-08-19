@@ -293,15 +293,70 @@
         Déspota: THES-poh-tah (the "th" sounds like the "th" in "the")
 
         "ton thes-PO-teen keh ar-hee-eh-REH-ah ee-MON, KEE-ree-eh FEE-lah-teh: ees poh-LAH EH-tee, THES-poh-tah!"
-    - from: 0:54
+    - from: 1:50
       for: 4
       role: SERVERS
       text: have censers ready at both deacon's doors
     - for: 4
       role: DEACONS
       text: retrieve loaded censers from north and south doors
+  todos: at the end of this clip a server appears carrying something.  What is it?
 
-# ─── The remaining row types, for completeness ─────────────────────────
+- clip: 5
+  chapter: Vesting the Bishop
+
+  card: 
+    for: 20
+    text: |
+      Vesting the Bishop
+
+      All vestments, and other articles must have been 
+      prepared and neatly stacked.
+      A tray should be ready to recieve the Mantiya and Klobuk.
+      These are ready in the sanctuary or on a table in the nave.
+      Altar servers need to be assigned to carry these items.
+      An altar server should be ready to receive the staff, 
+      as the senior servers will now help with the vesting.
+      
+  annotations: 
+    - for: 4
+      role: SERVERS
+      text: A junior server takes the staff, and the Mantiya is removed
+    - for: 4
+      role: SERVERS
+      text: The Bishop takes off his Klobuk and hands to the servers, who place it on the tray.
+    - from: 15
+      for: 4
+      role: SERVERS
+      text: The Bishop removes his cross, and engolpion, and other items
+    - from: 19
+      for: 4
+      role: SERVERS
+      text: "MEANWHILE: The vestments are brought from their location to the bishop"
+    - from: 25
+      for: 4
+      role: SERVERS
+      text: The Bishop removes his riassa, and its placed with the rest of the items
+    - from: 33
+      for: 3
+      role: SERVERS
+      text: The items are taken back to the sanctuary
+    - from: 36
+      for: 4
+      role: DEACONS
+      text: The deacons raise their censers for the blessing
+    - from: 50
+      for: 6
+      role: DEACONS
+      text: |
+        Before each item is readied, the second deacon says: Let us pray to the Lord!
+        Then the first deacon chants the appropriate prayer for that item.
+    - from: 1:05
+      to: end
+      role: DEACONS
+      text: During the vesting the deacons continuously cense the Bishop.
+
+#─── The remaining row types, for completeness ─────────────────────────
 
 # Drop a clip from the build entirely.
 - clip: 13
