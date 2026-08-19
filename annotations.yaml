@@ -29,6 +29,15 @@
 #    must be given (a span cannot continue from whatever preceded it), and a
 #    span never affects where the next annotation picks up.
 #
+#      speed: 4x      four times normal. 4 and 2.5x parse too;
+#                     speed: true uses the global --speed rate.
+#      audio: normal  what the span sounds like:
+#                       mute    silence (the default)
+#                       fast    time-stretched to fit; pitch intact, hurried
+#                       normal  natural speed — the opening of the span plays
+#                               untouched for as long as the sped video lasts.
+#                               Right for background singing.
+#
 #    Separate `speed:` and `cuts:` blocks also work if you prefer them.
 #
 #    NOTE: a key cannot repeat in one clip. Writing `annotations:` twice
