@@ -95,7 +95,7 @@ LISTY = {"annotations", "speed", "cuts", "cards"}
 # An entry in the annotations list is a span if it says so; spans may also be
 # written in their own speed:/cuts: blocks.
 ANN_KEYS   = {"at", "from", "for", "to", "role", "text", "speed", "cut",
-              "mute", "audio", "notes", "note", "todos", "todo"}
+              "mute", "audio", "hold", "notes", "note", "todos", "todo"}
 AUDIO_MODES = ("mute", "fast", "normal")
 
 
@@ -118,7 +118,7 @@ def parse_rate(v):
         except ValueError: pass
     raise ValueError(f"{v!r} — use true, or a rate like 4 or 4x")
 SPAN_KEYS  = {"at", "from", "for", "to", "role", "text", "speed", "mute",
-              "audio", "notes", "note", "todos", "todo"}
+              "audio", "hold", "notes", "note", "todos", "todo"}
 CARD_KEYS  = {"text", "image", "for", "to", "chapter", "after",
               "notes", "note", "todos", "todo"}
 
@@ -254,7 +254,16 @@ def validate(path):
                                + ", ".join(AUDIO_MODES))
                     if "mute" in e:
                         warn(w, "audio: and mute: both given — audio: wins")
-                if e.get("cut") is True and ("mute" in e or "audio" in e):
+                if "hold" in e:
+                    try:
+                        if float(e["hold"]) < 0: raise ValueError
+                    except (TypeError, ValueError):
+                        err(w, f"hold: {e['hold']!r} — seconds at full volume "
+                               f"before the fade, e.g. 4")
+                    if str(e.get("audio", "")).strip().lower() != "normal":
+                        warn(w, "hold: only applies to audio: normal")
+                if e.get("cut") is True and any(k in e for k in
+                                                ("mute", "audio", "hold")):
                     warn(w, "audio settings have no effect on a cut")
                 if "at" not in e and "from" not in e: err(w, "no start — a span needs from:")
                 if "to" not in e and "for" not in e:  err(w, "no end — a span needs to: or for:")

@@ -93,7 +93,10 @@ SPEED AND CUT SPANS
                                  untouched for exactly as long as the sped
                                  video lasts. Right for background singing —
                                  the chant sounds normal while the picture
-                                 races.
+                                 races. It fades out rather than stopping
+                                 dead, after `hold:` seconds at full volume
+                                 (default 4).
+      hold: 2          seconds before the fade begins; only for audio: normal
                        mute: true/false is the older spelling of mute/fast.
       role: PRIEST
       text: Greets the bishop
@@ -164,6 +167,7 @@ def out(name):
 MASTER = os.path.join(OUT, "master.mp4")
 W, H, FPS, CRF, PRESET = 1920, 1080, 30, 18, "slow"
 DRAFT_CRF, DRAFT_PRESET = 30, "ultrafast"
+AUDIO_HOLD = 4.0    # seconds at full volume before `audio: normal` fades out
 
 ROLE_COLOURS = {
     "D1": "&H00A5FF&", "D2": "&H80D0A0&", "SD": "&HD0C070&",
@@ -269,15 +273,16 @@ def atempo_chain(f):
 def edit_segments(dur, edits):
     """Turn a clip duration + edit list into (start, end, factor, audio) spans.
     factor 1.0 = untouched, >1 = sped up. Cut spans are omitted.
-    audio is mute / fast / normal, and only matters where factor != 1."""
+    audio is (mode, hold): mode is mute / fast / normal, hold is the seconds
+    at full volume before `normal` fades out. Only matters where factor != 1."""
     segs, prev = [], 0.0
     for st, d, factor, amode in sorted(edits):
         st = max(st, 0.0); en = min(st + d, dur)
         if en <= prev: continue
-        if st > prev: segs.append((prev, st, 1.0, ""))
+        if st > prev: segs.append((prev, st, 1.0, ("", 0.0)))
         if factor is not None: segs.append((st, en, float(factor), amode))
         prev = en
-    if prev < dur: segs.append((prev, dur, 1.0, ""))
+    if prev < dur: segs.append((prev, dur, 1.0, ("", 0.0)))
     return [sg for sg in segs if sg[1] - sg[0] > 0.01]
 
 
@@ -302,7 +307,8 @@ def build_edited_clip(src, dst, segs):
         if open(sidecar).read().strip() == spec:
             return False
     parts, labels = [], []
-    for i, (a, b, f, amode) in enumerate(segs):
+    for i, (a, b, f, audio) in enumerate(segs):
+        amode, hold_s = audio
         parts.append(f"[0:v]trim=start={a:.3f}:end={b:.3f},"
                      f"setpts=(PTS-STARTPTS)/{f:.6f}[v{i}]")
         sped = abs(f - 1.0) > 1e-6
@@ -316,9 +322,15 @@ def build_edited_clip(src, dst, segs):
         elif amode == "normal":
             # Play the opening of the span at natural speed for exactly as
             # long as the sped video lasts. Right for background singing:
-            # the chant sounds untouched while the picture races.
-            ab = a + (b - a) / f
+            # the chant sounds untouched while the picture races. Fade it
+            # out rather than cutting, which lands as harshly as a mute.
+            outdur = (b - a) / f
+            ab = a + outdur
             chain = ["asetpts=PTS-STARTPTS"]
+            hold = min(hold_s, max(0.0, outdur - 0.5))
+            fade = outdur - hold
+            if fade > 0.05:
+                chain.append(f"afade=t=out:st={hold:.3f}:d={fade:.3f}")
         else:                                   # "mute", the default
             chain = ["asetpts=PTS-STARTPTS"] + atempo_chain(f) + ["volume=0"]
         ach = ",".join(chain)
@@ -377,11 +389,15 @@ def read_sheet(path):
             e.get("cut") is True or ("speed" in e and e["speed"] is not False))
 
     def audio_of(e):
-        """audio: mute | fast | normal. mute: true/false is the older spelling."""
+        """(mode, hold). audio: mute | fast | normal; mute: true/false is the
+        older spelling. hold: seconds at full volume before normal fades."""
         v = e.get("audio")
         if v is None:
             v = "mute" if e.get("mute", True) else "fast"
-        return str(v).strip().lower()
+        hold = e.get("hold", AUDIO_HOLD)
+        try: hold = float(hold)
+        except (TypeError, ValueError): hold = AUDIO_HOLD
+        return (str(v).strip().lower(), hold)
 
     def rate_of(v):
         if v is True: return None
@@ -674,7 +690,7 @@ def main():
                 if srole and srole not in seen_roles: seen_roles.append(srole)
                 if text: labels_for[(n, est)] = (srole, text)
             edits[n].append((est, edur, factor,
-                             row.get("_audio") or "mute"))
+                             row.get("_audio") or ("mute", AUDIO_HOLD)))
             continue
 
         if typ == "chapter":

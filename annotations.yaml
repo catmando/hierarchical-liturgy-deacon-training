@@ -35,8 +35,9 @@
 #                       mute    silence (the default)
 #                       fast    time-stretched to fit; pitch intact, hurried
 #                       normal  natural speed — the opening of the span plays
-#                               untouched for as long as the sped video lasts.
-#                               Right for background singing.
+#                               untouched for as long as the sped video lasts,
+#                               then fades out. Right for background singing.
+#      hold: 4        seconds at full volume before that fade (default 4).
 #
 #    Separate `speed:` and `cuts:` blocks also work if you prefer them.
 #
