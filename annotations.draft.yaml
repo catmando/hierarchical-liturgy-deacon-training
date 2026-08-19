@@ -1,18 +1,28 @@
 # ═══════════════════════════════════════════════════════════════════════
 #  Hierarchical Divine Liturgy — deacon training video
-#  DRAFT FORMAT for review. Real content, clips 1–3 only.
+#  DRAFT FORMAT, round 2. Real content, clips 1–3 only.
 #
-#  One block per clip, in order. The clip number is the block, so it can
+#  One block per clip, in order. The clip number IS the block, so it can
 #  never go missing the way it did in the spreadsheet export.
 #
+#  ── Where text ends up ────────────────────────────────────────────────
+#    annotations:  on screen, timed — and also in the printed rubric
+#    rubric:       printed rubric ONLY; never on screen
+#    notes:        yours alone. Never on screen, never printed.
+#
+#  ── Timing ────────────────────────────────────────────────────────────
+#    Start:  at:  or  from:      (identical; use whichever reads better)
+#    End:    for: = how long it stays up, counted from the start
+#            to:  = an absolute position in the clip
+#            Give one or the other, never both.
+#
+#    at: next        → 0.2s after the previous annotation ends
+#    at: next+1.5    → 1.5s after it ends
+#    ("C" and "C+1.5" still work; next is the same thing, spelled out.)
+#
 #  Every time is measured on the ORIGINAL, untouched clip. Cards, cuts and
-#  edits never shift anything — the build maps times through them.
-#
-#    annotations:  at = when it appears,  for = how long it stays up
-#    speed / cut:  from → to are both positions in the clip
-#
-#  "at: C" means continue 0.2s after the previous annotation. "C+1.5" waits
-#  longer. Quote any time containing a colon.
+#  speed-ups never shift anything — the build maps times through them.
+#  Quote any time containing a colon: "1:27", not 1:27.
 # ═══════════════════════════════════════════════════════════════════════
 
 # ─── Opening card, before everything ───────────────────────────────────
@@ -30,30 +40,35 @@
 - clip: 1
   chapter: Greeting of the Hierarch at the Doors
 
-  # Working notes. Never burned into the video — unlike the CSV, where these
-  # sat inside the chapter title and collapsed into one very long chapter name.
-  notes: |
-    ? What is the order of greeting — warden? Priest? Children?
-        Children — flowers
-        Parish Council President — bread and salt
-
-    Rector at center, other priests to south and north sides of the church.
-    (Don't forget to carry the cross handle to the priest's left.)
-
-    Deacons 1 and 2 ready to cense.
-
-    Subdeacons or altar servers ready at the door to place the mantiya.
-    (This should be practiced the night before.)
-
-    One subdeacon or altar server holds the train of the mantiya.
-
   annotations:
+    # Your CSV had this at 0 for 20s. Kept as you wrote it, but it is a lot of
+    # text for one overlay — likely wants splitting into two or three.
+    - at: 0
+      for: 20
+      text: |
+        What is the order of greeting?
+        Children — flowers.
+        Parish Council President — bread and salt.
+
     - { at: 0,      for: 4, role: AS1+2,   text: Subdeacons or altar servers place the mantilla }
-    - { at: C,      for: 3, role: DEACONS, text: Continuously cense the bishop }
+    - { at: next,   for: 3, role: DEACONS, text: Continuously cense the bishop }
     - { at: "1:27", for: 4, role: PRIEST,  text: "At the conclusion, the priest presents the cross" }
 
   speed:
-    - { from: 38, to: "1:20", role: PRIEST, text: Greets Bishop… }
+    - { from: 38, to: "1:20", role: PRIEST, text: Greets Bishop…. }
+
+  # Read without the video, this fills in what the overlays can only gesture at.
+  rubric: |
+    Rector at center, other priests to south and north sides of the church.
+    (Don't forget to carry the cross handle to priests left.)
+
+    Deacon 1 and 2 ready to cense.
+
+    Subdeacons or altar servers ready at the door to place the Mantiya.
+    One subdeacon or altar server holds the train of the Mantiya.
+
+  notes: |
+    This should be practiced the night before.
 
 
 # ─── 2 ─────────────────────────────────────────────────────────────────
@@ -63,7 +78,7 @@
   annotations:
     - at: 1
       for: 7
-      text: "The priests in order kiss the cross, and the Bishop's hand and receive the blessing"
+      text: "The priests in order kiss the cross, and the Bishop's hand and receive the blessing,"
 
     - at: 9
       for: 5
@@ -72,15 +87,15 @@
     - at: 25
       for: 3
       role: D1
-      text: '"Bless, master, the holy incense" — both deacons hold up their censers'
+      text: '"Bless, master, the holy incense" - Both Deacons hold up their censers'
 
-    - { at: C, for: 2, text: 'First Deacon: "Wisdom"' }
-    - { at: C, for: 2, text: Deacons turn around and walk forward toward cathedra }
+    - { at: next, for: 2, text: 'First Deacon:  "Wisdom"' }
+    - { at: next, for: 2, text: Deacons turn around and walk forward toward cathedra }
 
-    - at: C
+    - at: next
       for: 4
       role: CHOIR
-      text: While the first deacon chants, the choir sings "It is truly meet…"
+      text: While the first deacon, chants and the choir sings - "it is truly meet…"
 
     - { at: 44,     for: 3, text: "Deacons walk past cathedra, turn around and continue to cense the Bishop" }
     - { at: "1:00", for: 4, role: AS3+4, text: "Deacons turn towards the altar, as Bishop walks past, giving their censers away" }
@@ -90,21 +105,38 @@
 # ─── 3 ─────────────────────────────────────────────────────────────────
 - clip: 3
   chapter: Entrance Prayers
-  notes: TRIM THE END OF THIS OFF
 
   annotations:
+    # 'to:' here instead of 'for:' — an absolute end, shown for illustration.
     - at: 15
-      for: 4
+      to: 19
       role: D1
       text: |
         Deacon 1 reads the entrance prayers quietly.
-        As normal, BUT stop before "I will enter thy house".
+        As normal, BUT stop before "I will enter thy house"
 
+  notes: |
+    TRIM THE END OF THIS OFF
+
+
+# ─── The remaining row types, for completeness ─────────────────────────
+
+# Drop a clip from the build entirely.
+- clip: 13
+  skip: true
+
+# Remove spans from a clip. Both ends are positions in the ORIGINAL clip, and
+# later times in this sheet still refer to the original — the build maps them.
+- clip: 19
+  cuts:
+    - { from: "1:00", to: "2:00" }
 
 # ─── Cards further along, kept here to show the shape ──────────────────
 - clip: 20
   cards:
     - { text: Homily, for: 6, own_chapter: true }     # standalone card = its own chapter
+    # A card may show an image instead of, or behind, its text:
+    # - { image: art/great-entrance.png, for: 6, own_chapter: true }
 
 - clip: 25
   cards:
