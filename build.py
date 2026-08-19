@@ -19,7 +19,7 @@ USAGE
     python3 build.py --clip 3-5         # preview a range
 
 REQUIRES
-    _normalized/001.mp4 ... from normalize_and_join.sh
+    normalized/001.mp4 ... from normalize_and_join.sh
     ffmpeg, ffprobe
 
 ------------------------------------------------------------------
@@ -125,8 +125,15 @@ EXAMPLE
 import argparse, csv, hashlib, os, re, subprocess, sys
 from collections import defaultdict
 
-WORK = "_normalized"
-MASTER = "master.mp4"
+WORK = "normalized"          # build.py working files, from normalize_and_join.sh
+RAW  = "raw"                 # the 37 source clips (see raw_clips.tsv)
+OUT  = "output"              # every build product lands here
+
+def out(name):
+    """Path to a build product. Everything build.py writes goes to OUT/."""
+    return os.path.join(OUT, name)
+
+MASTER = os.path.join(OUT, "master.mp4")
 W, H, FPS, CRF, PRESET = 1920, 1080, 30, 18, "slow"
 
 ROLE_COLOURS = {
@@ -374,9 +381,11 @@ def main():
                 except ValueError: die(f"bad --clip value: {part!r}")
         if not only: die("--clip selected nothing")
 
-    OUT_VIDEO = "preview.mp4" if only else MASTER
-    OUT_ASS   = "preview.ass" if only else "annotations.ass"
-    OUT_MKV   = "preview.mkv" if only else "liturgy_training.mkv"
+    OUT_VIDEO = out("preview.mp4") if only else MASTER
+    OUT_ASS   = out("preview.ass" if only else "annotations.ass")
+    OUT_MKV   = out("preview.mkv" if only else "liturgy_training.mkv")
+
+    os.makedirs(OUT, exist_ok=True)
 
     if not os.path.exists(a.csv): die(f"not found: {a.csv}")
     if not os.path.isdir(WORK): die(f"{WORK}/ not found — run normalize_and_join.sh first")
@@ -589,7 +598,7 @@ def main():
         print(f"Preview: clips {', '.join(str(c) for c in sorted(only))} "
               f"({len(sequence)} segment(s))")
 
-    if a.subs_only and os.path.exists("boundaries.tsv"):
+    if a.subs_only and os.path.exists(out("boundaries.tsv")):
         pass  # reuse existing boundaries below
     else:
         listfile = os.path.join(WORK, "concat.txt")
@@ -612,7 +621,7 @@ def main():
         t += d
     total = t
 
-    with open("preview_boundaries.tsv" if only else "boundaries.tsv", "w") as f:
+    with open(out("preview_boundaries.tsv" if only else "boundaries.tsv"), "w") as f:
         for st, nm, label, is_card, cno, d, lead in rows_out:
             f.write(f"{ass_time(st)}\t{nm}\t{label}\n")
         f.write(f"{ass_time(total)}\t[END]\t\n")
@@ -737,10 +746,10 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 f"(YouTube needs 10s)")
 
     if only:
-        open("preview_chapters.txt", "w").write("\n".join(meta))
+        open(out("preview_chapters.txt"), "w").write("\n".join(meta))
     else:
-        open("chapters.txt", "w").write("\n".join(meta))
-        open("youtube_chapters.txt", "w").write("\n".join(yt) + "\n")
+        open(out("chapters.txt"), "w").write("\n".join(meta))
+        open(out("youtube_chapters.txt"), "w").write("\n".join(yt) + "\n")
 
     # ---------------- mux the review copy ----------------
     mkv = OUT_MKV
@@ -748,7 +757,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         print(f"Muxing {mkv} (subtitles + chapters, no re-encode)")
         run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-nostdin",
              "-i", OUT_VIDEO, "-i", OUT_ASS,
-             "-i", "preview_chapters.txt" if only else "chapters.txt",
+             "-i", out("preview_chapters.txt" if only else "chapters.txt"),
              "-map", "0:v", "-map", "0:a", "-map", "1",
              "-map_metadata", "2", "-map_chapters", "2",
              "-c", "copy",
@@ -760,11 +769,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     if a.youtube and only:
         print("(--youtube ignored while previewing)")
     elif a.youtube:
-        yt_out = "youtube.mp4"
+        yt_out = out("youtube.mp4")
         print(f"Burning subtitles into {yt_out} — this re-encodes, "
               f"expect a long run")
         run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-nostdin",
-             "-i", MASTER, "-vf", "ass=annotations.ass",
+             "-i", MASTER, "-vf", f"ass={OUT_ASS}",
              "-c:v", "libx264", "-preset", PRESET, "-crf", str(CRF),
              "-pix_fmt", "yuv420p", "-c:a", "copy",
              "-movflags", "+faststart", yt_out])

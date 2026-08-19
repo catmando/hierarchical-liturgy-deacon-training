@@ -1,22 +1,20 @@
-# ─── Raw source footage ────────────────────────────────────────────────
-# 6.8 GB, 37 clips. NOT in git — published as GitHub release assets.
-# Verify/restore with ./restore_raw_clips.sh against raw_clips.tsv.
-[0-9][0-9] - *.mp4
+# Nothing tracked by git lives in a subdirectory, so these four ignores cover
+# every byte of video the pipeline touches. Pipeline order: raw → normalized → output.
 
-# ─── Build products (all rebuildable by build.py) ──────────────────────
-_normalized/
-master.mp4
-youtube.mp4
-*.mkv
-annotations.ass
-chapters.txt
-youtube_chapters.txt
-boundaries.tsv
-encode.log
+# Source footage: 37 clips, 6.8 GB. Irreplaceable, but too large for git —
+# published as GitHub release assets. Fetch with ./restore_raw_clips.sh,
+# which verifies every file against raw_clips.tsv.
+raw/
 
-# Preview-mode outputs (build.py --clip N)
-preview.*
-preview_*
+# build.py's working files. Rebuilt from raw/ by normalize_and_join.sh.
+normalized/
 
-# ─── macOS ─────────────────────────────────────────────────────────────
+# All build products: master.mp4, liturgy_training.mkv, annotations.ass,
+# chapters.txt, youtube_chapters.txt, boundaries.tsv, preview.*
+output/
+
+# Parked files kept off GitHub but deliberately not deleted.
+junk/
+
 .DS_Store
+__pycache__/

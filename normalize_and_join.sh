@@ -40,9 +40,10 @@ PRESET=slow
 CROP_LIST=(
 )
 
-WORK="_normalized"
-OUT="master.mp4"
-LOG="encode.log"
+RAW="raw"                  # the 37 source clips (see raw_clips.tsv)
+WORK="normalized"          # per-clip normalized output
+OUT="output/master.mp4"
+LOG="output/encode.log"
 
 # ======================================================================
 
@@ -52,7 +53,7 @@ CHECK_ONLY=0
 command -v ffmpeg  >/dev/null || { echo "ffmpeg not found. brew install ffmpeg" >&2; exit 1; }
 command -v ffprobe >/dev/null || { echo "ffprobe not found. brew install ffmpeg" >&2; exit 1; }
 
-mkdir -p "$WORK"
+mkdir -p "$WORK" output
 
 # ----------------------------------------------------------------------
 # Collect clips in order
@@ -60,11 +61,11 @@ mkdir -p "$WORK"
 
 CLIPS=()
 while IFS= read -r line; do CLIPS+=("$line"); done < <(
-  find . -maxdepth 1 -type f \( -iname '*.mp4' -o -iname '*.mov' \) \
-    ! -name '._*' -print | sed 's|^\./||' | sort
+  find "$RAW" -maxdepth 1 -type f \( -iname '*.mp4' -o -iname '*.mov' \) \
+    ! -name '._*' -print | sed "s|^$RAW/||" | sort
 )
 
-[ ${#CLIPS[@]} -eq 0 ] && { echo "No clips found." >&2; exit 1; }
+[ ${#CLIPS[@]} -eq 0 ] && { echo "No clips found in $RAW/ — run ./restore_raw_clips.sh" >&2; exit 1; }
 
 # Warn about unpadded leading numbers, which sort wrongly (1, 10, 11, 2...)
 if printf '%s\n' "${CLIPS[@]}" | grep -qE '^[0-9][^0-9]'; then
@@ -100,17 +101,18 @@ printf '%-3s %-40s %-11s %-5s %-6s %s\n' "#" "FILE" "SOURCE" "ROT" "AUDIO" "PLAN
 
 i=0; total=0; n_portrait=0; n_noaudio=0
 for f in "${CLIPS[@]}"; do
+  src="$RAW/$f"
   i=$((i+1))
-  sw=$(ffprobe -v error -select_streams v:0 -show_entries stream=width  -of csv=p=0 "$f" 2>/dev/null)
-  sh=$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "$f" 2>/dev/null)
+  sw=$(ffprobe -v error -select_streams v:0 -show_entries stream=width  -of csv=p=0 "$src" 2>/dev/null)
+  sh=$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "$src" 2>/dev/null)
   rot=$(ffprobe -v error -select_streams v:0 \
           -show_entries stream_side_data=rotation \
-          -of default=nw=1:nk=1 "$f" 2>/dev/null | head -1)
+          -of default=nw=1:nk=1 "$src" 2>/dev/null | head -1)
   rot="${rot:-0}"
-  dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$f" 2>/dev/null)
+  dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$src" 2>/dev/null)
   dur="${dur:-0}"
   has_a=$(ffprobe -v error -select_streams a -show_entries stream=index \
-          -of csv=p=0 "$f" 2>/dev/null | head -1)
+          -of csv=p=0 "$src" 2>/dev/null | head -1)
 
   # Effective orientation AFTER ffmpeg applies the rotation flag
   case "$rot" in
@@ -169,6 +171,7 @@ FAILED=()
 i=0
 
 for f in "${CLIPS[@]}"; do
+  src="$RAW/$f"
   i=$((i+1))
   n=$(printf '%03d' "$i")
   target="$WORK/${n}.mp4"
@@ -190,10 +193,10 @@ for f in "${CLIPS[@]}"; do
     fi
 
     has_a=$(ffprobe -v error -select_streams a -show_entries stream=index \
-            -of csv=p=0 "$f" 2>/dev/null | head -1)
+            -of csv=p=0 "$src" 2>/dev/null | head -1)
 
     if [ -n "$has_a" ]; then
-      ffmpeg -hide_banner -loglevel error -y -nostdin -i "$f" \
+      ffmpeg -hide_banner -loglevel error -y -nostdin -i "$src" \
         -vf "$VF" -r "$FPS" -fps_mode cfr \
         -c:v libx264 -preset "$PRESET" -crf "$CRF" -pix_fmt yuv420p \
         -c:a aac -b:a 192k -ar 48000 -ac 2 \
@@ -201,7 +204,7 @@ for f in "${CLIPS[@]}"; do
       rc=$?
     else
       # Silent track, so every clip has the same stream layout for concat
-      ffmpeg -hide_banner -loglevel error -y -nostdin -i "$f" \
+      ffmpeg -hide_banner -loglevel error -y -nostdin -i "$src" \
         -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=48000 \
         -vf "$VF" -r "$FPS" -fps_mode cfr -shortest \
         -c:v libx264 -preset "$PRESET" -crf "$CRF" -pix_fmt yuv420p \
@@ -256,15 +259,15 @@ awk -F'\t' 'BEGIN{t=0}
 END{
   h=int(t/3600); m=int((t%3600)/60); s=t-h*3600-m*60
   printf "%02d:%02d:%06.3f\t[END]\n", h, m, s
-}' "$WORK/manifest.tsv" > boundaries.tsv
+}' "$WORK/manifest.tsv" > output/boundaries.tsv
 
 echo
 echo "======================================================================"
 echo " Finished $(date)"
 echo "   Master video:        $OUT"
-echo "   Chapter boundaries:  boundaries.tsv   <-- send me this file"
+echo "   Chapter boundaries:  output/boundaries.tsv"
 echo "   Encoder log:         $LOG"
 echo "   Normalized clips:    $WORK/  (delete once happy with $OUT)"
 echo "======================================================================"
 echo
-cat boundaries.tsv
+cat output/boundaries.tsv
