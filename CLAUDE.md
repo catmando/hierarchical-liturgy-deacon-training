@@ -110,7 +110,9 @@ Singular and plural are synonyms throughout: `annotation`/`annotations`,
 annotation `at:` (or `from:`) is the start and may be **left out**, in which
 case it picks up 0.2s after the previous annotation ends, or at 0 if it is
 the first in the clip. `for:` is a duration (default 4); `to:` is an absolute
-end. `at: next+1.5` waits longer. Resolves in sheet order.
+end, and **`to: end` runs to the end of the clip** — on spans too, so a cut
+`from: 60, to: end` trims the tail. `at: next+1.5` waits longer. Resolves in
+sheet order.
 
 **Spans.** `speed:` and `cut: true` entries sit inline in the annotations
 list so a clip reads in time order. Both ends must be given, and a span never

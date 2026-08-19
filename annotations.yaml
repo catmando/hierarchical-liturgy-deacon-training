@@ -29,6 +29,12 @@
 #    must be given (a span cannot continue from whatever preceded it), and a
 #    span never affects where the next annotation picks up.
 #
+#  ── Speed-ups and cuts ────────────────────────────────────────────────
+#    Write them inline in the annotations list, marked `speed: true` or
+#    `cut: true`, and the list reads in the order things happen. Both ends
+#    must be given (a span cannot continue from whatever preceded it), and a
+#    span never affects where the next annotation picks up.
+#
 #      speed: 4x      four times normal. 4 and 2.5x parse too;
 #                     speed: true uses the global --speed rate.
 #      audio: normal  what the span sounds like:
@@ -113,15 +119,19 @@
     # No `at:` on the first annotation → starts at 0.
     - at: 6
       for: 4
-      role: AS1+2
-      text: Subdeacons or altar servers place the mantilla
+      role: SERVERS
+      text: Subdeacons or altar servers place the Mantiya
+      notes: Placing the Mantiya should be practiced the night before
 
     # No `at:` → picks up 0.2s after the one above ends.
-    - for: 3
+    - for: 4
       role: DEACONS
       text: Continuously cense the bishop
 
-    # these few seconds look strange 
+    - for: 10
+      text: Notice arrangement of priests in order of seniority with deacons behind them.
+
+    # these few seconds look strange so cut them
     - from: 33
       to: 38
       cut: true
@@ -130,15 +140,18 @@
     - from: 38
       to: 1:18
       speed: 6x          # plays fast, audio muted
+      audio: normal
       role: PRIEST
-      text: Greets Bishop….
+      text: Greets Bishop...
+      note: In the parish setting the lead priest is the rector, for other situations consult your Dean.
 
     - at: 1:22
       for: 4
       role: PRIEST
       text: At the conclusion, the priest presents the cross
-      # notes: and todos: attach to a single annotation too, not just the clip.
-      # notes: The cross is returned to the tray afterwards.
+      notes: |
+        The cross should be carried on a tray, with the handle to the priests left.
+        This ensures that the Bishop can pick it up easily with his right hand.
       # todos: Confirm which priest presents when the rector is absent.
 
   notes:
@@ -162,6 +175,9 @@
 # ─── 2 ─────────────────────────────────────────────────────────────────
 - clip: 2
   chapter: The Bishop Enters the Nave
+  card: 
+    for: 8
+    text: The Bishop Greets the Clergy, and Enters the Nave
 
   annotations:
     - at: 1
@@ -176,16 +192,18 @@
         Then the presiding priest does the same, and is given back the cross
         on his tray
 
-    - at: 25
-      for: 3
-      role: D1
+    - at: 16
+      for: 4
+      role: FIRST DEACON
       text: >
         "Bless, master, the holy incense" - Both Deacons hold up their censers
 
-    - for: 2
-      text: 'First Deacon:  "Wisdom"'
+    - at: 27
+      for: 3
+      role: SECOND DEACON
+      text: Wisdom!
 
-    - for: 2
+    - for: 4
       text: Deacons turn around and walk forward toward cathedra
 
     - for: 4
@@ -193,40 +211,47 @@
       text: >
         While the first deacon, chants and the choir sings - "it is truly meet…"
 
-    - at: 44
-      for: 3
+    - at: 42
+      for: 5
       text: >
         Deacons walk past cathedra, turn around and continue to cense the Bishop
 
-    - at: 1:00
+    - at: 56
       for: 4
-      role: AS3+4
+      role: SERVERS
       text: >
         Deacons turn towards the altar, as Bishop walks past, giving their
         censers away
-
-    - at: 1:05
+    
+    - at: 1:00
       for: 4
-      role: AS1+2
-      text: A server takes the staff, and the Bishop will greet the icons
+      role: SERVERS
+      text: The server holding the train takes the staff, and the Bishop will greet the icons
+    
+    - for: 4
+      role: SERVERS
+      text: The two servers holding the censers return them to the altar
 
 
 # ─── 3 ─────────────────────────────────────────────────────────────────
 - clip: 3
   chapter: Entrance Prayers
 
+  card:
+    for: 8
+    text:  Entrance Prayers
+
   annotations:
     # 'to:' here instead of 'for:' — an absolute end, shown for illustration.
     - at: 15
-      to: 19
-      role: D1
+      for: 7
+      role: FIRST DEACON
       text: |
-        Deacon 1 reads the entrance prayers quietly.
-        As normal, BUT stop before "I will enter thy house"
-
-  todos: |
-    TRIM THE END OF THIS OFF
-
+        reads the entrance prayers quietly,
+        As normal, BUT stops before "I will enter thy house"
+    - from: 30
+      to: 2:40
+      cut: true 
 
 # ─── The remaining row types, for completeness ─────────────────────────
 

@@ -55,7 +55,9 @@ TIMES
                     after the previous annotation ends, or at 0 if it is
                     the first in the clip.
     for:            how long it stays up (default 4)
-    to:             an absolute end instead of a duration
+    to:             an absolute end instead of a duration. `to: end` runs
+                    to the end of the clip — on spans too, so `cut: true`
+                    with `to: end` trims a clip's tail.
     at: next+1.5    continue, but wait 1.5s. "C" and "C+1.5" also work.
 
 TEXT
@@ -389,6 +391,22 @@ def read_sheet(path):
         return isinstance(e, dict) and (
             e.get("cut") is True or ("speed" in e and e["speed"] is not False))
 
+    _lens = {}
+
+    def clip_len(n):
+        if n not in _lens:
+            _lens[n] = probe_dur(os.path.join(WORK, f"{n:03d}.mp4"))
+        return _lens[n]
+
+    def end_of(v, n):
+        """A time, or the word `end` for the end of clip n."""
+        if isinstance(v, str) and v.strip().lower() == "end":
+            d = clip_len(n)
+            if d is None:
+                die(f"clip {n}: 'to: end' needs {WORK}/{n:03d}.mp4 to measure")
+            return d
+        return parse_time(str(v))
+
     def audio_of(e):
         """(mode, hold). audio: mute | fast | normal; mute: true/false is the
         older spelling. hold: seconds at full volume before normal fades."""
@@ -460,7 +478,7 @@ def read_sheet(path):
             else:
                 st = parse_time(str(raw_at))
             if "for" in e:   dur = parse_time(str(e["for"]))
-            elif "to" in e:  dur = parse_time(str(e["to"])) - st
+            elif "to" in e:  dur = end_of(e["to"], n) - st
             else:            dur = DEFAULT_DUR
             prev_end = st + dur
             rows.append((f"{where} annotation {ai}", {
@@ -471,7 +489,7 @@ def read_sheet(path):
 
         for k, e in enumerate(spans, 1):
             st = parse_time(str(_first(e, "at", "from")))
-            en = (parse_time(str(e["to"])) if "to" in e
+            en = (end_of(e["to"], n) if "to" in e
                   else st + parse_time(str(e["for"])))
             cut = e.get("cut") is True
             rows.append((f"{where} {'cut' if cut else 'speed'} {k}", {

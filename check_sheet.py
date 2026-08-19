@@ -49,7 +49,7 @@ def clip_durations():
     return durs
 
 
-def resolve(entries):
+def resolve(entries, dur=None):
     """Resolve each annotation to (start, end), mirroring build.py exactly:
     an explicit time wins, otherwise continue CONT_GAP after the previous end.
     """
@@ -67,9 +67,18 @@ def resolve(entries):
                 st = 0.0 if prev_end is None else prev_end + gap
             else:
                 st = parse_time(str(raw))
-            if "for" in e:   en = st + parse_time(str(e["for"]))
-            elif "to" in e:  en = parse_time(str(e["to"]))
-            else:            en = st + DEFAULT_DUR
+            if "for" in e:
+                en = st + parse_time(str(e["for"]))
+            elif "to" in e:
+                t = e["to"]
+                if isinstance(t, str) and t.strip().lower() == "end":
+                    if dur is None:
+                        out.append((None, None)); continue
+                    en = dur
+                else:
+                    en = parse_time(str(t))
+            else:
+                en = st + DEFAULT_DUR
         except Exception:
             out.append((None, None)); continue
         out.append((st, en))
@@ -131,6 +140,8 @@ def check_time(where, field, v):
     """Times may arrive as int/float (YAML base-60) or as a string."""
     if v is None:
         return
+    if field == "to" and isinstance(v, str) and v.strip().lower() == "end":
+        return                      # runs to the end of the clip
     if isinstance(v, (int, float)):
         return
     s = str(v).strip()
@@ -302,8 +313,8 @@ def validate(path):
         if isinstance(entries, dict): entries = [entries]
         anns   = [e for e in entries if not is_span(e)]
         inline = [e for e in entries if is_span(e)]
-        spans  = resolve(anns)
         dur    = DURS.get(n)
+        spans  = resolve(anns, dur)
 
         for i, ((st, en), e) in enumerate(zip(spans, anns), 1):
             if st is None: continue
@@ -340,7 +351,15 @@ def validate(path):
             if not isinstance(e, dict): continue
             try:
                 sst = parse_time(str(e.get("at", e.get("from"))))
-                sen = parse_time(str(e["to"])) if "to" in e else sst + parse_time(str(e["for"]))
+                if "to" in e:
+                    t = e["to"]
+                    sen = (dur if isinstance(t, str)
+                                  and t.strip().lower() == "end"
+                           else parse_time(str(t)))
+                else:
+                    sen = sst + parse_time(str(e["for"]))
+                if sen is None:
+                    continue
             except Exception:
                 continue
             for i, (st, en) in enumerate(spans, 1):
