@@ -5,6 +5,15 @@
 #  One block per clip, in order. The clip number IS the block, so it can
 #  never go missing the way it did in the spreadsheet export.
 #
+#  ── Chapters ──────────────────────────────────────────────────────────
+#    chapter: always means "a chapter starts here, titled this".
+#    Present → a chapter starts. Absent → it doesn't. That is the whole rule.
+#
+#    On a clip:  names the chapter beginning at that clip.
+#    On a card:  the card becomes its own chapter with that title. A card
+#                with no chapter: folds into the chapter that follows it —
+#                that chapter simply starts earlier, at the card.
+#
 #  ── Where text ends up ────────────────────────────────────────────────
 #    annotations:  on screen, timed — and also in the printed rubric
 #    rubric:       printed rubric ONLY; never on screen
@@ -33,7 +42,7 @@
         Deacon Training
         20 June 2026
       for: 8
-      own_chapter: false      # a section title: folds into the chapter that follows
+      # no chapter: → folds into the chapter that follows (chapter 1 starts here, at 0:00)
 
 
 # ─── 1 ─────────────────────────────────────────────────────────────────
@@ -134,10 +143,12 @@
 # ─── Cards further along, kept here to show the shape ──────────────────
 - clip: 20
   cards:
-    - { text: Homily, for: 6, own_chapter: true }     # standalone card = its own chapter
+    # chapter: present → this card is its own chapter, and the chapter title
+    # can differ from the words on screen.
+    - { text: Homily, for: 6, chapter: Homily — not shown }
     # A card may show an image instead of, or behind, its text:
-    # - { image: art/great-entrance.png, for: 6, own_chapter: true }
+    # - { image: art/great-entrance.png, for: 6, chapter: The Great Entrance }
 
 - clip: 25
   cards:
-    - { text: The Great Entrance, for: 5, own_chapter: false }
+    - { text: The Great Entrance, for: 5 }        # no chapter: → folds into the next
