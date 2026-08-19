@@ -85,8 +85,16 @@ SPEED AND CUT SPANS
     - from: 38
       to: 1:18
       speed: 4x        4 and 2.5x also parse; true = the --speed rate
-      mute: false      keep the audio. Defaults to true, because
-                       sped-up speech and chant are unpleasant.
+      audio: normal    what a sped span sounds like:
+                         mute    silence (the default)
+                         fast    time-stretched to fit. Pitch is intact but
+                                 speech and chant sound hurried.
+                         normal  natural speed: the opening of the span plays
+                                 untouched for exactly as long as the sped
+                                 video lasts. Right for background singing —
+                                 the chant sounds normal while the picture
+                                 races.
+                       mute: true/false is the older spelling of mute/fast.
       role: PRIEST
       text: Greets the bishop
 
@@ -259,16 +267,17 @@ def atempo_chain(f):
 
 
 def edit_segments(dur, edits):
-    """Turn a clip duration + edit list into (start, end, factor, mute) spans.
-    factor 1.0 = untouched, >1 = sped up. Cut spans are omitted."""
+    """Turn a clip duration + edit list into (start, end, factor, audio) spans.
+    factor 1.0 = untouched, >1 = sped up. Cut spans are omitted.
+    audio is mute / fast / normal, and only matters where factor != 1."""
     segs, prev = [], 0.0
-    for st, d, factor, mute in sorted(edits):
+    for st, d, factor, amode in sorted(edits):
         st = max(st, 0.0); en = min(st + d, dur)
         if en <= prev: continue
-        if st > prev: segs.append((prev, st, 1.0, False))
-        if factor is not None: segs.append((st, en, float(factor), mute))
+        if st > prev: segs.append((prev, st, 1.0, ""))
+        if factor is not None: segs.append((st, en, float(factor), amode))
         prev = en
-    if prev < dur: segs.append((prev, dur, 1.0, False))
+    if prev < dur: segs.append((prev, dur, 1.0, ""))
     return [sg for sg in segs if sg[1] - sg[0] > 0.01]
 
 
@@ -293,17 +302,27 @@ def build_edited_clip(src, dst, segs):
         if open(sidecar).read().strip() == spec:
             return False
     parts, labels = [], []
-    for i, (a, b, f, mute) in enumerate(segs):
+    for i, (a, b, f, amode) in enumerate(segs):
         parts.append(f"[0:v]trim=start={a:.3f}:end={b:.3f},"
                      f"setpts=(PTS-STARTPTS)/{f:.6f}[v{i}]")
-        # atempo keeps audio the same length as the sped video. Sped-up
-        # speech and chant is unpleasant, so a sped span is silenced unless
-        # the sheet says mute: false.
-        chain = ["asetpts=PTS-STARTPTS"] + atempo_chain(f)
-        if abs(f - 1.0) > 1e-6 and mute:
-            chain.append("volume=0")
+        sped = abs(f - 1.0) > 1e-6
+        aa, ab = a, b
+        if not sped:
+            chain = ["asetpts=PTS-STARTPTS"]
+        elif amode == "fast":
+            # atempo compresses the audio to match the video, pitch intact.
+            # Hurried speech and chant, but continuous.
+            chain = ["asetpts=PTS-STARTPTS"] + atempo_chain(f)
+        elif amode == "normal":
+            # Play the opening of the span at natural speed for exactly as
+            # long as the sped video lasts. Right for background singing:
+            # the chant sounds untouched while the picture races.
+            ab = a + (b - a) / f
+            chain = ["asetpts=PTS-STARTPTS"]
+        else:                                   # "mute", the default
+            chain = ["asetpts=PTS-STARTPTS"] + atempo_chain(f) + ["volume=0"]
         ach = ",".join(chain)
-        parts.append(f"[0:a]atrim=start={a:.3f}:end={b:.3f},{ach}[a{i}]")
+        parts.append(f"[0:a]atrim=start={aa:.3f}:end={ab:.3f},{ach}[a{i}]")
         labels.append(f"[v{i}][a{i}]")
     fc = ";".join(parts) + ";" + "".join(labels) + \
          f"concat=n={len(segs)}:v=1:a=1[v][a]"
@@ -356,6 +375,13 @@ def read_sheet(path):
     def is_span(e):
         return isinstance(e, dict) and (
             e.get("cut") is True or ("speed" in e and e["speed"] is not False))
+
+    def audio_of(e):
+        """audio: mute | fast | normal. mute: true/false is the older spelling."""
+        v = e.get("audio")
+        if v is None:
+            v = "mute" if e.get("mute", True) else "fast"
+        return str(v).strip().lower()
 
     def rate_of(v):
         if v is True: return None
@@ -436,7 +462,7 @@ def read_sheet(path):
                 "start": f"{st:.6f}", "end": f"{en:.6f}",
                 "role": _text(e.get("role")), "text": _text(e.get("text")),
                 "_rate": None if cut else rate_of(e.get("speed", True)),
-                "_mute": bool(e.get("mute", True)),
+                "_audio": audio_of(e),
             }))
     return rows
 
@@ -648,7 +674,7 @@ def main():
                 if srole and srole not in seen_roles: seen_roles.append(srole)
                 if text: labels_for[(n, est)] = (srole, text)
             edits[n].append((est, edur, factor,
-                             bool(row.get("_mute", True))))
+                             row.get("_audio") or "mute"))
             continue
 
         if typ == "chapter":

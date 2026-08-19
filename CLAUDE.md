@@ -114,7 +114,11 @@ end. `at: next+1.5` waits longer. Resolves in sheet order.
 **Spans.** `speed:` and `cut: true` entries sit inline in the annotations
 list so a clip reads in time order. Both ends must be given, and a span never
 advances where the next annotation picks up. `speed: 4x` sets a rate;
-`speed: true` defers to `--speed`. `mute:` defaults true.
+`speed: true` defers to `--speed`. `audio:` is `mute` (default), `fast`
+(time-stretched to fit, pitch intact but hurried) or `normal` (natural speed;
+the opening of the span plays untouched for as long as the sped video lasts —
+right for background singing). `mute: true/false` is the older spelling of
+`mute`/`fast`.
 
 **Chapters.** `chapter:` always means "a chapter starts here, titled this".
 On a card it makes the card its own chapter, with a title that need not match

@@ -94,8 +94,9 @@ LISTY = {"annotations", "speed", "cuts", "cards"}
 
 # An entry in the annotations list is a span if it says so; spans may also be
 # written in their own speed:/cuts: blocks.
-ANN_KEYS   = {"at", "from", "for", "to", "role", "text", "speed", "cut", "mute",
-              "notes", "note", "todos", "todo"}
+ANN_KEYS   = {"at", "from", "for", "to", "role", "text", "speed", "cut",
+              "mute", "audio", "notes", "note", "todos", "todo"}
+AUDIO_MODES = ("mute", "fast", "normal")
 
 
 def is_span(e):
@@ -117,7 +118,7 @@ def parse_rate(v):
         except ValueError: pass
     raise ValueError(f"{v!r} — use true, or a rate like 4 or 4x")
 SPAN_KEYS  = {"at", "from", "for", "to", "role", "text", "speed", "mute",
-              "notes", "note", "todos", "todo"}
+              "audio", "notes", "note", "todos", "todo"}
 CARD_KEYS  = {"text", "image", "for", "to", "chapter", "after",
               "notes", "note", "todos", "todo"}
 
@@ -247,8 +248,14 @@ def validate(path):
                         err(w, f"speed: {ex}")
                 if "mute" in e and not isinstance(e["mute"], bool):
                     err(w, f"mute: {e['mute']!r} — use true or false")
-                if e.get("cut") is True and "mute" in e:
-                    warn(w, "mute has no effect on a cut")
+                if "audio" in e:
+                    if str(e["audio"]).strip().lower() not in AUDIO_MODES:
+                        err(w, f"audio: {e['audio']!r} — use "
+                               + ", ".join(AUDIO_MODES))
+                    if "mute" in e:
+                        warn(w, "audio: and mute: both given — audio: wins")
+                if e.get("cut") is True and ("mute" in e or "audio" in e):
+                    warn(w, "audio settings have no effect on a cut")
                 if "at" not in e and "from" not in e: err(w, "no start — a span needs from:")
                 if "to" not in e and "for" not in e:  err(w, "no end — a span needs to: or for:")
         # A span is a region of the original clip, so unlike an annotation it
