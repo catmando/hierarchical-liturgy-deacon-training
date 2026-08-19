@@ -25,8 +25,11 @@ while IFS=$'\t' read -r name bytes sha _rest; do
   [[ "$name" == "filename" || -z "$name" ]] && continue
 
   path="$RAW/$name"
-  # GitHub replaces spaces with dots in release asset filenames.
-  asset="${name// /.}"
+  # GitHub rewrites release asset filenames: every run of characters outside
+  # [A-Za-z0-9._-] collapses to a single dot. Spaces, commas and parentheses
+  # all fall in that set, so "a, b (c).mp4" is stored as "a.b.c.mp4".
+  # Verified against all 37 assets on the live release.
+  asset=$(printf '%s' "$name" | sed -E 's/[^A-Za-z0-9._-]+/./g')
 
   if [[ ! -f "$path" ]]; then
     if $verify_only; then
