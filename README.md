@@ -162,6 +162,7 @@ python3 check_sheet.py           # validate the edit sheet, build nothing
 python3 build.py                 # full build (validates first; errors stop it)
 python3 build.py --help          # flags AND the full edit-sheet reference
 python3 build.py --clip 3        # preview one clip (also 3-5 or 3,7,19)
+python3 build.py --clip 3 --draft  # ~4x faster re-encode while checking timings
 python3 build.py --subs-only     # regenerate annotations only — fast
 python3 build.py --speed 6       # global rate for every speed row
 python3 build.py --no-mkv

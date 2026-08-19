@@ -19,6 +19,7 @@ USAGE
     python3 build.py --clip 3           # preview clip 3 on its own
     python3 build.py --clip 3-5         # preview a range
     python3 build.py --clip 3 --cards none    # preview times = clip times
+    python3 build.py --clip 3 --draft         # fast, blocky re-encode
 
     The sheet defaults to annotations.yaml. It is validated before anything
     is built, and errors stop the build; --no-check overrides that.
@@ -154,6 +155,7 @@ def out(name):
 
 MASTER = os.path.join(OUT, "master.mp4")
 W, H, FPS, CRF, PRESET = 1920, 1080, 30, 18, "slow"
+DRAFT_CRF, DRAFT_PRESET = 30, "ultrafast"
 
 ROLE_COLOURS = {
     "D1": "&H00A5FF&", "D2": "&H80D0A0&", "SD": "&HD0C070&",
@@ -283,8 +285,9 @@ def time_map(t, segs):
 
 def build_edited_clip(src, dst, segs):
     """Re-encode one clip with cuts and speed changes applied."""
-    spec = hashlib.md5((src + repr([(round(a,3), round(b,3), round(f,4), m)
-                                    for a, b, f, m in segs])).encode()).hexdigest()
+    spec = hashlib.md5((src + f"|{PRESET}|{CRF}|" +
+                        repr([(round(a,3), round(b,3), round(f,4), m)
+                              for a, b, f, m in segs])).encode()).hexdigest()
     sidecar = dst + ".spec"
     if os.path.exists(dst) and os.path.exists(sidecar):
         if open(sidecar).read().strip() == spec:
@@ -498,6 +501,7 @@ def make_card(path, text, dur, image=None):
 # ----------------------------------------------------------------------
 
 def main():
+    global CRF, PRESET
     ap = argparse.ArgumentParser(
         prog="build.py",
         description="Build the training video from one edit sheet.",
@@ -505,6 +509,14 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--sheet", dest="sheet", metavar="FILE",
                     help="the edit sheet to read (default annotations.yaml)")
+    ap.add_argument("--draft", action="store_true",
+                    help="re-encode edited clips fast and ugly "
+                         f"(-preset {DRAFT_PRESET} -crf {DRAFT_CRF} instead of "
+                         f"-preset {PRESET} -crf {CRF}). Several times quicker "
+                         "while you are checking timings; the picture is "
+                         "blocky and it is not for anything you keep. Draft "
+                         "and final clips are cached separately, so switching "
+                         "back re-encodes properly.")
     ap.add_argument("--no-check", action="store_true",
                     help="build even if the sheet fails validation. The check "
                          "runs first by default and stops the build on errors.")
@@ -562,6 +574,11 @@ def main():
         else:
             die("no edit sheet found — expected annotations.yaml")
     if not os.path.exists(a.sheet): die(f"not found: {a.sheet}")
+
+    if a.draft:
+        CRF, PRESET = DRAFT_CRF, DRAFT_PRESET
+        print(f"Draft mode: -preset {PRESET} -crf {CRF}. "
+              f"Fast and blocky — not for anything you keep.")
 
     # Validate before spending anything on ffmpeg.
     import check_sheet
