@@ -30,14 +30,21 @@
 #    notes:        yours alone. Never on screen, never printed.
 #
 #  ── Timing ────────────────────────────────────────────────────────────
-#    Start:  at:  or  from:      (identical; use whichever reads better)
 #    End:    for: = how long it stays up, counted from the start
 #            to:  = an absolute position in the clip
 #            Give one or the other, never both.
 #
-#    at: next        → 0.2s after the previous annotation ends
-#    at: next+1.5    → 1.5s after it ends
-#    ("C" and "C+1.5" still work; next is the same thing, spelled out.)
+#    Start:  LEAVE IT OUT and the annotation picks up 0.2s after the previous
+#            one ends — or at 0 if it is the first in the clip. Most
+#            annotations need nothing more than a `for:` and a `text:`.
+#
+#            Leave `for:` out too and it stays up 4s, so the shortest useful
+#            annotation is just a line of text.
+#
+#            at: 1:27      an absolute position, when you need to pin one down
+#            at: next+1.5  continue, but wait 1.5s instead of 0.2s
+#            from:         a synonym for at:
+#            ("next", "C" and "C+1.5" still work.)
 #
 #    Write times bare — no quotes. 1:27, 1:03:23, 0:04, 87 and 4.5 all work.
 #
@@ -77,13 +84,13 @@
         Parish Council President — bread and salt.
 
   annotations:
-    - at: 0
-      for: 4
+    # No `at:` on the first annotation → starts at 0.
+    - for: 4
       role: AS1+2
       text: Subdeacons or altar servers place the mantilla
 
-    - at: next
-      for: 3
+    # No `at:` → picks up 0.2s after the one above ends.
+    - for: 3
       role: DEACONS
       text: Continuously cense the bishop
 
@@ -139,16 +146,13 @@
       text: >
         "Bless, master, the holy incense" - Both Deacons hold up their censers
 
-    - at: next
-      for: 2
+    - for: 2
       text: 'First Deacon:  "Wisdom"'
 
-    - at: next
-      for: 2
+    - for: 2
       text: Deacons turn around and walk forward toward cathedra
 
-    - at: next
-      for: 4
+    - for: 4
       role: CHOIR
       text: >
         While the first deacon, chants and the choir sings - "it is truly meet…"

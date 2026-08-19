@@ -125,10 +125,20 @@ for i, b in enumerate(doc):
 
     for j, e in enumerate(items("annotations"), 1):
         check_entry(f"{where} annotation {j}", e, ANN_KEYS)
+    # A span is a region of the original clip, so unlike an annotation it
+    # cannot inherit its start from whatever came before.
     for j, e in enumerate(items("speed"), 1):
-        check_entry(f"{where} speed {j}", e, SPAN_KEYS, need_text=False)
+        w = f"{where} speed {j}"
+        check_entry(w, e, SPAN_KEYS, need_text=False)
+        if isinstance(e, dict):
+            if "at" not in e and "from" not in e: err(w, "no start — a span needs from:")
+            if "to" not in e and "for" not in e:  err(w, "no end — a span needs to: or for:")
     for j, e in enumerate(items("cuts"), 1):
-        check_entry(f"{where} cut {j}", e, {"at", "from", "to", "for"}, need_text=False)
+        w = f"{where} cut {j}"
+        check_entry(w, e, {"at", "from", "to", "for"}, need_text=False)
+        if isinstance(e, dict):
+            if "at" not in e and "from" not in e: err(w, "no start — a cut needs from:")
+            if "to" not in e and "for" not in e:  err(w, "no end — a cut needs to: or for:")
     for j, e in enumerate(items("cards"), 1):
         check_entry(f"{where} card {j}", e, CARD_KEYS)
 
