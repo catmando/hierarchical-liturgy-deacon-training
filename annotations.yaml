@@ -112,7 +112,7 @@
     - for: 4
       text: |
         Greeting of the Hierarch at the Doors
-
+        ***
         What is the order of greeting?
         Children — flowers.
         Parish Council President — bread and salt.
@@ -309,7 +309,7 @@
     for: 20
     text: |
       Vesting the Bishop
-
+      ***
       All vestments, and other articles must have been 
       prepared and neatly stacked.
       A tray should be ready to recieve the Mantiya and Klobuk.
@@ -355,6 +355,90 @@
       to: end
       role: DEACONS
       text: During the vesting the deacons continuously cense the Bishop.
+
+- clip: 6
+  chapter: The Blessing of the Dikiri and Trikiri
+
+  card: 
+    for: 6
+    text: |
+      The Blessing of the Dikiri and Trikiri
+      ***
+      As the Cross and Encolpion are placed,
+      the Dikiri and Trikiri are brought from the altar,
+      followed by the clergy.
+
+  annotations:
+    - for: 7
+      role: SERVERS
+      text: | 
+        Dikiri on bishops *left* (left is less), 
+        trikiri on the *right* (more candles, more letters in *right*)
+    - at: 0:46
+      for: 4
+      role: DEACONS
+      text: At the last Amen, rapidly cense the Bishop
+    - at: 1:24
+      for: 4
+      role: SERVERS
+      text: take the dikiri and trikiri (kissing the hand) and go to the iconostasis
+    - at: 1:29
+      for: 4
+      role: DEACONS
+      text: as the Bishop blesses the deacons they cense him *nine* times
+    - at: 1:40
+      for: 4
+      text: |
+        The two servers, and deacons turn and reverence the altar, 
+        then turn and reverence the Bishop.
+    - at: 1:49
+      for: 4
+      role: SERVERS
+      text: the servers take the dikiri, trikiri and censers to the altar  
+    - for: 4
+      role: DEACONS
+      text: |
+        while the deacons stand in front and to the side of the Bishop,
+        bowing first to the altar, then to the Bishop
+
+- clip: 7
+  chapter: Final Prayers before the Liturgy
+
+  card: 
+    for: 7
+    text: |
+      Final Prayers before the Liturgy
+      ***
+      These are the same prayers said by the priest at the altar,
+      but here they are said in front of the Ambo
+
+  annotations:
+    - at: 0:26
+      for: 6
+      role: FIRST DEACON
+      text: |
+        *It is time for the Lord to act*
+        etc, just the same as at the beginning of the Liturgy
+    - at: 0:32
+      for: 3
+      role: FIRST DEACON
+      text: |
+        *pray for me reverend master*
+        and receive the blessing
+    - for: 3
+      role: SECOND DEACON
+      text: also receives a blessing and stands behind the Bishop on his left.
+    - for: 3
+      role: FIRST DEACON
+      text: stands before the icon of Christ at the iconostasis
+    - at: 0:52
+      for: 3
+      role: FIRST DEACON
+      text: |
+        along with those at the altar, bow to the high place, then to the Bishop
+        and the liturgy begins
+
+      
 
 #─── The remaining row types, for completeness ─────────────────────────
 
