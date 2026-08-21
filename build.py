@@ -440,6 +440,14 @@ def build_edited_clip(src, dst, segs):
     return True
 
 
+def _as_list(v):
+    """Entries however they were written. A scalar where a list belongs yields
+    nothing here; check_sheet reports it properly rather than crashing."""
+    if v is None: return []
+    if isinstance(v, dict): return [v]
+    return v if isinstance(v, list) else []
+
+
 def _first(d, *names):
     for n in names:
         if n in d and d[n] is not None:
@@ -528,8 +536,7 @@ def read_sheet(path):
             rows.append((where, {"type": "chapter", "clip": str(n),
                                  "text": _text(title)}))
 
-        cards = _first(b, "cards", "card") or []
-        if isinstance(cards, dict): cards = [cards]
+        cards = _as_list(_first(b, "cards", "card"))
         for ci, c in enumerate(cards, 1):
             ctitle = _first(c, "chapter", "chapters")
             dur = _first(c, "for", "to")
@@ -543,10 +550,9 @@ def read_sheet(path):
                 "_chapter": _text(ctitle) if ctitle else "",
             }))
 
-        entries = _first(b, "annotations", "annotation") or []
-        if isinstance(entries, dict): entries = [entries]
-        spans = list(_first(b, "speed", "speeds") or [])
-        spans += list(_first(b, "cuts", "cut") or [])
+        entries = _as_list(_first(b, "annotations", "annotation"))
+        spans = (_as_list(_first(b, "speed", "speeds"))
+                 + _as_list(_first(b, "cuts", "cut")))
         spans = [e for e in spans if isinstance(e, dict)]
 
         prev_end, ai, si = None, 0, 0

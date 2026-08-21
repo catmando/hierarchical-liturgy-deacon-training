@@ -108,6 +108,15 @@ PROSE = {"notes": "note", "todos": "todo"}
 ALIAS = {a: canon for canon, aliases in CLIP_FIELDS.items() for a in (canon,) + aliases}
 LISTY = {"annotations", "speed", "cuts", "cards"}
 
+
+def as_list(v):
+    """A field that holds entries, however it was written. Anything that is
+    not a list or a single mapping yields nothing, so a malformed value is
+    reported once by the type check rather than crashing every later loop."""
+    if v is None: return []
+    if isinstance(v, dict): return [v]
+    return v if isinstance(v, list) else []
+
 # An entry in the annotations list is a span if it says so; spans may also be
 # written in their own speed:/cuts: blocks.
 ANN_KEYS   = {"at", "from", "for", "to", "role", "text", "speed", "cut",
@@ -245,11 +254,21 @@ def validate(path):
                 continue
             canon[c] = v
 
+        for field in LISTY:
+            v = canon.get(field)
+            if v is None or isinstance(v, (list, dict)):
+                continue
+            hint = ""
+            if field == "cuts" and v is True:
+                hint = ("  — `cut:` marks a span inside annotations and needs "
+                        "from:/to:. To drop a whole clip use `skip: true`.")
+            err(where, f"{field}: expected a list of entries, got "
+                       f"{type(v).__name__} {v!r}{hint}")
+            canon[field] = None
+
         def items(field):
             """A listy field may be written as one entry or a list of them."""
-            v = canon.get(field)
-            if v is None: return []
-            return v if isinstance(v, list) else [v]
+            return as_list(canon.get(field))
 
         for j, e in enumerate(items("annotations"), 1):
             w = f"{where} {'span' if is_span(e) else 'annotation'} {j}"
@@ -316,8 +335,7 @@ def validate(path):
         n = b["clip"]
         if not isinstance(n, int) or n == 0: continue
         where = f"clip {n}"
-        entries = b.get("annotations", b.get("annotation")) or []
-        if isinstance(entries, dict): entries = [entries]
+        entries = as_list(b.get("annotations", b.get("annotation")))
         anns   = [e for e in entries if not is_span(e)]
         inline = [e for e in entries if is_span(e)]
         dur    = DURS.get(n)
@@ -325,7 +343,7 @@ def validate(path):
 
         # cuts remove footage, so an annotation over one has nothing to sit on
         cuts = []
-        for c in list(inline) + list(b.get("cuts", b.get("cut")) or []):
+        for c in list(inline) + as_list(b.get("cuts", b.get("cut"))):
             if not isinstance(c, dict) or c.get("cut") is not True: continue
             try:
                 cst = parse_time(str(_first(c, "at", "from")))
@@ -383,8 +401,7 @@ def validate(path):
                          f"overlap {fmt(lo)}–{fmt(hi)} — they share the same screen position")
 
         # a speed label sits in the annotation position for its whole span
-        sp = b.get("speed", b.get("speeds")) or []
-        if isinstance(sp, dict): sp = [sp]
+        sp = as_list(b.get("speed", b.get("speeds")))
         sp = list(sp) + [e for e in inline if e.get("speed") is True]
         for k, e in enumerate(sp, 1):
             if not isinstance(e, dict): continue
@@ -411,16 +428,11 @@ def validate(path):
 
 
     def _entries(b):
-        v = b.get("annotations", b.get("annotation"))
-        if isinstance(v, dict): return [v]
-        return v if isinstance(v, list) else []
+        return as_list(b.get("annotations", b.get("annotation")))
 
     def _spans(b):
-        v = b.get("speed", b.get("speeds")) or []
-        if isinstance(v, dict): v = [v]
-        w = b.get("cuts", b.get("cut")) or []
-        if isinstance(w, dict): w = [w]
-        return list(v) + list(w)
+        return (as_list(b.get("speed", b.get("speeds")))
+                + as_list(b.get("cuts", b.get("cut"))))
 
     blocks = [b for b in doc if isinstance(b, dict)]
     n_ann  = sum(len([e for e in _entries(b) if not is_span(e)]) for b in blocks)

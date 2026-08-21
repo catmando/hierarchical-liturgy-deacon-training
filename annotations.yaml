@@ -587,6 +587,16 @@
       The Conclusion of the Little Entrance
       
       Generally follows the rubics on pages 97-99
+  # card: 
+  #   for: 8
+  #   after: true
+  #   text: |
+  #     Note the Dikiri and Trikiri are taken
+  #     from the Bishop as he enters the royal doors.
+
+  #     So the two senior altar servers should stand ready by the doors
+  #     at the conclusion of the great entrance.
+
 
   annotations:
     - at: 0:11
@@ -618,10 +628,9 @@
         The senior servers return to escort the Bishop to the Ambo,
         and return to the sanctuary.
 
-  todos: |
-    Investigate this clip!  I think its telling how the dikiri and triki are taken away.
 - clip: 13
   skip: true
+
 
 # # Remove spans from a clip. Both ends are positions in the ORIGINAL clip, and
 # # later times in this sheet still refer to the original — the build maps them.
