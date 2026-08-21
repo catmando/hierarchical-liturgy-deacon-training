@@ -22,6 +22,7 @@ USAGE
     python3 build.py --clip 3 --draft         # fast, blocky re-encode
     python3 build.py --clip 3 --play          # open it in VLC when it works
     python3 build.py --clip 3 --timecode --draft   # show ORIGINAL clip times
+    python3 build.py --fade 0           # no fade between clips
 
     The sheet defaults to annotations.yaml. It is validated before anything
     is built, and errors stop the build; --no-check overrides that.
@@ -184,6 +185,7 @@ MASTER = os.path.join(OUT, "master.mp4")
 W, H, FPS, CRF, PRESET = 1920, 1080, 30, 18, "slow"
 DRAFT_CRF, DRAFT_PRESET = 30, "ultrafast"
 AUDIO_HOLD = 4.0    # seconds at full volume before `audio: normal` fades out
+CLIP_FADE = 3.0     # default fade to black at the end of every clip
 
 ROLE_COLOURS = {
     "D1": "&H00A5FF&", "D2": "&H80D0A0&", "SD": "&HD0C070&",
@@ -389,9 +391,14 @@ def time_map(t, segs):
     return out
 
 
-def build_edited_clip(src, dst, segs):
-    """Re-encode one clip with cuts and speed changes applied."""
-    spec = hashlib.md5((src + f"|{PRESET}|{CRF}|" +
+def build_edited_clip(src, dst, segs, fade=0.0):
+    """Re-encode one clip with cuts and speed changes applied.
+
+    fade is a fade to black, video and audio together, at the very end of the
+    finished clip — so a clip stops gently rather than cutting dead into
+    whatever follows.
+    """
+    spec = hashlib.md5((src + f"|{PRESET}|{CRF}|{fade:.3f}|" +
                         repr([(round(a,3), round(b,3), round(f,4), m)
                               for a, b, f, m in segs])).encode()).hexdigest()
     sidecar = dst + ".spec"
@@ -429,7 +436,14 @@ def build_edited_clip(src, dst, segs):
         parts.append(f"[0:a]atrim=start={aa:.3f}:end={ab:.3f},{ach}[a{i}]")
         labels.append(f"[v{i}][a{i}]")
     fc = ";".join(parts) + ";" + "".join(labels) + \
-         f"concat=n={len(segs)}:v=1:a=1[v][a]"
+         f"concat=n={len(segs)}:v=1:a=1[vc][ac]"
+    outdur = sum((b - a) / f for a, b, f, _ in segs)
+    if fade > 0.05 and outdur > fade:
+        st = outdur - fade
+        fc += (f";[vc]fade=t=out:st={st:.3f}:d={fade:.3f}[v]"
+               f";[ac]afade=t=out:st={st:.3f}:d={fade:.3f}[a]")
+    else:
+        fc += ";[vc]null[v];[ac]anull[a]"
     run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-nostdin",
          "-i", src, "-filter_complex", fc, "-map", "[v]", "-map", "[a]",
          "-r", str(FPS), "-fps_mode", "cfr",
@@ -714,6 +728,13 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--sheet", dest="sheet", metavar="FILE",
                     help="the edit sheet to read (default annotations.yaml)")
+    ap.add_argument("--fade", type=float, default=CLIP_FADE, metavar="SEC",
+                    help=f"fade each clip to black over SEC seconds at its "
+                         f"end, video and audio together (default "
+                         f"{CLIP_FADE:g}). --fade 0 turns it off. Any fade "
+                         f"means every clip is re-encoded rather than copied "
+                         f"through, so the first build after changing it is "
+                         f"much slower; results are cached afterwards.")
     ap.add_argument("--timecode", action="store_true",
                     help="burn the ORIGINAL clip time into the corner of a "
                          "preview. The number on screen is the number to type "
@@ -930,9 +951,15 @@ def main():
     seg_map = {}          # clip -> segment list, for remapping annotations
     skip_spans = []       # (clip, orig_start, orig_end, label)
     edited_name = {}      # clip -> filename to use in the sequence
-    for n, elist in sorted(edits.items()):
+    wanted = sorted(set(edits) | (set(only) if (a.fade > 0.05 and only)
+                                  else set(range(1, n_clips + 1))
+                                  if a.fade > 0.05 else set()))
+    for n in wanted:
+        elist = edits.get(n, [])
         if only and n not in only:
             continue          # a preview must not pay to edit clips it drops
+        if n in skips:
+            continue
         src = os.path.join(WORK, f"{n:03d}.mp4")
         if not os.path.exists(src):
             warnings.append(f"clip {n:02d}: no normalized file, edits ignored")
@@ -951,7 +978,8 @@ def main():
                                 f"end of the clip ({dur0:.1f}s) — skipped")
                 continue
             clean.append((st, d, f, mu)); last_end = st + d
-        if not clean: continue
+        if not clean and a.fade <= 0.05:
+            continue
         segs = edit_segments(dur0, clean)
         seg_map[n] = segs
         for st, d, f, mu in clean:
@@ -961,7 +989,7 @@ def main():
                     skip_spans.append((n, st, st + d, srole, lbl))
         dst = os.path.join(WORK, f"{n:03d}_edit.mp4")
         if not a.subs_only:
-            build_edited_clip(src, dst, segs)
+            build_edited_clip(src, dst, segs, fade=a.fade)
         edited_name[n] = f"{n:03d}_edit.mp4"
         newdur = sum((b - aa) / f for aa, b, f, _ in segs)
         cuts = sum(1 for st, d, f, _ in clean if f is None)
@@ -969,8 +997,9 @@ def main():
         bits = []
         if cuts: bits.append(f"{cuts} cut{'s' if cuts>1 else ''}")
         if sps: bits.append(f"{sps} speed change{'s' if sps>1 else ''}")
-        print(f"  clip {n:02d}: {', '.join(bits)} — "
-              f"{dur0:.1f}s becomes {newdur:.1f}s")
+        if bits:
+            print(f"  clip {n:02d}: {', '.join(bits)} — "
+                  f"{dur0:.1f}s becomes {newdur:.1f}s")
 
     # ---------------- assemble the sequence ----------------
     sequence = []          # (path_in_work, label, is_card, clip_no, lead)

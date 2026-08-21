@@ -648,6 +648,16 @@
         and is ready to receive the censer.
         A server takes the dikiri, while the first deacon takes the censer.
 
+- clip: 15
+  chapter: Troparion, Kontakion, Save the Pious and the Thrice Holy
+
+  card:
+    - for: 10
+      text: |
+        Troparion, Kontakion, Save the Pious and the Thrice Holy
+
+        This follows the exact rubics from page 101.
+
 
 # # Remove spans from a clip. Both ends are positions in the ORIGINAL clip, and
 # # later times in this sheet still refer to the original — the build maps them.
