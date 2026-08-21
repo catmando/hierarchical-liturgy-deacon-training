@@ -478,37 +478,177 @@
       text: |
         moves forward to stand before the Theotokos
 
-#─── The remaining row types, for completeness ─────────────────────────
+- clip: 9
+  chapter: Completion of the Washing of Hands and the Second Litany 
 
-# Drop a clip from the build entirely.
+  card: 
+    for: 9
+    text: |
+      Completion of the Washing of Hands and the Second Litany
+      
+      The second deacon is now in place to chant the second litany.
+      The first deacon moves behind and to the right of the Bishop.
+      The servers return to the sanctuary
+
+  annotations:
+    - at: 0:0
+      for: 4
+      role: SERVERS
+      text: |
+        At the conclusion of the washing of the hands, the servers return to sanctuary
+    - for: 4
+      role: FIRST DEACON
+      text: |
+        moves behind and to the right of the Bishop
+    - at: 0:15
+      for: 7
+      role: SECOND DEACON
+      text: |
+        As the first antiphon concludes, bow to the icon, and then to the Bishop
+
+- clip: 10
+  chapter: The Second Antiphon 
+
+  card: 
+    for: 10
+    text: |
+      The Second Antiphon
+
+      At the conclusion of each litany the deacon also bows to the Bishop.
+
+      As the second antiphon begins, the hieratikon is brought to the Bishop.
+
+      The third Litany is chanted as usual.
+      
+- clip: 11
+  chapter: The Beginning of the Little Entrance
+
+  card: 
+    for: 30
+    text: |
+      The Beginning of the Little Entrance
+      
+      **The key is to organize the players before leaving the altar**
+      - 1) junior servers with candles: they will end at the back
+      - 2) then the dikiri: it will end up at the bishops left
+      - 3) then a fan: it will be between the dikiri and the altar
+      - 4) the **second** and (5) the first deacon: who will travel behind the bishop
+      the second deacon crosses over with the censer, between the fan and the altar
+      the first deacon moves level with the second deacon carrying the gospel
+      - 6) then the second fan, which will be level with the other fan
+      - 7) and finally the trikiri
+
+  annotations:
+    - at: 0:0
+      for: 2
+      role: SERVERS
+      text: |
+        Extra servers carrying candles come first
+    - for: 2
+      role: SERVERS
+      text: the **dikiri**
+    - for: 2
+      role: SERVERS
+      text: the fan on the left
+    - for: 2
+      role: SECOND DEACON
+      text: carrying the censer
+    - for: 2
+      role: FIRST DEACON
+      text: carrying the gospel
+    - for: 2
+      role: SERVERS
+      text: the fan on the right
+    - for: 2
+      role: SERVERS
+      text: the trikiri
+    - at: 0:16
+      for: 2
+      text: the dikiri and fan on the left are dropped off
+    - for: 3
+      text: every one else moves behind the Bishop and to his right
+    - at: 0:24
+      for: 4
+      text: notice the censer is carried around to the Bishop's left
+    - for: 4
+      text: everyone reverences the icons, and then the Bishop
+    - at: 0:39
+      text: everyone is now facing each other with the bishop at the center
+    - at: 0:50
+      to: end
+      cut: true
+
+- clip: 12
+  chapter: The Conclusion of the Little Entrance
+
+  card: 
+    for: 6
+    text: |
+      The Conclusion of the Little Entrance
+      
+      Generally follows the rubics on pages 97-99
+
+  annotations:
+    - at: 0:11
+      for: 4
+      role: FIRST DEACON
+      text: |
+        *Bless Master the Holy Entrance* (p 98)
+    - at: 0:16
+      for: 5
+      role: FIRST DEACON
+      text: |
+        Presents the Gospel to Bishop to kiss.
+        Be sure to hold it high enough for the Bishop.
+    - for: 16
+      role: SERVERS
+      text: |
+        Hand the Dikiri and Trikiri to the Bishop.
+        And move just behind the first deacon.
+        The second deacon continously censes.
+        While the fans cover the Gospel.
+    - at: 1:10
+      for: 4
+      role: DEACONS
+      text: with the censer leading, return to the sanctuary
+    - at: 1:22
+      for: 4
+      role: SERVERS
+      text: |
+        The senior servers return to escort the Bishop to the Ambo,
+        and return to the sanctuary.
+
+  todos: |
+    Investigate this clip!  I think its telling how the dikiri and triki are taken away.
 - clip: 13
   skip: true
 
-# Remove spans from a clip. Both ends are positions in the ORIGINAL clip, and
-# later times in this sheet still refer to the original — the build maps them.
-- clip: 19
-  cuts:
-    - from: 1:00
-      to: 2:00
+# # Remove spans from a clip. Both ends are positions in the ORIGINAL clip, and
+# # later times in this sheet still refer to the original — the build maps them.
+# - clip: 19
+#   cuts:
+#     - from: 1:00
+#       to: 2:00
 
 
-# ─── Cards further along, kept here to show the shape ──────────────────
+# # ─── Cards further along, kept here to show the shape ──────────────────
 
-# Was "after clip 20" in the CSV; before clip 21 is the same gap, and reads as
-# the card that introduces clip 21. chapter: present → its own chapter, and the
-# chapter title can differ from the words on screen.
-- clip: 21
-  cards:
-    - text: Homily
-      for: 6
-      chapter: Homily — not shown
-      notes: The homily is not filmed; roughly 18 minutes of the service.
-    # A card may show an image instead of, or behind, its text:
-    # - image: art/great-entrance.png
-    #   for: 6
-    #   chapter: The Great Entrance
+# # Was "after clip 20" in the CSV; before clip 21 is the same gap, and reads as
+# # the card that introduces clip 21. chapter: present → its own chapter, and the
+# # chapter title can differ from the words on screen.
+# - clip: 21
+#   cards:
+#     - text: Homily
+#       for: 6
+#       chapter: Homily — not shown
+#       notes: The homily is not filmed; roughly 18 minutes of the service.
+#     # A card may show an image instead of, or behind, its text:
+#     # - image: art/great-entrance.png
+#     #   for: 6
+#     #   chapter: The Great Entrance
 
-- clip: 26
-  cards:
-    - text: The Great Entrance
-      for: 5          # no chapter: → folds into chapter 26
+# - clip: 26
+#   cards:
+#     - text: The Great Entrance
+#       for: 5          # no chapter: → folds into chapter 26
+
