@@ -581,25 +581,20 @@
 - clip: 12
   chapter: The Conclusion of the Little Entrance
 
-  card: 
-    for: 6
-    text: |
-      The Conclusion of the Little Entrance
-      
-      Generally follows the rubics on pages 97-99
-  # card: 
-  #   for: 8
-  #   after: true
-  #   text: |
-  #     Note the Dikiri and Trikiri are taken
-  #     from the Bishop as he enters the royal doors.
+  cards:
+    - for: 6
+      text: |
+        The Conclusion of the Little Entrance
 
-  #     So the two senior altar servers should stand ready by the doors
-  #     at the conclusion of the great entrance.
-
+        Generally follows the rubics on pages 97-99
+    - for: 3
+      after: true
+      text: |
+        The Dikiri and Trikiri will be taken
+        from the Bishop as he enters the royal doors.
 
   annotations:
-    - at: 0:11
+    - at: 0:10
       for: 4
       role: FIRST DEACON
       text: |
@@ -622,14 +617,36 @@
       role: DEACONS
       text: with the censer leading, return to the sanctuary
     - at: 1:22
-      for: 4
+      to: end
       role: SERVERS
       text: |
         The senior servers return to escort the Bishop to the Ambo,
-        and return to the sanctuary.
+        and return to the sanctuary, where they wait to take the
+        Dikiri and Trikiri
 
 - clip: 13
   skip: true
+
+- clip: 14
+  chapter: The Bishop's Censing After the Great Entrance
+
+  card:
+    - for: 10
+      text: |
+        The Bishop's Censing After the Great Entrance
+
+        The Bishop is given the dikiri (left hand) and censer right hand.
+        The first deacon will *lead* the Bishop in the censing carrying the trikiri.
+
+        The rubics for the lesser censing are on page 38.
+
+  annotations:
+    - at: 1:43
+      to: end
+      text: |
+        The first deacon carries the trikiri to the altar, 
+        and is ready to receive the censer.
+        A server takes the dikiri, while the first deacon takes the censer.
 
 
 # # Remove spans from a clip. Both ends are positions in the ORIGINAL clip, and

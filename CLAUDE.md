@@ -139,6 +139,9 @@ right for background singing — it holds full volume for `hold:` seconds,
 default 4, then fades to silence rather than stopping dead). `mute:
 true/false` is the older spelling of `mute`/`fast`.
 
+**Cards** belong to the clip they are written under and play before it;
+`after: true` puts one after. A skipped clip takes only its own cards with it.
+
 **Chapters.** `chapter:` always means "a chapter starts here, titled this".
 On a card it makes the card its own chapter, with a title that need not match
 the words on screen; a card without `chapter:` folds into the chapter that

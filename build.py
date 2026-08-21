@@ -540,10 +540,10 @@ def read_sheet(path):
         for ci, c in enumerate(cards, 1):
             ctitle = _first(c, "chapter", "chapters")
             dur = _first(c, "for", "to")
-            target = n if c.get("after") is True else n - 1
             rows.append((f"{where} card {ci}", {
                 "type":  "card" if ctitle else "title",
-                "clip":  str(max(target, 0)),
+                "clip":  str(n),
+                "_after": c.get("after") is True,
                 "end":   "" if dur is None else str(dur),
                 "text":  _text(c.get("text")),
                 "image": _text(c.get("image")),
@@ -815,7 +815,8 @@ def main():
     if not clips: die(f"no normalized clips in {WORK}/")
     n_clips = len(clips)
 
-    cards = defaultdict(list)      # after-clip -> [(dur, text, image)]
+    cards = defaultdict(list)       # clip -> cards played BEFORE it
+    cards_after = defaultdict(list)  # clip -> cards played AFTER it
     edits = defaultdict(list)      # clip -> [(start, dur, factor|None)]
     labels_for = {}                # (clip, start) -> custom skip label
     skips = set()
@@ -883,8 +884,9 @@ def main():
             if not text and not img:
                 warnings.append(f"{ln}: card with no text or image — skipped")
                 continue
-            cards[n].append((dur, text, img, typ == "title",
-                             (row.get("_chapter") or "").strip()))
+            bucket = cards_after if row.get("_after") else cards
+            bucket[n].append((dur, text, img, typ == "title",
+                              (row.get("_chapter") or "").strip()))
             continue
 
         # annotation
@@ -971,26 +973,28 @@ def main():
               f"{dur0:.1f}s becomes {newdur:.1f}s")
 
     # ---------------- assemble the sequence ----------------
-    sequence = []          # (path_in_work, label, is_card, clip_no)
-    if not a.subs_only:
-        for dur, text, img, lead, ctitle in cards.get(0, []):
-            nm = f"000_card{len(sequence):02d}.mp4"
+    sequence = []          # (path_in_work, label, is_card, clip_no, lead)
+
+    def add_cards(bucket, i, tag):
+        """Cards belong to the clip they are written under, so a skipped clip
+        takes only its own cards with it — never the one introducing the clip
+        after it."""
+        if a.subs_only: return
+        for j, (dur, text, img, lead, ctitle) in enumerate(bucket.get(i, [])):
+            nm = f"{i:03d}_{tag}{j:02d}.mp4"
             make_card(os.path.join(WORK, nm), text, dur, img)
             lines = [md_plain(l) for l in split_lines(text)]
             sequence.append((nm, ctitle or (lines[0] if lines else "Card"),
-                             True, 0, lead))
+                             True, i, lead))
+
+    add_cards(cards, 0, "card")          # a `clip: 0` block means the very front
 
     for i in range(1, n_clips + 1):
         if i in skips: continue
+        add_cards(cards, i, "card")
         sequence.append((edited_name.get(i, f"{i:03d}.mp4"),
                          f"Clip {i:02d}", False, i, False))
-        if not a.subs_only:
-            for j, (dur, text, img, lead, ctitle) in enumerate(cards.get(i, [])):
-                nm = f"{i:03d}_card{j:02d}.mp4"
-                make_card(os.path.join(WORK, nm), text, dur, img)
-                lines = [md_plain(l) for l in split_lines(text)]
-                sequence.append((nm, ctitle or (lines[0] if lines else "Card"),
-                                 True, i, lead))
+        add_cards(cards_after, i, "endcard")
 
     if only:
         kept = []
