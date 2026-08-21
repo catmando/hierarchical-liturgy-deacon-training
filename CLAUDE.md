@@ -30,7 +30,7 @@ what to hold, which hand, what to say, and what cues trigger movement.
 | Directory layout | **DONE.** `raw/` → `normalized/` → `output/` (§12) |
 | Normalize encode | **DONE.** 37 clips → `normalized/001.mp4`…`037.mp4` |
 | `master.mp4` | built, 1:03:23, now at `output/master.mp4` |
-| Annotation timings | **clips 1–2 done; 35 to go** |
+| Annotation timings | **in progress — at clip 9 of 37 as of 21 Aug 2026** |
 | Roles vocabulary | evolving by design (§6) |
 | Roles chart | **still not uploaded** (§6) |
 | Chapter titles in MKV | **VERIFIED WORKING** on real footage (§8) |
@@ -394,3 +394,60 @@ confirmed to reproduce the committed manifest exactly.
 120 fps. All 1920×1080 h264/aac, 63.4 minutes total. This is precisely why
 `normalize_and_join.sh` exists — concatenating them raw produces broken
 timing.
+
+---
+
+## 13. Distribution — thought about, not decided
+
+Raised 21 August 2026 while the user was at clip 9 of 37. Nothing is built;
+this records the analysis so it does not have to be redone.
+
+### Size
+
+`master.mp4` is **6.5 GB at 15.3 Mbps** — archival, more than handing out
+needs. Measured from a 30s sample scaled to the full 63 minutes:
+
+| target | full video |
+|---|---|
+| current, CRF 18 | 6.5 GB |
+| 1080p CRF 24 | 4.0 GB |
+| **1080p CRF 26** | **3.0 GB** |
+| 1080p CRF 28 | 2.2 GB |
+| 720p CRF 23 | 2.2 GB |
+
+**Stay at 1080p.** At equal file size, 720p makes the annotation text mushy —
+text suffers from downscaling far more than the footage does.
+
+### Three traps for a thumb drive
+
+- **Format the drive exFAT, not FAT32.** FAT32 caps a single file at 4 GB, and
+  a larger copy fails part way through, sometimes without a clear error. Most
+  drives ship FAT32. This is the likeliest way a handout day goes wrong.
+- **Do not hand out the MKV.** Its annotations are a subtitle *track*:
+  QuickTime will not open MKV at all, Windows needs VLC, and VLC still needs
+  `v`. Distribute mp4 with the text **burned in** — it plays everywhere and
+  needs no instructions.
+- **A burned-in mp4 has no chapter menu.** Put `chapters.txt` on the drive as
+  a plain listing.
+
+### Online
+
+**YouTube unlisted** is stronger than a drive for most people: free, plays on
+any phone or TV, nothing to lose, and chapters work — `youtube_chapters.txt`
+is already generated. Unlisted is not searchable; only a link reaches it.
+Caveat the user should weigh deliberately rather than inherit from the GitHub
+decision: the footage shows identifiable clergy and parishioners, and YouTube
+is a different reach from a public repo.
+
+A GitHub release asset is the other free option, but assets cap at 2 GB per
+file, which a 3 GB video clears only if the quality drops further.
+
+### Still to build
+
+- **`--distribute`**: burned-in text, 1080p CRF 26, `+faststart`, chapters
+  beside it. `--youtube` exists but burns at CRF 18 / preset slow and would
+  produce roughly 9 GB, which is wrong for this.
+- **The written document.** `notes:` fields are collected for it and nothing
+  generates one yet — the user chose "carry the field only" when the format
+  was designed. It is what would make a thumb drive a package rather than a
+  video file.

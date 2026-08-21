@@ -96,8 +96,10 @@
   card:
     - text: |
         Hierarchical Divine Liturgy
-        Deacon Training
+        Recorded at NY&NJ Deacon Training
         20 June 2026
+
+        *Page references are from St. Tikhon's Hieratikon Vol 2, 2017*
       for: 8
       # no chapter: → folds into chapter 1, which then starts here at 0:00
 
@@ -408,9 +410,10 @@
     for: 7
     text: |
       Final Prayers before the Liturgy
-      ***
+      
       These are the same prayers said by the priest at the altar,
       but here they are said in front of the Ambo
+      (see pg 87)
 
   annotations:
     - at: 0:26
@@ -437,8 +440,43 @@
       text: |
         along with those at the altar, bow to the high place, then to the Bishop
         and the liturgy begins
-
+    - at: 1:05
+      for: 4
+      role: SERVERS
+      text: |
+        The Bishop's Hieratikon is brought out the north door, and the server stands
+        with the first deacon for the blessing.
+    - at: 1:16
+      role: FIRST DEACON
+      text: |
+        after *unto ages of ages...* turn around and again reverence the Bishop.
+        **note: this is done before each litany by both deacons, remember get a blessing to proceed**
       
+- clip: 8
+  chapter: Washing of the Hands 
+
+  card: 
+    for: 9
+    text: |
+      Washing of the Hands
+      
+      These are said by the first deacon during the singing of the first antiphon
+      (see page 71)
+      The second deacon moves into place for the second (little) litany
+
+  annotations:
+    - at: 0:0
+      for: 7
+      role: SERVERS
+      text: |
+        As the final litany is chanted *commerating our most holy...*
+        Three servers come down in front of the Ambo
+        Traditionally a young server carries the bowl, pitcher and towel.
+    - at: 8
+      for: 4
+      role: SECOND DEACON
+      text: |
+        moves forward to stand before the Theotokos
 
 #─── The remaining row types, for completeness ─────────────────────────
 
