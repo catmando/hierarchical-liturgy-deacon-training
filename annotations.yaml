@@ -656,7 +656,80 @@
       text: |
         Troparion, Kontakion, Save the Pious and the Thrice Holy
 
-        This follows the exact rubics from page 101.
+        This follows the exact rubics from page 101,
+        including the first deacon's proclaimation of 
+        *O Lord, save the pious* which is often not said in
+        parish practice.
+  
+  annotations: 
+    - at: 0
+      for: 4
+      text: Ignore the many observing deacons
+    - for: 8
+      role: SERVERS
+      text: |
+        Dikiri on the **right**, Trikiri on the **left**.
+        So that they are the bishops left and right hand as
+        he faces the people.
+    - at: 0:31
+      to: 0:43 
+      role: FIRST DEACON
+      text: |
+        As the choir sings *to ages of ages...*
+        goes to the high place bows to the high 
+        place and the Bishop.  *This is the normal practice and*
+        *should always be done before any action by the deacon*
+    - at: 0:44
+      for: 4
+      role: SERVERS
+      text: |
+         Note the position of Trikiri and Dikiri
+
+    - at: 0:50
+      for: 4
+      role: FIRST DEACON
+      text: |
+        Get the blessing from the Bishop and stand in front of Christ.
+    - at: 1:13
+      for: 6
+      role: FIRST DEACON
+      text: |
+        *Let us pray to the Lord* etc, following the full rubric on page 101 
+    - at: 1:27
+      for: 6
+      role: FIRST DEACON
+      text: |
+        *O Lord, save the pious* is often translated in modern use as
+        *O Lord, save those who fear thee*
+    - at: 2:00
+      role: FIRST DEACON
+      to: 2:22
+      text: |
+        After smoothly walking through the royal doors, go to the high place
+        as usual, **and take the DIKIRI** to the Bishop
+
+- clip: 16
+  chapter: Conclusion of Thrice Holy
+  card:
+    - for: 8
+      text: |
+        Conclusion of the Thrice Holy
+
+        Rubrics are the same as page 102-103
+        Second Deacon will read the epistle
+
+  annotations:
+    - from: 0:31
+      to: 1:04
+      speed: 6x
+      audio: normal
+    - from: 1:05
+      for: 6
+      role: SECOND DEACON
+      text: |
+        gets the blessing from the bishop, and walks out the
+        **royal doors** holding the epistle book high with the
+        cross facing the people.   
 
 
 # # Remove spans from a clip. Both ends are positions in the ORIGINAL clip, and
@@ -688,3 +761,156 @@
 #     - text: The Great Entrance
 #       for: 5          # no chapter: → folds into chapter 26
 
+
+
+# ────────────────────────────────────────────────────────────────────
+#  Clips 17-37 — scaffolding only.
+#  Chapter and card taken from the source filename; no annotations yet.
+# ────────────────────────────────────────────────────────────────────
+
+- clip: 17
+  chapter: Lesser Censing, and Epistle Reading
+  cards:
+    - for: 6
+      text: |
+        Lesser Censing, and Epistle Reading
+
+- clip: 18
+  chapter: Alleluia and Gospel Book Goes Out
+  cards:
+    - for: 6
+      text: |
+        Alleluia and Gospel Book Goes Out
+
+- clip: 19
+  chapter: Reading of Gospel
+  cards:
+    - for: 6
+      text: |
+        Reading of Gospel
+
+- clip: 20
+  chapter: Gospel is Returned to the Altar
+  cards:
+    - for: 6
+      text: |
+        Gospel is Returned to the Altar
+
+- clip: 21
+  chapter: Augmented Litany Begins
+  cards:
+    - for: 6
+      text: |
+        Augmented Litany Begins
+
+- clip: 22
+  chapter: Augmented Litany through censing before great entrance
+  cards:
+    - for: 6
+      text: |
+        Augmented Litany through censing before great entrance
+
+- clip: 23
+  chapter: Clergy Kissing the Bishops Shoulder
+  cards:
+    - for: 6
+      text: |
+        Clergy Kissing the Bishops Shoulder
+
+- clip: 24
+  chapter: And last the 2nd Deacon kisses the Bishops Shoulder
+  cards:
+    - for: 6
+      text: |
+        And last the 2nd Deacon kisses the Bishops Shoulder
+
+- clip: 25
+  chapter: The Bishop makes commemorations
+  cards:
+    - for: 6
+      text: |
+        The Bishop makes commemorations
+
+- clip: 26
+  chapter: Covering the Gifts and The Great Entrance
+  cards:
+    - for: 6
+      text: |
+        Covering the Gifts and The Great Entrance
+
+- clip: 27
+  chapter: Conclusion of the Great Entrance
+  cards:
+    - for: 6
+      text: |
+        Conclusion of the Great Entrance
+
+- clip: 28
+  chapter: Litany of Supplication and the Creed
+  cards:
+    - for: 6
+      text: |
+        Litany of Supplication and the Creed
+
+- clip: 29
+  chapter: The anaphora part 1
+  cards:
+    - for: 6
+      text: |
+        The anaphora part 1
+
+- clip: 30
+  chapter: The anaphora part 2
+  cards:
+    - for: 6
+      text: |
+        The anaphora part 2
+
+- clip: 31
+  chapter: The anaphora part 3
+  cards:
+    - for: 6
+      text: |
+        The anaphora part 3
+
+- clip: 32
+  chapter: The anaphora part 4
+  cards:
+    - for: 6
+      text: |
+        The anaphora part 4
+
+- clip: 33
+  chapter: The anaphora part 5 and beginning of Litany before the lords prayer
+  cards:
+    - for: 6
+      text: |
+        The anaphora part 5 and beginning of Litany before the lords prayer
+
+- clip: 34
+  chapter: After Communion
+  cards:
+    - for: 6
+      text: |
+        After Communion
+
+- clip: 35
+  chapter: Litany of Thanksgiving
+  cards:
+    - for: 6
+      text: |
+        Litany of Thanksgiving
+
+- clip: 36
+  chapter: Final blessing and Many Years
+  cards:
+    - for: 6
+      text: |
+        Final blessing and Many Years
+
+- clip: 37
+  chapter: Conclusion
+  cards:
+    - for: 6
+      text: |
+        Conclusion
