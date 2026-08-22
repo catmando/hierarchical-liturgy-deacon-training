@@ -22,7 +22,7 @@ USAGE
     python3 build.py --clip 3 --draft         # fast, blocky re-encode
     python3 build.py --clip 3 --play          # open it in VLC when it works
     python3 build.py --clip 3 --timecode --draft   # show ORIGINAL clip times
-    python3 build.py --fade 0           # no fade between clips
+    python3 build.py --fade 0           # no audio fade at clip ends
 
     The sheet defaults to annotations.yaml. It is validated before anything
     is built, and errors stop the build; --no-check overrides that.
@@ -185,7 +185,7 @@ MASTER = os.path.join(OUT, "master.mp4")
 W, H, FPS, CRF, PRESET = 1920, 1080, 30, 18, "slow"
 DRAFT_CRF, DRAFT_PRESET = 30, "ultrafast"
 AUDIO_HOLD = 4.0    # seconds at full volume before `audio: normal` fades out
-CLIP_FADE = 3.0     # default fade to black at the end of every clip
+CLIP_FADE = 3.0     # default audio fade at the end of every clip
 
 ROLE_COLOURS = {
     "D1": "&H00A5FF&", "D2": "&H80D0A0&", "SD": "&HD0C070&",
@@ -394,9 +394,10 @@ def time_map(t, segs):
 def build_edited_clip(src, dst, segs, fade=0.0):
     """Re-encode one clip with cuts and speed changes applied.
 
-    fade is a fade to black, video and audio together, at the very end of the
-    finished clip — so a clip stops gently rather than cutting dead into
-    whatever follows.
+    fade is an audio fade at the very end of the finished clip, so the sound
+    settles rather than cutting dead into whatever follows. It happens inside
+    the clip's existing length — nothing is made longer. The picture is left
+    alone.
     """
     spec = hashlib.md5((src + f"|{PRESET}|{CRF}|{fade:.3f}|" +
                         repr([(round(a,3), round(b,3), round(f,4), m)
@@ -405,6 +406,18 @@ def build_edited_clip(src, dst, segs, fade=0.0):
     if os.path.exists(dst) and os.path.exists(sidecar):
         if open(sidecar).read().strip() == spec:
             return False
+    # No cuts, no speed changes: the picture is already right, so copy it and
+    # re-encode only the audio. Far cheaper than pushing every frame through
+    # x264 for the sake of a fade the video does not even get.
+    if (len(segs) == 1 and abs(segs[0][2] - 1.0) < 1e-6 and segs[0][0] < 0.01):
+        af = (f"afade=t=out:st={max(segs[0][1] - fade, 0):.3f}:d={fade:.3f}"
+              if fade > 0.05 and segs[0][1] > fade else "anull")
+        run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-nostdin",
+             "-i", src, "-af", af, "-c:v", "copy",
+             "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2", dst])
+        open(sidecar, "w").write(spec)
+        return True
+
     parts, labels = [], []
     for i, (a, b, f, audio) in enumerate(segs):
         amode, hold_s = audio
@@ -438,12 +451,12 @@ def build_edited_clip(src, dst, segs, fade=0.0):
     fc = ";".join(parts) + ";" + "".join(labels) + \
          f"concat=n={len(segs)}:v=1:a=1[vc][ac]"
     outdur = sum((b - a) / f for a, b, f, _ in segs)
+    fc += ";[vc]null[v]"
     if fade > 0.05 and outdur > fade:
         st = outdur - fade
-        fc += (f";[vc]fade=t=out:st={st:.3f}:d={fade:.3f}[v]"
-               f";[ac]afade=t=out:st={st:.3f}:d={fade:.3f}[a]")
+        fc += f";[ac]afade=t=out:st={st:.3f}:d={fade:.3f}[a]"
     else:
-        fc += ";[vc]null[v];[ac]anull[a]"
+        fc += ";[ac]anull[a]"
     run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-nostdin",
          "-i", src, "-filter_complex", fc, "-map", "[v]", "-map", "[a]",
          "-r", str(FPS), "-fps_mode", "cfr",
@@ -729,12 +742,11 @@ def main():
     ap.add_argument("--sheet", dest="sheet", metavar="FILE",
                     help="the edit sheet to read (default annotations.yaml)")
     ap.add_argument("--fade", type=float, default=CLIP_FADE, metavar="SEC",
-                    help=f"fade each clip to black over SEC seconds at its "
-                         f"end, video and audio together (default "
-                         f"{CLIP_FADE:g}). --fade 0 turns it off. Any fade "
-                         f"means every clip is re-encoded rather than copied "
-                         f"through, so the first build after changing it is "
-                         f"much slower; results are cached afterwards.")
+                    help=f"fade the AUDIO out over SEC seconds at the end of "
+                         f"each clip, so the sound settles instead of cutting "
+                         f"dead (default {CLIP_FADE:g}; 0 turns it off). The "
+                         f"picture is untouched and no clip gets longer — the "
+                         f"fade happens inside the clip's existing length.")
     ap.add_argument("--timecode", action="store_true",
                     help="burn the ORIGINAL clip time into the corner of a "
                          "preview. The number on screen is the number to type "
