@@ -30,7 +30,7 @@ what to hold, which hand, what to say, and what cues trigger movement.
 | Directory layout | **DONE.** `raw/` → `normalized/` → `output/` (§12) |
 | Normalize encode | **DONE.** 37 clips → `normalized/001.mp4`…`037.mp4` |
 | `master.mp4` | built, 1:03:23, now at `output/master.mp4` |
-| Annotation timings | **in progress — at clip 9 of 37 as of 21 Aug 2026** |
+| Annotation timings | **first draft through clip 20 of 37 as of 23 Aug 2026** |
 | Roles vocabulary | evolving by design (§6) |
 | Roles chart | **still not uploaded** (§6) |
 | Chapter titles in MKV | **VERIFIED WORKING** on real footage (§8) |
