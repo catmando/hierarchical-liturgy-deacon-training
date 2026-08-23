@@ -399,17 +399,20 @@ def build_edited_clip(src, dst, segs, fade=0.0):
     the clip's existing length — nothing is made longer. The picture is left
     alone.
     """
-    spec = hashlib.md5((src + f"|{PRESET}|{CRF}|{fade:.3f}|" +
+    spec = hashlib.md5((src + f"|v2|{PRESET}|{CRF}|{fade:.3f}|" +
                         repr([(round(a,3), round(b,3), round(f,4), m)
                               for a, b, f, m in segs])).encode()).hexdigest()
     sidecar = dst + ".spec"
     if os.path.exists(dst) and os.path.exists(sidecar):
         if open(sidecar).read().strip() == spec:
             return False
-    # No cuts, no speed changes: the picture is already right, so copy it and
-    # re-encode only the audio. Far cheaper than pushing every frame through
-    # x264 for the sake of a fade the video does not even get.
-    if (len(segs) == 1 and abs(segs[0][2] - 1.0) < 1e-6 and segs[0][0] < 0.01):
+    # The picture is already right only if one segment runs at normal speed
+    # from the very start to the very end. A tail cut also leaves a single
+    # segment starting at 0 — it just stops early — so the end must be checked
+    # too, or the trim is silently discarded along with the re-encode.
+    srcdur = probe_dur(src) or 0.0
+    if (len(segs) == 1 and abs(segs[0][2] - 1.0) < 1e-6
+            and segs[0][0] < 0.01 and segs[0][1] >= srcdur - 0.05):
         af = (f"afade=t=out:st={max(segs[0][1] - fade, 0):.3f}:d={fade:.3f}"
               if fade > 0.05 and segs[0][1] > fade else "anull")
         run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-nostdin",

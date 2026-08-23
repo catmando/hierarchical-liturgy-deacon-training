@@ -880,7 +880,12 @@
   cards:
     - for: 6
       text: |
-        Augmented Litany Begins
+        Augmented Litany Begins after the Sermon
+        as usual
+  annotations:
+    - at: 0:15
+      to: end
+      cut: true
 
 - clip: 22
   chapter: Augmented Litany through censing before great entrance
