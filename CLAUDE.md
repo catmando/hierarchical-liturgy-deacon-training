@@ -118,6 +118,7 @@ cannot go missing.
   notes:        # published — for the written document
   todos:        # the user's own; never on screen, never printed
   skip: true    # leave this clip out
+  join: true    # continue the previous clip: no chapter, no fade between
 ```
 
 Singular and plural are synonyms throughout: `annotation`/`annotations`,

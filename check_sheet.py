@@ -112,7 +112,7 @@ def fmt(t):
 
 # Singular and plural mean the same thing everywhere. Canonical name -> aliases.
 CLIP_FIELDS = {
-    "clip": (), "chapter": ("chapters",), "skip": (),
+    "clip": (), "chapter": ("chapters",), "skip": (), "join": (),
     "annotations": ("annotation",), "speed": ("speeds",), "cuts": ("cut",),
     "cards": ("card",), "notes": ("note",), "todos": ("todo",),
 }
@@ -268,6 +268,16 @@ def validate(path):
                 err(where, f"{k!r} and its synonym both given — keep one")
                 continue
             canon[c] = v
+
+        if canon.get("join") is True:
+            if canon.get("cards"):
+                err(where, "join: true with a card — a joined clip continues "
+                           "the one before it, so a card between them would "
+                           "break the join. Remove one.")
+            if canon.get("chapter"):
+                warn(where, "join: true with chapter: — the chapter title is "
+                            "ignored, since the clip continues the previous "
+                            "chapter")
 
         for field in LISTY:
             v = canon.get(field)

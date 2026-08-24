@@ -46,6 +46,9 @@ cannot go missing.
     notes:        published — goes into the written document
     todos:        yours alone; never on screen, never printed
     skip: true    leave this clip out of the build entirely
+    join: true    this clip continues the one before it: no chapter of its
+                  own, and the previous clip does not fade out at its end.
+                  It must carry no cards, or one would sit in the join.
 
 Singular and plural key names mean the same thing everywhere:
 annotation/annotations, card/cards, cut/cuts, note/notes, todo/todos.
@@ -585,6 +588,9 @@ def read_sheet(path):
             rows.append((where, {"type": "skip", "clip": str(n)}))
             continue
 
+        if b.get("join") is True:
+            rows.append((where, {"type": "join", "clip": str(n)}))
+
         title = _first(b, "chapter", "chapters")
         if title:
             rows.append((where, {"type": "chapter", "clip": str(n),
@@ -911,6 +917,7 @@ def main():
     edits = defaultdict(list)      # clip -> [(start, dur, factor|None)]
     labels_for = {}                # (clip, start) -> custom skip label
     skips = set()
+    joined = set()          # clips that continue the previous one
     chapter_titles = {}
     anns = defaultdict(list)
     last_end = {}          # clip -> end of the most recent row, for "C"
@@ -920,6 +927,10 @@ def main():
         typ = row.get("type", "").strip().lower() or "annotation"
         n = clip_num(row.get("clip", ""))
         text = row.get("text", "").strip()
+        if typ == "join":
+            if n: joined.add(n)
+            continue
+
         if typ == "skip":
             if n: skips.add(n)
             continue
@@ -1021,6 +1032,12 @@ def main():
     seg_map = {}          # clip -> segment list, for remapping annotations
     skip_spans = []       # (clip, orig_start, orig_end, label)
     edited_name = {}      # clip -> filename to use in the sequence
+    order = [i for i in range(1, n_clips + 1) if i not in skips]
+    no_fade = set()
+    for k, i in enumerate(order):
+        if i in joined and k > 0:
+            no_fade.add(order[k - 1])
+
     wanted = sorted(set(edits) | (set(only) if (a.fade > 0.05 and only)
                                   else set(range(1, n_clips + 1))
                                   if a.fade > 0.05 else set()))
@@ -1059,7 +1076,8 @@ def main():
                     skip_spans.append((n, st, st + d, srole, lbl))
         dst = os.path.join(WORK, f"{n:03d}_edit.mp4")
         if not a.subs_only:
-            build_edited_clip(src, dst, segs, fade=a.fade,
+            build_edited_clip(src, dst, segs,
+                              fade=0.0 if n in no_fade else a.fade,
                               cut_fade=a.cut_fade)
         edited_name[n] = f"{n:03d}_edit.mp4"
         newdur = sum((b - aa) / f for aa, b, f, _ in segs)
@@ -1245,12 +1263,16 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         if is_card and lead and idx + 1 < len(rows_out):
             if pending is None: pending = st
             continue                       # folded into the next chapter
+        if not is_card and cno in joined:
+            continue                      # continues the previous chapter
         title = chapter_titles.get(cno) if not is_card else (label or "Card")
         if title is None: title = label
         if pending is not None:
             st = pending; pending = None
         j = idx + 1
-        while j < len(rows_out) and rows_out[j][3] and rows_out[j][6]:
+        while j < len(rows_out) and ((rows_out[j][3] and rows_out[j][6])
+                                     or (not rows_out[j][3]
+                                         and rows_out[j][4] in joined)):
             j += 1
         en = rows_out[j][0] if j < len(rows_out) else total
         meta += ["[CHAPTER]", "TIMEBASE=1/1000",
