@@ -403,7 +403,46 @@ timing.
 
 ---
 
-## 13. Distribution — thought about, not decided
+## 13. Plan diagrams — `art/`
+
+Top-down plans of the church showing who stands where. They teach placement
+better than the footage does, because a camera cannot show the whole floor at
+once, and they carry no copyright encumbrance.
+
+SVG is the source; the PNG the video uses is regenerated from it:
+
+```bash
+rsvg-convert -w 1920 -h 1080 art/great_entrance_plan.svg \
+             -o art/great_entrance_plan.png
+```
+
+Used through an `image:` card, which is verified to work end to end:
+
+```yaml
+- clip: 26
+  cards:
+    - image: art/great_entrance_plan.png
+      for: 10
+      chapter: The Great Entrance — positions
+```
+
+Give a diagram ~10s, not the 6 a title card gets — it has to be studied.
+
+| file | what |
+|---|---|
+| `church_plan.svg` | bare architecture, the starting point for new diagrams |
+| `great_entrance_plan.svg` | the procession once outside the altar |
+
+**The Great Entrance plan is confirmed correct by the user**, including the
+inferred architecture. Convention: east at the top, so north is left and
+south is right. Marker colours follow the on-screen role colours.
+
+Worth drawing next, all reusing `church_plan.svg`: the vesting, the little
+entrance, censing paths, and the order of shoulder-kissing.
+
+---
+
+## 14. Distribution — thought about, not decided
 
 Raised 21 August 2026 while the user was at clip 9 of 37. Nothing is built;
 this records the analysis so it does not have to be redone.
