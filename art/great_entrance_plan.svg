@@ -58,8 +58,8 @@
   <!-- dikirion and trikirion behind them, further out -->
   <circle class="fig" cx="774" cy="503" r="30" fill="#d9b45b"/>
   <circle class="fig" cx="1146" cy="503" r="30" fill="#d9b45b"/>
-  <text class="name" x="774" y="512" fill="#1a1a1a">Di</text>
-  <text class="name" x="1146" y="512" fill="#1a1a1a">Tr</text>
+  <text class="name" x="774" y="512" fill="#1a1a1a">Tr</text>
+  <text class="name" x="1146" y="512" fill="#1a1a1a">Di</text>
 
   <!-- priest and first deacon with the gifts, at the foot of the ambo -->
   <circle cx="896"  cy="668" r="41" fill="none" stroke="#d9b45b" stroke-width="3"/>
@@ -104,5 +104,12 @@
 
   <text class="cmp" x="290" y="400">EAST · altar</text>
   <text class="cmp" x="290" y="700">north ←    → south</text>
+  <path d="M774,556 C820,610 1100,610 1146,556" fill="none" stroke="#d9b45b"
+        stroke-width="2.5" stroke-dasharray="9 7" opacity="0.75"/>
+  <path d="M766,548 L774,562 L784,550" fill="none" stroke="#d9b45b" stroke-width="2.5"/>
+  <path d="M1136,550 L1146,562 L1154,548" fill="none" stroke="#d9b45b" stroke-width="2.5"/>
+  <text class="gold" x="960" y="952" style="font-size:27px">Set for the blessing — trikirion to the bishop's right as he faces west</text>
+  <text class="arch" x="960" y="984" style="font-size:25px">After he blesses the congregation, Di and Tr change sides</text>
+
   <text class="cmp" x="290" y="985">WEST · doors</text>
 </svg>

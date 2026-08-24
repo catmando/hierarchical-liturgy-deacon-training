@@ -328,6 +328,11 @@ north. Facing **west** toward the people, they reverse. So the bearers must
 cross when he turns — the only way to keep the trikirion in his right hand
 through a 180° turn. Not a local custom.
 
+**Local practice, confirmed by the user:** at the Great Entrance the
+**trikirion stands north and the dikirion south** — already set for the bishop
+to bless the congregation, since facing west his right hand is to the north.
+The Great Entrance diagram shows this arrangement, with the swap noted.
+
 **Open, and not answerable from sources:** exactly *when* in the Great
 Entrance they cross — before setting out, on the solea, or as he turns. The
 user is confident the crossing always happens and cannot see it himself from
