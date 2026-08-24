@@ -130,7 +130,7 @@
     # No `at:` → picks up 0.2s after the one above ends.
     - for: 4
       role: DEACONS
-      text: Continuously cense the bishop
+      text: Continuously cense the Bishop
 
     - for: 10
       text: Notice arrangement of priests in order of seniority with deacons behind them.
@@ -276,7 +276,7 @@
         Ton Despótēn kaì Archiaréa hēmōn, Kýrie phýlatte: eis pollà étē, Déspota!
     - to: 1:48
       text: |
-        Prouncation: 
+        Pronunciation: 
         ton thes-PO-teen keh ar-hee-eh-REH-ah ee-MON, 
         KEE-ree-eh FEE-lah-teh: ees poh-LAH EH-tee, THES-poh-tah!
       notes: |
@@ -314,7 +314,7 @@
       ***
       All vestments, and other articles must have been 
       prepared and neatly stacked.
-      A tray should be ready to recieve the Mantiya and Klobuk.
+      A tray should be ready to receive the Mantiya and Klobuk.
       These are ready in the sanctuary or on a table in the nave.
       Altar servers need to be assigned to carry these items.
       An altar server should be ready to receive the staff, 
@@ -330,11 +330,11 @@
     - from: 15
       for: 4
       role: SUBDEACONS
-      text: The Bishop removes his cross, and engolpion, and other items
+      text: The Bishop removes his cross, and Encolpion, and other items
     - from: 19
       for: 4
       role: SERVERS
-      text: "MEANWHILE: The vestments are brought from their location to the bishop"
+      text: "MEANWHILE: The vestments are brought from their location to the Bishop"
     - from: 25
       for: 4
       role: SUBDEACONS
@@ -366,7 +366,7 @@
     text: |
       The Blessing of the Dikiri and Trikiri
       ***
-      As the Cross and Encolpion are placed,
+      As the cross and Encolpion are placed,
       the Dikiri and Trikiri are brought from the altar,
       followed by the clergy.
 
@@ -375,7 +375,7 @@
       role: SUBDEACONS
       text: | 
         Dikiri on bishops *left* (left is less), 
-        trikiri on the *right* (more candles, more letters in *right*)
+        Trikiri on the *right* (more candles, more letters in *right*)
     - at: 0:46
       for: 4
       role: DEACONS
@@ -383,7 +383,7 @@
     - at: 1:24
       for: 4
       role: SUBDEACONS
-      text: take the dikiri and trikiri (kissing the hand) and go to the iconostasis
+      text: take the Dikiri and Trikiri (kissing the hand) and go to the iconostasis
     - at: 1:29
       for: 4
       role: DEACONS
@@ -396,7 +396,7 @@
         then turn and reverence the Bishop.
     - at: 1:49
       for: 4
-      text: the subdeacons and servers take the dikiri, trikiri and censers to the altar  
+      text: the subdeacons and servers take the Dikiri, Trikiri and censers to the altar  
     - for: 4
       role: DEACONS
       text: |
@@ -467,9 +467,9 @@
   annotations:
     - at: 0:0
       for: 7
-      role: SUBDEACON, SERVER
+      role: SUBDEACON, SERVERS
       text: |
-        As the final litany is chanted *commerating our most holy...*
+        As the final litany is chanted *commemorating our most holy...*
         Three servers come down in front of the Ambo
         Traditionally a young server carries the bowl, pitcher and towel.
     - at: 8
@@ -516,7 +516,7 @@
 
       At the conclusion of each litany the deacon also bows to the Bishop.
 
-      As the second antiphon begins, the hieratikon is brought to the Bishop.
+      As the second antiphon begins, the Hieratikon is brought to the Bishop.
 
       The third Litany is chanted as usual.
       
@@ -530,13 +530,13 @@
       
       **The key is to organize the players before leaving the altar**
       - 1) junior servers with candles: they will end at the back
-      - 2) then the dikiri: it will end up at the bishops left
-      - 3) then a fan: it will be between the dikiri and the altar
-      - 4) the **second** and (5) the first deacon: who will travel behind the bishop
+      - 2) then the Dikiri: it will end up at the bishops left
+      - 3) then a fan: it will be between the Dikiri and the altar
+      - 4) the **second** and (5) the first deacon: who will travel behind the Bishop
       the second deacon crosses over with the censer, between the fan and the altar
-      the first deacon moves level with the second deacon carrying the gospel
+      the first deacon moves level with the second deacon carrying the Gospel
       - 6) then the second fan, which will be level with the other fan
-      - 7) and finally the trikiri
+      - 7) and finally the Trikiri
 
   annotations:
     - at: 0:0
@@ -546,7 +546,7 @@
         Extra servers carrying candles come first
     - for: 2
       role: SUBDEACON
-      text: the **dikiri**
+      text: the **Dikiri**
     - for: 2
       role: SERVERS
       text: the fan on the left
@@ -555,16 +555,16 @@
       text: carrying the censer
     - for: 2
       role: FIRST DEACON
-      text: carrying the gospel
+      text: carrying the Gospel
     - for: 2
       role: SERVERS
       text: the fan on the right
     - for: 2
       role: SUBDEACON
-      text: the trikiri
+      text: the Trikiri
     - at: 0:16
       for: 2
-      text: the dikiri and fan on the left are dropped off
+      text: the Dikiri and fan on the left are dropped off
     - for: 3
       text: every one else moves behind the Bishop and to his right
     - at: 0:24
@@ -573,7 +573,7 @@
     - for: 4
       text: everyone reverences the icons, and then the Bishop
     - at: 0:39
-      text: everyone is now facing each other with the bishop at the center
+      text: everyone is now facing each other with the Bishop at the center
     - at: 0:50
       to: end
       cut: true
@@ -586,7 +586,7 @@
       text: |
         The Conclusion of the Little Entrance
 
-        Generally follows the rubics on pages 97-99
+        Generally follows the rubrics on pages 97-99
     - for: 3
       after: true
       text: |
@@ -610,7 +610,7 @@
       text: |
         Hand the Dikiri and Trikiri to the Bishop.
         And move just behind the first deacon.
-        The second deacon continously censes.
+        The second deacon continuously censes.
         While the fans cover the Gospel.
     - at: 1:10
       for: 4
@@ -635,18 +635,18 @@
       text: |
         Hierarchical Censing After the Great Entrance
 
-        The Bishop is given the dikiri (left hand) and censer (right hand.)
-        The first deacon will *lead* the Bishop in the censing carrying the trikiri.
+        The Bishop is given the Dikiri (left hand) and censer (right hand.)
+        The first deacon will *lead* the Bishop in the censing carrying the Trikiri.
 
-        The rubics for the lesser censing are on page 38.
+        The rubrics for the lesser censing are on page 38.
 
   annotations:
     - at: 1:43
       to: end
       text: |
-        The first deacon carries the trikiri to the altar, 
+        The first deacon carries the Trikiri to the altar, 
         and is ready to receive the censer.
-        A server takes the dikiri, while the first deacon takes the censer.
+        A server takes the Dikiri, while the first deacon takes the censer.
 
 - clip: 15
   chapter: Troparion, Kontakion, Save the Pious and the Thrice Holy
@@ -656,8 +656,8 @@
       text: |
         Troparion, Kontakion, Save the Pious and the Thrice Holy
 
-        This follows the exact rubics from page 101,
-        including the first deacon's proclaimation of 
+        This follows the exact rubrics from page 101,
+        including the first deacon's proclamation of 
         *O Lord, save the pious* which is often not said in
         parish practice.
   
@@ -716,7 +716,7 @@
         Conclusion of the Thrice Holy
 
         Rubrics are the same as page 102-103
-        Second Deacon will read the epistle
+        Second deacon will read the epistle
 
   annotations:
     - from: 0:31
@@ -727,7 +727,7 @@
       for: 6
       role: SECOND DEACON
       text: |
-        gets the blessing from the bishop, and walks out the
+        gets the blessing from the Bishop, and walks out the
         **royal doors** holding the epistle book high with the
         cross facing the people.   
 
@@ -740,11 +740,11 @@
   annotations:
     - from: 0:0
       for: 15
-      role: ALTAR SERVERS
+      role: SERVERS
       text: | 
         bring the censer opened fully, and spoon of incense.
         Hand the censer to the first deacon and spoon to the Bishop.
-        The first deacon will hold the censer and the bishop will add the 
+        The first deacon will hold the censer and the Bishop will add the 
         incense.
     - from: 0:32
       to: 0:50
@@ -762,15 +762,15 @@
       for: 12
       role: FIRST DEACON
       text: |
-        in best practice will finish censing the sancturary and the doors
+        in best practice will finish censing the sanctuary and the doors
         and will wait at the royal doors till he announces the epistle
-        before censing the iconostatis.
+        before censing the iconostasis.
     - from: 2:18
       for: 15
       role: FIRST DEACON
       text: |
         after censing the iconostasis, returns to cense the clergy as is
-        normal, remembering to first cense the bishop 9 times, then clergy
+        normal, remembering to first cense the Bishop 9 times, then clergy
         from senior to junior, and south to north.
     - from: 2:38
       for: 10
@@ -781,9 +781,9 @@
       for: 15
       role: FIRST DEACON
       text: |
-        finally censes Christ, Mary, and the Altar as normal, and the
+        finally censes Christ, Mary, and the altar as normal, and the
         Bishop (but only three times), bows to the high place, and the
-        bishop, and gives away the censer.
+        Bishop, and gives away the censer.
 
 - clip: 18
   chapter: Alleluias and the Gospel Book Goes Out
@@ -794,15 +794,15 @@
   annotations: 
     - from: 0
       for: 12
-      role: ALTAR SERVERS
+      role: SERVERS
       text: |
         Altar servers use both doors, 
         candle bearers first,
         then fans,
-        then dikiri and trikiri.
+        then Dikiri and Trikiri.
     - from: 0:36
       for: 8
-      role: ALTAR SERVERS
+      role: SERVERS
       text: |
         go out both doors, and wait at the Ambo
         for the Gospel
@@ -826,7 +826,7 @@
       text: | 
         enters through the royal doors after reading the epistle,
         and stands on the south side of the altar holding the
-        epistle book up, as the gospel is announced.
+        epistle book up, as the Gospel is announced.
     - from: 0:12
       for: 6
       role: SECOND DEACON
@@ -844,24 +844,24 @@
         returning to his place at the altar.
     - at: 1:00
       for: 4
-      role: ALTAR SERVER
+      role: SERVER
       text: |
-        presents omophoron to the Bishop to kiss.
+        presents Omophoron to the Bishop to kiss.
 
 - clip: 20
-  chapter: Gospel is Returned to the Altar
+  chapter: Gospel is Returned to the altar
   cards:
     - for: 6
       text: |
-        Gospel is Returned to the Altar
+        Gospel is Returned to the altar
   annotations:
     - from: 0:04
       for: 10
       role: SUBDEACONS
       text: |
-        upon returning to the Ambo hands the trikiri and dikiri
+        upon returning to the Ambo hands the Trikiri and Dikiri
         to the Bishop, and waits for him to complete the blessing,
-        then return them to the Altar
+        then return them to the altar
     - from: 0:14
       for: 6
       role: FIRST DEACON
@@ -880,7 +880,7 @@
   cards:
     - for: 6
       text: |
-        THe Second Deacon Begins The Augmented Litany
+        THe Second deacon Begins The Augmented Litany
         after the Sermon as usual
   annotations:
     - at: 0:15
@@ -904,7 +904,7 @@
       text: |
         during the augmented litany,
         uncovers the gifts in preparation for the Bishop's
-        commerations.  Note the placement of the various
+        commemorations.  Note the placement of the various
         cloths, and utensils.
     - at: 1:20
       to: 1:54
@@ -923,7 +923,7 @@
          the icons, Bishop (9x), the clergy and servers, then stops. 
     - at: 4:12
       for: 8
-      role: ALTAR SERVERS
+      role: SERVERS
       text: |
         bring out the pitcher of water, with a server having a towel
         on his shoulders, carrying the bowl.
@@ -931,7 +931,7 @@
       for: 8
       role: SUBDEACONS
       text: |
-        prepare to hold the omophoron above the Bishop during the 
+        prepare to hold the Omophoron above the Bishop during the 
         washing of the hands.  
         **Be sure the buttons are facing the Royal Doors**
     - at: 4:38
@@ -959,9 +959,9 @@
         *That we may receive the King of all...* X 3
     - at: 6:02
       for: 4
-      role: ALTAR SERVER
+      role: SERVER
       text: |
-        takes the Bishop's miter.
+        takes the Bishop's Miter.
     - at: 6:15
       for: 5
       role: DEACONS
@@ -1034,16 +1034,16 @@
     - for: 6
       role: SECOND DEACON
       text: |
-        concludes the proskomedia with the Bishop.
+        concludes the Proskomedia with the Bishop.
         (See pgs 82-85, the deacon's part should be memorized)
     - at: 0:40
       to: 1:15
       speed: 6x
       audio: normal
       text: |
-        concludes the proskomedia
+        concludes the Proskomedia
     - at: 1:16
-      role: ALTAR SERVERS
+      role: SERVERS
       text: carry (in order) the Miter and the Omophoron...
     - at: 1:22
       text: the candles...
@@ -1062,7 +1062,7 @@
     - at: 1:43
       text: and other priests carrying crosses. 
     - at: 1:47
-      role: ALTAR SERVERS
+      role: SERVERS
       text: |
         have continued moving through the south deacon's doors,
         carrying the Omophoron and Miter
@@ -1076,7 +1076,7 @@
       text: |
         meanwhile on the Ambo the procession proceeds so that:
         fans are on either side of the Royal doors,
-        dikiri and triki behind them (or if ambo is narrow beside them)
+        Dikiri and Trikiri behind them (or if Ambo is narrow beside them)
         the first deacon and priest carrying the gifts at the foot of the Ambo,
         other priests behind them,
         and candle bearers behind them.
@@ -1084,7 +1084,7 @@
     - at: 2:31
       role: SECOND DEACON
       text: |
-        gives the censer to the bishop.
+        gives the censer to the Bishop.
     - at: 2:36 
       role: FIRST DEACON
       text: |
@@ -1095,7 +1095,7 @@
       role: DEACONS
       text: |
         The second deacon takes the censer and the first deacon hands
-        the Diskos to the bishop.
+        the Diskos to the Bishop.
         The first deacon returns to the altar, either through the royal 
         doors (if there is room) or through the south deacon's door.
     - at: 3:23
@@ -1113,10 +1113,10 @@
       role: SUBDEACONS
       text: | 
         after the Bishop finishes blessing with the Dikiri and Trikiri and
-        returns to the Altar, the subdeacons cross the ambo swapping places.
+        returns to the altar, the subdeacons cross the Ambo swapping places.
 
         This allows the Dikiri and Trikiri to return to the correct side
-        of the Altar. 
+        of the altar. 
     - at: 4:05
       for: 6
       text: | 
@@ -1159,7 +1159,7 @@
       text: |
         Litany of Supplication and the Creed
 
-        For the Deacons and Servers this follows
+        For the Deacons and servers this follows
         the normal rubrics.
   annotations:
     - at: 15
@@ -1269,8 +1269,8 @@
       to: 45
       role: SECOND DEACON
       text: |
-        takes the censer from the bishop and continues to bless the 
-        south, east, north, and west sides of the Altar, and
+        takes the censer from the Bishop and continues to bless the 
+        south, east, north, and west sides of the altar, and
         returning to the south-east corner, censes the Bishop 3 times.
     - from: 48
       role: FIRST DEACON
@@ -1291,7 +1291,7 @@
     - from: 1:38
       text: |
         The following prayer and action begins as the priest concludes with
-        the words *Amoung the first ... and rightly divides the word of thy truth!*
+        the words *Among the first ... and rightly divides the word of thy truth!*
     - from: 1:58
       role: FIRST DEACON
       text: |
