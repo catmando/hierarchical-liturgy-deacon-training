@@ -167,9 +167,12 @@ def err(where, msg):  errors.append(f"{where}: {msg}")
 def warn(where, msg): warnings.append(f"{where}: {msg}")
 
 
-def check_time(where, field, v):
+def check_time(where, field, v, present=False):
     """Times may arrive as int/float (YAML base-60) or as a string."""
     if v is None:
+        if present:
+            err(where, f"{field}: is empty — give a time, or remove the line. "
+                       f"An empty value is not the same as leaving the key out.")
         return
     if field == "to" and isinstance(v, str) and v.strip().lower() == "end":
         return                      # runs to the end of the clip
@@ -218,7 +221,7 @@ def check_entry(where, e, allowed, need_text=True):
     if "for" in e and "to" in e:
         err(where, "give either 'for' (duration) or 'to' (absolute end), not both")
     for f in ("at", "from", "for", "to"):
-        if f in e: check_time(where, f, e[f])
+        if f in e: check_time(where, f, e[f], present=True)
     if need_text and not str(e.get("text", "")).strip() and not e.get("image"):
         err(where, "no text")
 

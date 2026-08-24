@@ -1332,13 +1332,13 @@
       text: |
         *For this land, its civil authorities and armed forces.*
     - from: 2:42
+      to: end
       role: FIRST DEACON
       text: |
         *For peace of the whole world*
         *For the good estate of God's Holy Churches*
                                                                 
 - clip: 33
-  chapter: Anaphora Part 4 continued
   join: true
   annotations:
     - from: 0

@@ -554,6 +554,9 @@ def read_sheet(path):
 
     def end_of(v, n):
         """A time, or the word `end` for the end of clip n."""
+        if v is None:
+            die(f"clip {n}: a `to:` was left empty. Give it a time, or `end`, "
+                f"or remove the line.")
         if isinstance(v, str) and v.strip().lower() == "end":
             d = clip_len(n)
             if d is None:
