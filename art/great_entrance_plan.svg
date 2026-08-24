@@ -66,8 +66,8 @@
   <circle cx="1024" cy="668" r="41" fill="none" stroke="#d9b45b" stroke-width="3"/>
   <circle class="fig" cx="896"  cy="668" r="34" fill="#d96a68"/>
   <circle class="fig" cx="1024" cy="668" r="34" fill="#ffa500"/>
-  <text class="name" x="896"  y="677" fill="#1a1a1a">Ch</text>
-  <text class="name" x="1024" y="677" fill="#1a1a1a">Dk</text>
+  <text class="name" x="896"  y="677" fill="#1a1a1a">Pc</text>
+  <text class="name" x="1024" y="677" fill="#1a1a1a">D1</text>
   <text class="arch" x="960" y="737" style="font-size:23px;fill:#d9b45b">carrying the gifts</text>
 
   <!-- other priests -->
@@ -93,10 +93,10 @@
   <text class="lgd" x="1534" y="637">Di, Tr — Dikirion · Trikirion</text>
   <circle cx="1496" cy="686" r="27" fill="none" stroke="#d9b45b" stroke-width="2.5"/>
   <circle class="fig" cx="1496" cy="686" r="21" fill="#d96a68"/>
-  <text class="lgd" x="1534" y="695">Ch — Priest with the chalice</text>
+  <text class="lgd" x="1534" y="695">Pc — Priest with the chalice</text>
   <circle cx="1496" cy="744" r="27" fill="none" stroke="#d9b45b" stroke-width="2.5"/>
   <circle class="fig" cx="1496" cy="744" r="21" fill="#ffa500"/>
-  <text class="lgd" x="1534" y="753">Dk — Deacon with the diskos</text>
+  <text class="lgd" x="1534" y="753">D1 — First deacon, diskos</text>
   <circle class="fig" cx="1496" cy="802" r="21" fill="#a8e0a8"/>
   <text class="lgd" x="1534" y="811">P — Other priests</text>
   <circle class="fig" cx="1496" cy="860" r="21" fill="#93c4e8"/>
