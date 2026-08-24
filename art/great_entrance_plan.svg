@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <style>
+      .bg   { fill:#0b0b0d; }
+      .wall { fill:none; stroke:#e8e2d6; stroke-width:5; }
+      .icon { fill:none; stroke:#d9b45b; stroke-width:12; stroke-linecap:round; }
+      .floor{ fill:#141418; stroke:#33333c; stroke-width:2.5; }
+      .rise { fill:#1c1c22; stroke:#474751; stroke-width:2.5; }
+      .arch { fill:#8a8a94; font-family:Georgia,serif; font-size:25px; text-anchor:middle; }
+      .gold { fill:#d9b45b; font-family:Georgia,serif; font-size:27px; text-anchor:middle; }
+      .name { font-family:Georgia,serif; font-size:26px; text-anchor:middle; font-weight:bold; }
+      .ttl  { fill:#f0ece2; font-family:Georgia,serif; font-size:46px; text-anchor:middle; }
+      .fig  { stroke:#0b0b0d; stroke-width:3; }
+      .cmp  { fill:#7a7a84; font-family:Georgia,serif; font-size:24px; text-anchor:middle; }
+      .lgd  { fill:#a8a8b2; font-family:Georgia,serif; font-size:26px; text-anchor:start; }
+    </style>
+  </defs>
+  <rect class="bg" width="1920" height="1080"/>
+  <text class="ttl" x="960" y="70">The Great Entrance — once outside the altar</text>
+
+  <!-- sanctuary, now deeper -->
+  <path class="floor" d="M470,400 L470,255 A490,140 0 0 1 1450,255 L1450,400 Z"/>
+  <!-- nave -->
+  <rect class="floor" x="470" y="400" width="980" height="600"/>
+  <path class="wall"  d="M470,1000 L470,255 A490,140 0 0 1 1450,255 L1450,1000 Z"/>
+
+  <!-- square holy table, set back from the doors -->
+  <rect class="rise" x="885" y="150" width="150" height="150" rx="4"/>
+  <text class="arch" x="960" y="233">Holy Table</text>
+
+  <!-- iconostasis -->
+  <line class="icon" x1="470" y1="400" x2="700" y2="400"/>
+  <line class="icon" x1="770" y1="400" x2="878" y2="400"/>
+  <line class="icon" x1="1042" y1="400" x2="1150" y2="400"/>
+  <line class="icon" x1="1220" y1="400" x2="1450" y2="400"/>
+  <text class="arch" x="735" y="392">north</text>
+  <text class="arch" x="1185" y="392">south</text>
+  <text class="arch" x="1545" y="408">Iconostasis</text>
+
+  <!-- bishop, between the holy table and the royal doors -->
+  <circle class="fig" cx="960" cy="338" r="34" fill="#f0ece2"/>
+  <text class="name" x="960" y="347" fill="#1a1a1a">B</text>
+
+  <!-- solea, wide enough for both rows -->
+  <rect class="rise" x="600" y="400" width="720" height="140"/>
+  <text class="arch" x="1545" y="470">Solea</text>
+  <!-- ambo projecting into the nave -->
+  <path class="rise" d="M880,540 A80,58 0 0 0 1040,540 Z"/>
+  <text class="arch" x="960" y="582">Ambo</text>
+  <text class="gold" x="960" y="437" style="font-size:24px">ROYAL DOORS</text>
+
+  <!-- fans, slightly inward, either side of the royal doors -->
+  <circle class="fig" cx="838" cy="447" r="30" fill="#c8c8d0"/>
+  <circle class="fig" cx="1082" cy="447" r="30" fill="#c8c8d0"/>
+  <text class="name" x="838" y="456" fill="#1a1a1a">F</text>
+  <text class="name" x="1082" y="456" fill="#1a1a1a">F</text>
+
+  <!-- dikirion and trikirion behind them, further out -->
+  <circle class="fig" cx="774" cy="503" r="30" fill="#d9b45b"/>
+  <circle class="fig" cx="1146" cy="503" r="30" fill="#d9b45b"/>
+  <text class="name" x="774" y="512" fill="#1a1a1a">Di</text>
+  <text class="name" x="1146" y="512" fill="#1a1a1a">Tr</text>
+
+  <!-- priest and first deacon with the gifts, at the foot of the ambo -->
+  <circle class="fig" cx="896" cy="668" r="34" fill="#a8e0a8"/>
+  <circle class="fig" cx="1024" cy="668" r="34" fill="#ffa500"/>
+  <text class="name" x="896" y="677" fill="#1a1a1a">P</text>
+  <text class="name" x="1024" y="677" fill="#1a1a1a">D1</text>
+
+  <!-- other priests -->
+  <circle class="fig" cx="838" cy="775" r="30" fill="#a8e0a8"/>
+  <circle class="fig" cx="960" cy="775" r="30" fill="#a8e0a8"/>
+  <circle class="fig" cx="1082" cy="775" r="30" fill="#a8e0a8"/>
+  <text class="name" x="838" y="784" fill="#1a1a1a">P</text>
+  <text class="name" x="960" y="784" fill="#1a1a1a">P</text>
+  <text class="name" x="1082" y="784" fill="#1a1a1a">P</text>
+
+  <!-- candle bearers -->
+  <circle class="fig" cx="880" cy="878" r="30" fill="#93c4e8"/>
+  <circle class="fig" cx="1040" cy="878" r="30" fill="#93c4e8"/>
+  <text class="name" x="880" y="887" fill="#1a1a1a">C</text>
+  <text class="name" x="1040" y="887" fill="#1a1a1a">C</text>
+
+  <!-- legend -->
+  <circle class="fig" cx="1600" cy="560" r="21" fill="#f0ece2"/>
+  <text class="lgd" x="1640" y="569">Bishop</text>
+  <circle class="fig" cx="1600" cy="620" r="21" fill="#c8c8d0"/>
+  <text class="lgd" x="1640" y="629">Fans (ripidia)</text>
+  <circle class="fig" cx="1600" cy="680" r="21" fill="#d9b45b"/>
+  <text class="lgd" x="1640" y="689">Dikirion · Trikirion</text>
+  <circle class="fig" cx="1600" cy="740" r="21" fill="#ffa500"/>
+  <text class="lgd" x="1640" y="749">First deacon</text>
+  <circle class="fig" cx="1600" cy="800" r="21" fill="#a8e0a8"/>
+  <text class="lgd" x="1640" y="809">Priests</text>
+  <circle class="fig" cx="1600" cy="860" r="21" fill="#93c4e8"/>
+  <text class="lgd" x="1640" y="869">Candle bearers</text>
+
+  <text class="cmp" x="290" y="400">EAST · altar</text>
+  <text class="cmp" x="290" y="700">north ←    → south</text>
+  <text class="cmp" x="290" y="985">WEST · doors</text>
+</svg>

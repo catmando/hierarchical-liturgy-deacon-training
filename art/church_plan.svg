@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <style>
+      .bg    { fill:#0b0b0d; }
+      .wall  { fill:none; stroke:#e8e2d6; stroke-width:5; }
+      .icon  { fill:none; stroke:#d9b45b; stroke-width:11; stroke-linecap:round; }
+      .floor { fill:#16161a; stroke:#3a3a42; stroke-width:2.5; }
+      .rise  { fill:#1d1d22; stroke:#4a4a55; stroke-width:2.5; }
+      .lbl   { fill:#cfc9bd; font-family:Georgia,serif; font-size:27px; }
+      .lblc  { fill:#cfc9bd; font-family:Georgia,serif; font-size:27px; text-anchor:middle; }
+      .gold  { fill:#d9b45b; font-family:Georgia,serif; font-size:29px; text-anchor:middle; }
+      .tick  { stroke:#6a6a74; stroke-width:2; }
+      .cmp   { fill:#8d8d97; font-family:Georgia,serif; font-size:24px; text-anchor:middle; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1920" height="1080"/>
+
+  <!-- sanctuary floor + apse -->
+  <path class="floor" d="M520,300 L520,150 A440,150 0 0 1 1400,150 L1400,300 Z"/>
+  <!-- nave floor -->
+  <rect class="floor" x="520" y="300" width="880" height="580"/>
+  <!-- narthex -->
+  <rect class="floor" x="520" y="880" width="880" height="120"/>
+
+  <!-- outer wall -->
+  <path class="wall" d="M520,1000 L520,150 A440,150 0 0 1 1400,150 L1400,1000 Z"/>
+
+  <!-- holy table -->
+  <rect class="rise" x="880" y="170" width="160" height="90" rx="4"/>
+  <text class="lblc" x="960" y="225">Holy Table</text>
+
+  <!-- table of oblation, north side -->
+  <rect class="rise" x="580" y="180" width="130" height="70" rx="4"/>
+  <text class="lblc" x="645" y="222">Oblation</text>
+
+  <!-- iconostasis: three openings -->
+  <line class="icon" x1="520" y1="300" x2="700" y2="300"/>
+  <line class="icon" x1="790" y1="300" x2="880" y2="300"/>
+  <line class="icon" x1="1040" y1="300" x2="1130" y2="300"/>
+  <line class="icon" x1="1220" y1="300" x2="1400" y2="300"/>
+
+  <text class="gold" x="960" y="278">Royal Doors</text>
+  <text class="lblc" x="745" y="278">north</text>
+  <text class="lblc" x="1085" y="278">south</text>
+  <text class="lbl"  x="1420" y="307">Iconostasis</text>
+
+  <!-- solea -->
+  <rect class="rise" x="620" y="300" width="680" height="80"/>
+  <text class="lbl" x="1420" y="352">Solea</text>
+
+  <!-- ambo -->
+  <path class="rise" d="M880,380 A80,60 0 0 0 1040,380 Z"/>
+  <text class="lblc" x="960" y="425">Ambo</text>
+
+  <!-- cathedra -->
+  <rect class="rise" x="820" y="560" width="280" height="150" rx="6"/>
+  <text class="gold" x="960" y="628">Cathedra</text>
+  <text class="lblc" x="960" y="663">(bishop's place)</text>
+
+  <text class="lbl" x="1420" y="640">Nave</text>
+  <text class="lbl" x="1420" y="950">Narthex</text>
+
+  <!-- sanctuary label -->
+  <text class="lblc" x="960" y="120">SANCTUARY  ·  ALTAR</text>
+
+  <!-- orientation -->
+  <line class="tick" x1="250" y1="180" x2="250" y2="300"/>
+  <path class="tick" fill="none" d="M240,195 L250,175 L260,195"/>
+  <text class="cmp" x="250" y="160">EAST</text>
+  <text class="cmp" x="250" y="335">altar end</text>
+  <text class="cmp" x="250" y="960">WEST · doors</text>
+</svg>
