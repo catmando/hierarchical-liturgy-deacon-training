@@ -157,8 +157,9 @@ def render(sheet, linked, video_url):
                 continue
             img = str(c.get("image", "")).strip()
             if img:
-                add(f"![{md_escape(c.get('chapter') or 'diagram')}]"
-                    f"({os.path.relpath(img, OUT)})")
+                alt = (str(c["chapter"]) if c.get("chapter")
+                       else f"{title or f'clip {n}'} — plan")
+                add(f"![{md_escape(alt)}]({os.path.relpath(img, OUT)})")
                 add("")
             txt = str(c.get("text", "")).strip()
             if txt:
@@ -308,8 +309,9 @@ def render_html(sheet, video_url):
             if img:
                 uri = data_uri(img)
                 if uri:
-                    add(f'  <figure><img src="{uri}" alt="'
-                        f'{html.escape(str(c.get("chapter") or "diagram"))}">'
+                    alt = (str(c["chapter"]) if c.get("chapter")
+                           else f"{title or f'clip {n}'} — plan")
+                    add(f'  <figure><img src="{uri}" alt="{html.escape(alt)}">'
                         f'</figure>')
             txt = str(c.get("text", "")).strip()
             if txt:
