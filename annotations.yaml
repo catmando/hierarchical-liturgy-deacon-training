@@ -989,19 +989,26 @@
       text: |
         Clergy Kissing the Bishops Shoulder
 
+        In order of rank the clergy and the servers 
+        state their rank and name, and kiss the Bishop's
+        shoulder.
+
 - clip: 24
-  chapter: And last the 2nd Deacon kisses the Bishops Shoulder
-  cards:
-    - for: 6
-      text: |
-        And last the 2nd Deacon kisses the Bishops Shoulder
+  skip: true
 
 - clip: 25
-  chapter: The Bishop makes commemorations
+  chapter: The Bishop makes His Commemorations
   cards:
     - for: 6
       text: |
-        The Bishop makes commemorations
+        The Bishop now  makes His Commemorations
+  annotations:
+    - at: 0
+      for: 6
+      role: SECOND DEACON
+      text: |
+        remains at the Table of Oblation ready to
+        complete the Proskomedia with the Bishop.
 
 - clip: 26
   chapter: Covering the Gifts and The Great Entrance
@@ -1009,13 +1016,141 @@
     - for: 6
       text: |
         Covering the Gifts and The Great Entrance
+    - image: art/great_entrance_plan.png
+      for: 30
+      chapter: The Great Entrance — positions
+      after: true
+
+  annotations:
+    - at: 0
+      for: 6
+      text: At the Table of Oblation
+    - at: 10
+      for: 8
+      role: SECOND DEACON
+      text: |
+        holds the censer.  Notice how the censer is held:
+        by the bottom, with the lid pulled away.
+    - for: 6
+      role: SECOND DEACON
+      text: |
+        concludes the proskomedia with the Bishop.
+        (See pgs 82-85, the deacon's part should be memorized)
+    - at: 0:40
+      to: 1:15
+      speed: 6x
+      audio: normal
+      text: |
+        concludes the proskomedia
+    - at: 1:16
+      role: ALTAR SERVERS
+      text: carry (in order) the Miter and the Omophoron...
+    - at: 1:22
+      text: the candles...
+    - at: 1:24
+      text: the Dikiri...
+    - at: 1:26
+      text: the censer (carried by the second deacon)...
+    - at: 1:28
+      text: a fan...
+    - at: 1:33
+      text: the Diskos (carried by the first deacon)...
+    - at: 1:36
+      text: the Chalice...
+    - at: 1:38
+      text: the second fan, and Trikiri...
+    - at: 1:43
+      text: and other priests carrying crosses. 
+    - at: 1:47
+      role: ALTAR SERVERS
+      text: |
+        have continued moving through the south deacon's doors,
+        carrying the Omophoron and Miter
+    - at: 1:53
+      role: SECOND DEACON
+      text: |
+        also has returned to the sanctuary through the Royal Doors
+        and is at his side of the altar, with his censer.
+    - at: 2:00
+      for: 20
+      text: |
+        meanwhile on the Ambo the procession proceeds so that:
+        fans are on either side of the Royal doors,
+        dikiri and triki behind them (or if ambo is narrow beside them)
+        the first deacon and priest carrying the gifts at the foot of the Ambo,
+        other priests behind them,
+        and candle bearers behind them.
+        **This will set things up for the following actions**
+    - at: 2:31
+      role: SECOND DEACON
+      text: |
+        gives the censer to the bishop.
+    - at: 2:36 
+      role: FIRST DEACON
+      text: |
+        moves the center of the royal doors, and kneels presenting the
+        Diskos to the Bishop, who censes him.
+    - at: 2:46
+      for: 37 # added to prevent warning
+      role: DEACONS
+      text: |
+        The second deacon takes the censer and the first deacon hands
+        the Diskos to the bishop.
+        The first deacon returns to the altar, either through the royal 
+        doors (if there is room) or through the south deacon's door.
+    - at: 3:23
+      text: |
+        The priest carrying the chalice has presented it to the Bishop
+        and again the second deacon will hand the censer to the Bishop
+        and take it back.
+    - at: 3:41
+      for: 10
+      role: SECOND DEACON
+      text: |
+        now moves to the other side of the altar still holding the censer,
+        and wearing the aer.
+    - for: 12
+      role: SUBDEACONS
+      text: | 
+        after the Bishop finishes blessing with the Dikiri and Trikiri and
+        returns to the Altar, the subdeacons cross the ambo swapping places.
+
+        This allows the Dikiri and Trikiri to return to the correct side
+        of the Altar. 
+    - at: 4:05
+      for: 6
+      text: | 
+        The following is a diagram of the where everyone should stand
+        outside the sanctuary during the Great Entrance.  
+    - at: 4:11
+      to: end
+      cut: true
 
 - clip: 27
   chapter: Conclusion of the Great Entrance
   cards:
-    - for: 6
+    - for: 15
       text: |
         Conclusion of the Great Entrance
+
+        Not shown:  The second deacon kneels to the Bishop and 
+        the Aer is removed.  He rises and holds the censer as
+        the Aer is censed, then the censer is given to the Bishop.
+  annotations:
+    - at: 0
+      for: 10
+      role: SECOND DEACON
+      text: |
+        takes the censer back from the Bishop, goes the high place, 
+        censes the Bishop 9 times, then bows to the high place.
+    - at: 15
+      to: end
+      role: SUBDEACONS
+      text: |
+        have remained on the Ambo and will hand the Dikiri and Trikiri
+        to the Bishop, and then after the blessing return them to the 
+        Altar.
+
 
 - clip: 28
   chapter: Litany of Supplication and the Creed
@@ -1024,19 +1159,70 @@
       text: |
         Litany of Supplication and the Creed
 
+        For the Deacons and Servers this follows
+        the normal rubrics.
+  annotations:
+    - at: 15
+      to: 1:52
+      cut: true
+    - at: 2:02
+      to: end
+      cut: true
+
 - clip: 29
   chapter: The anaphora part 1
   cards:
     - for: 6
       text: |
         The anaphora part 1
+  annotations:
+    - at: 0
+      role: SUBDEACONS
+      text: |
+        have brought the Trikiri and Dikiri to the corner of the altar
+        during the creed; 
+    - at: 6
+      for: 6
+      text: |
+        and hand them to the Bishop as the creed concludes.
+    - at: 34
+      to: 54
+      text: |
+        the first deacon returns to the sanctuary, and
+        the subdeacons and deacons now stand together,
+        at the high place
+    - at: 1:18
+      to: 1:30
+      role: SUBDEACONS
+      text: |
+        move back to be ready to receive the Trikiri and Dikiri
+        as the choir sings *It is meet and right...* (pg 129)
+    - for: 10
+      text: |
+        All will bow to the high place together, turn,
+        and then the Dikiri and Trikiri are returned to their places
+    - at: 1:42
+      to: 1:56 
+      role: SUBDEACONS
+      text: |
+        return to their places.  The second deacon will kiss
+        the altar and hold the star as usual.
+    - at: 1:59
+      to: 2:08
+      cut: true
+    - at: 2:24
+      to: end
+      cut: true
+
 
 - clip: 30
   chapter: The anaphora part 2
   cards:
     - for: 6
       text: |
-        The anaphora part 2
+        The anaphora part 2: Words of Institution
+
+        This follows the exact rubrics on pg 132
 
 - clip: 31
   chapter: The anaphora part 3
