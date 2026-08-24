@@ -1222,14 +1222,37 @@
       text: |
         The anaphora part 2: Words of Institution
 
-        This follows the exact rubrics on pg 132
+        This follows the exact rubrics on pg 132,
+        the first deacon raising the chalice.
 
 - clip: 31
   chapter: The anaphora part 3
   cards:
     - for: 6
       text: |
-        The anaphora part 3
+        The anaphora part 3: Epiclesis
+
+        Again this follows the exact rubrics on pg 134-135.
+  annotations:
+    - from: 0
+      to: 2
+      cut: true
+    - from: 4
+      for: 6
+      role: FIRST DEACON
+      text: |
+        *Create in me a clean heart oh God, and renew a right Spirit within me!*
+    - from: 14
+      for: 6
+      role: SECOND DEACON
+      text: |
+        *Cast me not away from thy presence, and take not thy Holy Spirit from me!*
+    - from: 42
+      for: 8
+      role: FIRST DEACON
+      text: |
+        *Bless Master the Holy Bread*...*Bless Master the Holy Cup*...etc
+        (all said by the first deacon pg 134)
 
 - clip: 32
   chapter: The anaphora part 4
@@ -1237,13 +1260,106 @@
     - for: 6
       text: |
         The anaphora part 4
-
-- clip: 33
-  chapter: The anaphora part 5 and beginning of Litany before the lords prayer
-  cards:
-    - for: 6
+        
+        With the Bishop present additional prayers are said
+        by the first deacon before the Lord's prayer.  
+        These are not in the rubrics book!
+  annotations:
+    - from: 48
+      role: FIRST DEACON
       text: |
-        The anaphora part 5 and beginning of Litany before the lords prayer
+        while the hymn is being sung, goes to the high place,
+        makes the usual reverences, and kissing the altar as 
+        he passes, goes out through the Royal doors.
+    - from: 56 
+      role: CHOIR
+      text: |
+        singing... *without corruption thou gavest birth to God the*
+        *Word: true Theotokos, we magnify thee.*
+    - from: 1:07
+      for: 6
+      role: FIRST DEACON
+      text: |
+        now says: *For All Mankind!* 
+    - from: 1:38
+      text: |
+        The following prayer and action begins as the priest concludes with
+        the words *Amoung the first ... and rightly divides the word of thy truth*
+    - from: 1:58
+      role: FIRST DEACON
+      text: |
+        *For His Eminence, The Most Reverend Michael, Archbishop of*
+        *New York, of the Diocese of New York, and New Jersey.*
+    - from: 2:06
+      role: FIRST DEACON
+      text: |
+        *Who here offers* -- and turning enters the sanctuary --
+        *These Holy Gifts* -- pointing to the Diskos and Chalice
+    - from: 2:09
+      role: FIRST DEACON
+      text: |
+        *Unto the Lord our God* -- after going to the high place 
+        and reverencing the high place and the Bishop 
+    - from: 2:12
+      role: FIRST DEACON
+      text: |
+        *For the most blessed Tikhon, Archbishop of Washington*
+        *Metropolitan of all America and Canada*
+    - from: 2:18
+      role: FIRST DEACON
+      text: |
+        *For the holy synod of Bishops, the Most Reverend Metropolitans,* 
+        *Archbishops and Bishops*
+    - from: 2:25
+      role: FIRST DEACON
+      text: |
+        *For the honorable priesthood and the diaconate in Christ*
+    - from: 2:29
+      role: FIRST DEACON
+      text: |
+        Goes and stands again under the arch of he Royal doors, while saying:
+        *For every priestly and monastic order*
+    - from: 2:35
+      role: FIRST DEACON
+      text: |
+        *For this land, its civil authorities and armed forces*
+    - from: 2:42
+      role: FIRST DEACON
+      text: |
+        *For peace of the whole world*
+        *For the good estate of God's Holy Churches*
+                                                                
+- clip: 33
+  annotations:
+    - from: 0
+      role: FIRST DEACON
+      text: |
+        *For the salvation and assistance of all those*
+        *who diligently labor and serve*
+    - from: 0:08
+      role: FIRST DEACON
+      text: |
+        *For the healing of the sick, for the repose, pardon,*
+        *blessed memory, and forgiveness of sins of all*
+        *Orthodox who have fallen asleep.*
+    - from: 0:20
+      role: FIRST DEACON
+      text: |
+        *For the salvation of the people here present, and*
+        *for those they have in mind.*
+    - from: 0:28
+      role: FIRST DEACON
+      text: |
+        *And for all mankind!*
+    - from: 0:35
+      to: 0:48
+      role: FIRST DEACON
+      text: |
+        Returns to the high place, makes the usual reverences,
+        and receives a blessing from the Bishop, kissing His
+        hand and shoulder.
+
+
 
 - clip: 34
   chapter: After Communion
