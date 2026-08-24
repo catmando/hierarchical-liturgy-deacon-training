@@ -133,6 +133,11 @@ end, and **`to: end` runs to the end of the clip** — on spans too, so a cut
 `from: 60, to: end` trims the tail. `at: next+1.5` waits longer. Resolves in
 sheet order.
 
+**Fades are deliberately asymmetric.** `--cut-fade` eases the sound down
+*into* a cut but there is no fade in on the way out, because the user picks
+cut end points at moments of silence — solving it in the edit rather than in
+the encoder. Do not add a fade in unasked.
+
 **Spans.** `speed:` and `cut: true` entries sit inline in the annotations
 list so a clip reads in time order. Both ends must be given, and a span never
 advances where the next annotation picks up. `speed: 4x` sets a rate;
