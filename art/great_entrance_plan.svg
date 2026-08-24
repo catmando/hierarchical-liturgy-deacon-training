@@ -12,7 +12,7 @@
       .ttl  { fill:#f0ece2; font-family:Georgia,serif; font-size:46px; text-anchor:middle; }
       .fig  { stroke:#0b0b0d; stroke-width:3; }
       .cmp  { fill:#7a7a84; font-family:Georgia,serif; font-size:24px; text-anchor:middle; }
-      .lgd  { fill:#a8a8b2; font-family:Georgia,serif; font-size:26px; text-anchor:start; }
+      .lgd  { fill:#a8a8b2; font-family:Georgia,serif; font-size:23px; text-anchor:start; }
     </style>
   </defs>
   <rect class="bg" width="1920" height="1080"/>
@@ -62,10 +62,13 @@
   <text class="name" x="1146" y="512" fill="#1a1a1a">Tr</text>
 
   <!-- priest and first deacon with the gifts, at the foot of the ambo -->
-  <circle class="fig" cx="896" cy="668" r="34" fill="#a8e0a8"/>
+  <circle cx="896"  cy="668" r="41" fill="none" stroke="#d9b45b" stroke-width="3"/>
+  <circle cx="1024" cy="668" r="41" fill="none" stroke="#d9b45b" stroke-width="3"/>
+  <circle class="fig" cx="896"  cy="668" r="34" fill="#d96a68"/>
   <circle class="fig" cx="1024" cy="668" r="34" fill="#ffa500"/>
-  <text class="name" x="896" y="677" fill="#1a1a1a">P</text>
-  <text class="name" x="1024" y="677" fill="#1a1a1a">D1</text>
+  <text class="name" x="896"  y="677" fill="#1a1a1a">Ch</text>
+  <text class="name" x="1024" y="677" fill="#1a1a1a">Dk</text>
+  <text class="arch" x="960" y="737" style="font-size:23px;fill:#d9b45b">carrying the gifts</text>
 
   <!-- other priests -->
   <circle class="fig" cx="838" cy="775" r="30" fill="#a8e0a8"/>
@@ -82,18 +85,22 @@
   <text class="name" x="1040" y="887" fill="#1a1a1a">C</text>
 
   <!-- legend -->
-  <circle class="fig" cx="1600" cy="560" r="21" fill="#f0ece2"/>
-  <text class="lgd" x="1640" y="569">Bishop</text>
-  <circle class="fig" cx="1600" cy="620" r="21" fill="#c8c8d0"/>
-  <text class="lgd" x="1640" y="629">Fans (ripidia)</text>
-  <circle class="fig" cx="1600" cy="680" r="21" fill="#d9b45b"/>
-  <text class="lgd" x="1640" y="689">Dikirion · Trikirion</text>
-  <circle class="fig" cx="1600" cy="740" r="21" fill="#ffa500"/>
-  <text class="lgd" x="1640" y="749">First deacon</text>
-  <circle class="fig" cx="1600" cy="800" r="21" fill="#a8e0a8"/>
-  <text class="lgd" x="1640" y="809">Priests</text>
-  <circle class="fig" cx="1600" cy="860" r="21" fill="#93c4e8"/>
-  <text class="lgd" x="1640" y="869">Candle bearers</text>
+  <circle class="fig" cx="1496" cy="512" r="21" fill="#f0ece2"/>
+  <text class="lgd" x="1534" y="521">B — Bishop</text>
+  <circle class="fig" cx="1496" cy="570" r="21" fill="#c8c8d0"/>
+  <text class="lgd" x="1534" y="579">F — Fans (ripidia)</text>
+  <circle class="fig" cx="1496" cy="628" r="21" fill="#d9b45b"/>
+  <text class="lgd" x="1534" y="637">Di, Tr — Dikirion · Trikirion</text>
+  <circle cx="1496" cy="686" r="27" fill="none" stroke="#d9b45b" stroke-width="2.5"/>
+  <circle class="fig" cx="1496" cy="686" r="21" fill="#d96a68"/>
+  <text class="lgd" x="1534" y="695">Ch — Priest with the chalice</text>
+  <circle cx="1496" cy="744" r="27" fill="none" stroke="#d9b45b" stroke-width="2.5"/>
+  <circle class="fig" cx="1496" cy="744" r="21" fill="#ffa500"/>
+  <text class="lgd" x="1534" y="753">Dk — Deacon with the diskos</text>
+  <circle class="fig" cx="1496" cy="802" r="21" fill="#a8e0a8"/>
+  <text class="lgd" x="1534" y="811">P — Other priests</text>
+  <circle class="fig" cx="1496" cy="860" r="21" fill="#93c4e8"/>
+  <text class="lgd" x="1534" y="869">C — Candle bearers</text>
 
   <text class="cmp" x="290" y="400">EAST · altar</text>
   <text class="cmp" x="290" y="700">north ←    → south</text>
