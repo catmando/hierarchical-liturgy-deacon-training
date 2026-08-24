@@ -300,6 +300,22 @@ priest and the footage decide it.
 Only once that is settled: pick one spelling per office, singular or plural
 consistently, and apply it everywhere.
 
+### Left/right vs north/south — a real ambiguity, not just wording
+
+Ten clips mention the dikiri and trikiri (6, 11, 12, 14, 15, 18, 20, 26, 27),
+and they use **two different frames of reference**:
+
+- clip 6: *"Dikiri on bishops **left** … trikiri on the **right**"* — the
+  bishop's own body
+- clip 15: *"Dikiri on the **right**, Trikiri on the **left**"* — the viewer's,
+  as stated by the sentence that follows it
+
+Both are correct, and both agree with the confirmed local practice. But read
+one after the other they say the opposite, and the reader has to notice the
+frame changed. **North and south are unambiguous whoever is facing where**,
+which is why the diagram uses them. Prefer them in annotation text, or say
+whose left is meant every single time.
+
 ### Then, wording
 
 - Terms, case, spelling, grammar and punctuation across every annotation,
