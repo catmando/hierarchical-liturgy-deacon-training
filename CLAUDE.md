@@ -311,6 +311,13 @@ consistently, and apply it everywhere.
 
 Things the user wants said somewhere, not yet written into the sheet.
 
+- **When are the final bishop's prayers read?** The user does not know and
+  intends to find out. Raised while looking at clip 3, where the first deacon
+  *"reads the entrance prayers quietly, as normal, BUT stops before 'I will
+  enter thy house'"* — so what happens to the remainder is an open thread.
+  Clip 7 is titled *Final Prayers before the Liturgy*, which may or may not be
+  the same moment; do not assume it is.
+
 - **Deacons kiss the Holy Table before touching it.** Wanted in the
   introduction. Widely forgotten in parish practice, and a bishop will insist
   on it — which is the point worth making, and the reason it belongs early
