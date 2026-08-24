@@ -440,6 +440,30 @@ south is right. Marker colours follow the on-screen role colours.
 Worth drawing next, all reusing `church_plan.svg`: the vesting, the little
 entrance, censing paths, and the order of shoulder-kissing.
 
+### Wanted, once the first draft is done: diagrams beside the video
+
+The user wants a diagram shown *alongside* the footage rather than as a card
+that interrupts it — pictorial annotation. Deliberately deferred until the
+annotation pass is finished; do not start it early.
+
+The mechanism already exists in the codebase. `burn_timecode()` overlays a
+drawtext per segment switched on with `enable='between(t,S,E)'`; a diagram is
+the same shape with `overlay` instead, and the annotation timing model
+supplies the spans for free. Sketch:
+
+```yaml
+    - at: 1:20
+      for: 20
+      image: art/great_entrance_plan.png    # beside the picture, not a card
+      text: Positions once outside the altar
+```
+
+Two things to decide when it is built. Whether the video shrinks to make room
+(a real layout change, and every annotation position would move) or the
+diagram floats over a corner (cheap, but covers footage). And that it means
+re-encoding, like `--timecode` — so it belongs in the burn step rather than
+in `master.mp4`, or previews get slow again.
+
 ---
 
 ## 14. Distribution — thought about, not decided
