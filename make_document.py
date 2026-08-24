@@ -80,13 +80,16 @@ def render(sheet, linked, video_url):
     L = []
     add = L.append
 
-    add("# Hierarchical Divine Liturgy")
-    add("## A rubric for deacons")
+    add("# Rubrics for Serving at a Hierarchical Liturgy")
     add("")
-    add("Filmed 20 June 2026 · OCA, Diocese of New York and New Jersey")
+    add("*For deacons, subdeacons and altar servers*")
     add("")
-    add("Directions are numbered by their position in each clip, so a time here "
-        "matches the same moment in the footage.")
+    add("This assumes the parish Liturgy is already second nature. It covers "
+        "only what changes when the bishop serves.")
+    add("")
+    add("Filmed 20 June 2026 · OCA, Diocese of New York and New Jersey. "
+        "Times are positions within each clip, so a direction here sits at the "
+        "same moment in the footage.")
     add("")
     if not linked:
         add("<!-- printed form: convert to HTML and print from a browser, or "
@@ -244,7 +247,7 @@ def render_html(sheet, video_url):
         if t:
             secs.append((b["clip"], str(t).strip()))
 
-    add('<title>Deacon’s Rubric</title>')
+    add('<title>Serving a Hierarchical Liturgy</title>')
     add('<link rel="preconnect" href="https://fonts.googleapis.com">')
     add('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>')
     add('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
@@ -253,10 +256,13 @@ def render_html(sheet, video_url):
     add("<style>" + CSS + "</style>")
 
     add('<header class="masthead">')
-    add('  <p class="eyebrow">Hierarchical Divine Liturgy</p>')
-    add('  <h1>A Rubric for Deacons</h1>')
-    add('  <p class="standfirst">Filmed 20 June 2026 &middot; OCA, Diocese of '
-        'New York and New Jersey. Times are positions within each clip, so a '
+    add('  <p class="eyebrow">Deacons &middot; Subdeacons &middot; Altar servers</p>')
+    add('  <h1>Rubrics for Serving at a Hierarchical Liturgy</h1>')
+    add('  <p class="standfirst">This assumes the parish Liturgy is already '
+        'second nature. It covers only what changes when the bishop '
+        'serves.</p>')
+    add('  <p class="colophon">Filmed 20 June 2026 &middot; OCA, Diocese of New '
+        'York and New Jersey. Times are positions within each clip, so a '
         'direction here sits at the same moment in the footage.</p>')
     add("</header>")
 
@@ -371,7 +377,12 @@ h1{
   font-size:clamp(2.6rem,6vw,3.9rem); line-height:1.04; text-wrap:balance;
   letter-spacing:-.01em;
 }
-.standfirst{color:var(--muted);max-width:34rem;margin:1.1rem 0 0}
+.standfirst{color:var(--ink);max-width:34rem;margin:1.2rem 0 0;font-size:1.12rem}
+.colophon{
+  color:var(--muted); max-width:34rem; margin:1rem 0 0;
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.76rem;
+  line-height:1.7; letter-spacing:.02em;
+}
 .toc{padding:2.5rem 0 1rem}
 .toc h2{
   font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.74rem;
