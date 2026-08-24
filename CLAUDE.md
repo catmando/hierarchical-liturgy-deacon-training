@@ -313,6 +313,32 @@ consistently, and apply it everywhere.
 - Clip 02 is titled "Bishop moves to the cathedra" but precedes the entrance
   prayers, while the notes put the cathedra after. Confirm against the footage.
 
+### Dikirion and trikirion — which side, and the crossing
+
+Researched 24 Aug 2026. The rule is sourced; the choreography is not.
+
+**Sourced.** OrthodoxWiki: *"The trikirion is always on the bishop's right,
+and the dikirion on his left"*, and they are kept *"respectively on the
+northeast and southeast corners of the altar"* — dikirion northeast, trikirion
+southeast. Those two agree, since a bishop at the Holy Table facing east has
+his right hand to the south.
+
+**Follows necessarily.** Facing **east**, trikirion is south and dikirion
+north. Facing **west** toward the people, they reverse. So the bearers must
+cross when he turns — the only way to keep the trikirion in his right hand
+through a 180° turn. Not a local custom.
+
+**Open, and not answerable from sources:** exactly *when* in the Great
+Entrance they cross — before setting out, on the solea, or as he turns. The
+user is confident the crossing always happens and cannot see it himself from
+behind the Holy Table; he is asking **an experienced subdeacon in the
+diocese**. That person is also the obvious route to the roles chart of §6,
+still outstanding.
+
+Worth showing in the Great Entrance diagram once confirmed, as arrows for Di
+and Tr exchanging sides — it is precisely what the footage cannot show and
+what the written sources are vaguest about.
+
 ---
 
 ## 11. Notes for whoever picks this up
