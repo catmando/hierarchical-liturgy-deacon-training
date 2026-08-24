@@ -3,105 +3,104 @@
     <style>
       .bg   { fill:#0b0b0d; }
       .wall { fill:none; stroke:#e8e2d6; stroke-width:5; }
-      .floor{ fill:#141418; stroke:#33333c; stroke-width:2.5; }
-      .rise { fill:#1c1c22; stroke:#474751; stroke-width:2.5; }
+      .nave { fill:#141418; stroke:#33333c; stroke-width:2.5; }
+      .nart { fill:#1b1820; stroke:#413b4a; stroke-width:2.5; }
       .arch { fill:#8a8a94; font-family:Georgia,serif; font-size:25px; text-anchor:middle; }
       .gold { fill:#d9b45b; font-family:Georgia,serif; font-size:26px; text-anchor:middle; }
-      .name { font-family:Georgia,serif; font-size:24px; text-anchor:middle; font-weight:bold; }
+      .name { font-family:Georgia,serif; font-size:23px; text-anchor:middle; font-weight:bold; }
       .ttl  { fill:#f0ece2; font-family:Georgia,serif; font-size:46px; text-anchor:middle; }
       .fig  { stroke:#0b0b0d; stroke-width:3; }
       .cmp  { fill:#7a7a84; font-family:Georgia,serif; font-size:23px; text-anchor:middle; }
       .lgd  { fill:#a8a8b2; font-family:Georgia,serif; font-size:23px; text-anchor:start; }
-      .cap  { fill:#8a8a94; font-family:Georgia,serif; font-size:23px; text-anchor:middle; }
+      .cap  { fill:#8a8a94; font-family:Georgia,serif; font-size:22px; }
     </style>
   </defs>
   <rect class="bg" width="1920" height="1080"/>
-  <text class="ttl" x="960" y="68">The Greeting at the Doors</text>
-  <text class="cap" x="960" y="104">the west end &#183; the Bishop enters from below</text>
+  <text class="ttl" x="960" y="66">The Greeting at the Doors</text>
 
-  <!-- nave, running off the top toward the altar -->
-  <rect class="floor" x="470" y="150" width="980" height="650"/>
-  <rect class="floor" x="470" y="800" width="980" height="130"/>
-  <path class="wall" d="M470,150 L470,930 L1450,930 L1450,150"/>
+  <rect class="nave" x="470" y="128" width="980" height="512"/>
+  <rect class="nart" x="470" y="640" width="980" height="320"/>
+  <path class="wall" d="M470,128 L470,960 L1450,960 L1450,128"/>
+  <line x1="470" y1="640" x2="1450" y2="640" stroke="#413b4a" stroke-width="2.5"/>
 
-  <!-- outer doors -->
-  <line x1="800" y1="930" x2="1120" y2="930" stroke="#d9b45b" stroke-width="13" stroke-linecap="round"/>
-  <text class="gold" x="960" y="978">THE DOORS</text>
-  <text class="arch" x="1545" y="875">Narthex</text>
-  <text class="arch" x="1545" y="480">Nave</text>
-  <text class="arch" x="960" y="176">&#8593;&#8593;  toward the altar  &#8593;&#8593;</text>
+  <line x1="800" y1="960" x2="1120" y2="960" stroke="#d9b45b" stroke-width="13" stroke-linecap="round"/>
+  <text class="gold" x="960" y="1008">THE DOORS</text>
+  <text class="arch" x="960" y="164">&#8593;  toward the altar  &#8593;</text>
+  <text class="cap" x="500" y="204" style="fill:#5f5f6a">NAVE</text>
+  <text class="cap" x="500" y="946" style="fill:#5f5f6a">NARTHEX</text>
 
-  <!-- deacons, behind the priests, toward the altar -->
-  <circle class="fig" cx="860" cy="270" r="31" fill="#e0912c"/>
-  <circle class="fig" cx="1060" cy="270" r="31" fill="#e0912c"/>
-  <text class="name" x="860" y="279" fill="#1a1a1a">D1</text>
-  <text class="name" x="1060" y="279" fill="#1a1a1a">D2</text>
-  <text class="cap" x="960" y="332">censers ready, censing continuously</text>
+  <!-- deacons, behind the priests toward the altar -->
+  <circle class="fig" cx="890" cy="222" r="30" fill="#e0912c"/>
+  <circle class="fig" cx="1030" cy="222" r="30" fill="#e0912c"/>
+  <text class="name" x="890" y="230" fill="#1a1a1a">D1</text>
+  <text class="name" x="1030" y="230" fill="#1a1a1a">D2</text>
+  <text class="cap" x="1082" y="230">censers ready, censing continuously</text>
 
-  <!-- other priests, by rank, north and south -->
-  <circle class="fig" cx="640" cy="430" r="31" fill="#a8e0a8"/>
-  <circle class="fig" cx="760" cy="430" r="31" fill="#a8e0a8"/>
-  <circle class="fig" cx="1160" cy="430" r="31" fill="#a8e0a8"/>
-  <circle class="fig" cx="1280" cy="430" r="31" fill="#a8e0a8"/>
-  <text class="name" x="640" y="439" fill="#1a1a1a">P</text>
-  <text class="name" x="760" y="439" fill="#1a1a1a">P</text>
-  <text class="name" x="1160" y="439" fill="#1a1a1a">P</text>
-  <text class="name" x="1280" y="439" fill="#1a1a1a">P</text>
-  <text class="cap" x="545" y="439">north</text>
-  <text class="cap" x="1378" y="439">south</text>
-  <text class="cap" x="960" y="497">in order of rank, outward from the rector</text>
+  <!-- priests, a single file running east to west, rector nearest the doors -->
+  <circle class="fig" cx="960" cy="318" r="30" fill="#a8e0a8"/>
+  <circle class="fig" cx="960" cy="392" r="30" fill="#a8e0a8"/>
+  <circle class="fig" cx="960" cy="466" r="30" fill="#a8e0a8"/>
+  <circle class="fig" cx="960" cy="540" r="30" fill="#a8e0a8"/>
+  <text class="name" x="960" y="326" fill="#1a1a1a">P</text>
+  <text class="name" x="960" y="400" fill="#1a1a1a">P</text>
+  <text class="name" x="960" y="474" fill="#1a1a1a">P</text>
+  <text class="name" x="960" y="548" fill="#1a1a1a">P</text>
+  <text class="cap" x="1012" y="326">senior</text>
+  <text class="cap" x="1012" y="548">junior</text>
+  <text class="cap" x="640" y="440">in order of rank,</text>
+  <text class="cap" x="640" y="468">senior nearest the altar</text>
 
-  <!-- rector, at centre, with the cross -->
-  <circle cx="960" cy="430" r="39" fill="none" stroke="#d9b45b" stroke-width="3"/>
-  <circle class="fig" cx="960" cy="430" r="32" fill="#d96a68"/>
-  <text class="name" x="960" y="439" fill="#1a1a1a">R</text>
+  <!-- rector, closest to the narthex, holding the cross -->
+  <circle cx="960" cy="606" r="38" fill="none" stroke="#d9b45b" stroke-width="3"/>
+  <circle class="fig" cx="960" cy="606" r="31" fill="#d96a68"/>
+  <text class="name" x="960" y="614" fill="#1a1a1a">R</text>
+  <text class="cap" x="1016" y="600">Rector, with the cross</text>
+  <text class="cap" x="1016" y="628">on a tray, handle to his left</text>
 
-  <!-- servers with the mantiya, at the doors -->
-  <circle class="fig" cx="806" cy="700" r="31" fill="#c8c8d0"/>
-  <circle class="fig" cx="1114" cy="700" r="31" fill="#c8c8d0"/>
-  <text class="name" x="806" y="709" fill="#1a1a1a">S</text>
-  <text class="name" x="1114" y="709" fill="#1a1a1a">S</text>
-  <text class="cap" x="960" y="672">vested, holding the Mantiya</text>
+  <!-- ── narthex: everyone below the rector waits here ───────────── -->
+  <text class="cap" x="500" y="676" style="fill:#6f6a78">everyone below the rector waits in the narthex</text>
 
-  <!-- the one holding the train -->
-  <circle class="fig" cx="960" cy="762" r="29" fill="#9b74b8"/>
-  <text class="name" x="960" y="771" fill="#1a1a1a">T</text>
-  <text class="cap" x="1210" y="770" style="text-anchor:start">holds the train</text>
+  <circle class="fig" cx="820" cy="752" r="30" fill="#9b74b8"/>
+  <circle class="fig" cx="1100" cy="752" r="30" fill="#9b74b8"/>
+  <text class="name" x="820" y="760" fill="#1a1a1a">SD</text>
+  <text class="name" x="1100" y="760" fill="#1a1a1a">SD</text>
+  <text class="cap" x="960" y="706" style="text-anchor:middle;fill:#8a8a94">vested, holding the Mantiya</text>
 
-  <!-- greeters, just inside the doors -->
-  <circle class="fig" cx="660" cy="600" r="31" fill="#93c4e8"/>
-  <text class="name" x="660" y="609" fill="#1a1a1a">Ch</text>
-  <text class="cap" x="660" y="658">flowers</text>
-  <circle class="fig" cx="1260" cy="600" r="31" fill="#b3893c"/>
-  <text class="name" x="1260" y="609" fill="#1a1a1a">PC</text>
-  <text class="cap" x="1260" y="658">bread and salt</text>
+  <circle class="fig" cx="960" cy="836" r="29" fill="#9b74b8"/>
+  <text class="name" x="960" y="844" fill="#1a1a1a">SD</text>
+  <text class="cap" x="1000" y="844">holds the train</text>
 
-  <!-- narthex servers -->
-  <circle class="fig" cx="600" cy="866" r="29" fill="#7d8598"/>
-  <circle class="fig" cx="1320" cy="866" r="29" fill="#7d8598"/>
-  <text class="name" x="600" y="875" fill="#1a1a1a">S</text>
-  <text class="name" x="1320" y="875" fill="#1a1a1a">S</text>
-  <text class="cap" x="960" y="874">ready to follow and assist</text>
+  <circle class="fig" cx="620" cy="790" r="30" fill="#93c4e8"/>
+  <text class="name" x="620" y="798" fill="#1a1a1a">Ch</text>
+  <text class="cap" x="620" y="846" style="text-anchor:middle">flowers</text>
+
+  <circle class="fig" cx="1300" cy="790" r="30" fill="#b3893c"/>
+  <text class="name" x="1300" y="798" fill="#1a1a1a">PC</text>
+  <text class="cap" x="1300" y="846" style="text-anchor:middle">bread and salt</text>
+
+  <circle class="fig" cx="700" cy="908" r="28" fill="#7d8598"/>
+  <circle class="fig" cx="1220" cy="908" r="28" fill="#7d8598"/>
+  <text class="name" x="700" y="916" fill="#1a1a1a">S</text>
+  <text class="name" x="1220" y="916" fill="#1a1a1a">S</text>
+  <text class="cap" x="960" y="916" style="text-anchor:middle">ready to follow and assist</text>
 
   <!-- legend -->
-  <circle class="fig" cx="1608" cy="196" r="19" fill="#d96a68"/>
-  <text class="lgd" x="1642" y="204">R &#8212; Rector, with the cross</text>
-  <circle class="fig" cx="1608" cy="248" r="19" fill="#a8e0a8"/>
-  <text class="lgd" x="1642" y="256">P &#8212; Priests, by rank</text>
-  <circle class="fig" cx="1608" cy="300" r="19" fill="#e0912c"/>
-  <text class="lgd" x="1642" y="308">D1, D2 &#8212; Deacons</text>
-  <circle class="fig" cx="1608" cy="352" r="19" fill="#c8c8d0"/>
-  <text class="lgd" x="1642" y="360">S &#8212; Servers, Mantiya</text>
-  <circle class="fig" cx="1608" cy="404" r="19" fill="#9b74b8"/>
-  <text class="lgd" x="1642" y="412">T &#8212; Holds the train</text>
-  <circle class="fig" cx="1608" cy="456" r="19" fill="#93c4e8"/>
-  <text class="lgd" x="1642" y="464">Ch &#8212; Children</text>
-  <circle class="fig" cx="1608" cy="508" r="19" fill="#b3893c"/>
-  <text class="lgd" x="1642" y="516">PC &#8212; Council President</text>
-  <circle class="fig" cx="1608" cy="560" r="19" fill="#7d8598"/>
-  <text class="lgd" x="1642" y="568">S &#8212; Narthex servers</text>
+  <circle class="fig" cx="1608" cy="188" r="19" fill="#d96a68"/>
+  <text class="lgd" x="1642" y="196">R &#8212; Rector</text>
+  <circle class="fig" cx="1608" cy="240" r="19" fill="#a8e0a8"/>
+  <text class="lgd" x="1642" y="248">P &#8212; Priests</text>
+  <circle class="fig" cx="1608" cy="292" r="19" fill="#e0912c"/>
+  <text class="lgd" x="1642" y="300">D &#8212; Deacons</text>
+  <circle class="fig" cx="1608" cy="344" r="19" fill="#9b74b8"/>
+  <text class="lgd" x="1642" y="352">SD &#8212; Subdeacons</text>
+  <circle class="fig" cx="1608" cy="396" r="19" fill="#93c4e8"/>
+  <text class="lgd" x="1642" y="404">Ch &#8212; Children</text>
+  <circle class="fig" cx="1608" cy="448" r="19" fill="#b3893c"/>
+  <text class="lgd" x="1642" y="456">PC &#8212; Council President</text>
+  <circle class="fig" cx="1608" cy="500" r="19" fill="#7d8598"/>
+  <text class="lgd" x="1642" y="508">S &#8212; Servers</text>
 
-  <text class="cmp" x="270" y="200">EAST &#183; altar</text>
-  <text class="cmp" x="270" y="540">north &#8592;    &#8594; south</text>
-  <text class="cmp" x="270" y="920">WEST</text>
+  <text class="cmp" x="268" y="196">EAST &#183; altar</text>
+  <text class="cmp" x="268" y="440">north &#8592;   &#8594; south</text>
+  <text class="cmp" x="268" y="962">WEST</text>
 </svg>
