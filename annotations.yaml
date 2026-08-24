@@ -325,11 +325,11 @@
       role: SERVERS
       text: A junior server takes the staff, and the Mantiya is removed
     - for: 4
-      role: SERVERS
-      text: The Bishop takes off his Klobuk and hands to the servers, who place it on the tray.
+      role: SUBDEACONS
+      text: The Bishop takes off his Klobuk and hands to the subdeacons, who place it on the tray.
     - from: 15
       for: 4
-      role: SERVERS
+      role: SUBDEACONS
       text: The Bishop removes his cross, and engolpion, and other items
     - from: 19
       for: 4
@@ -337,7 +337,7 @@
       text: "MEANWHILE: The vestments are brought from their location to the bishop"
     - from: 25
       for: 4
-      role: SERVERS
+      role: SUBDEACONS
       text: The Bishop removes his riassa, and its placed with the rest of the items
     - from: 33
       for: 3
@@ -372,7 +372,7 @@
 
   annotations:
     - for: 7
-      role: SERVERS
+      role: SUBDEACONS
       text: | 
         Dikiri on bishops *left* (left is less), 
         trikiri on the *right* (more candles, more letters in *right*)
@@ -382,7 +382,7 @@
       text: At the last Amen, rapidly cense the Bishop
     - at: 1:24
       for: 4
-      role: SERVERS
+      role: SUBDEACONS
       text: take the dikiri and trikiri (kissing the hand) and go to the iconostasis
     - at: 1:29
       for: 4
@@ -390,13 +390,13 @@
       text: as the Bishop blesses the deacons they cense him *nine* times
     - at: 1:40
       for: 4
+      role: SUBDEACONS, DEACONS
       text: |
-        The two servers, and deacons turn and reverence the altar, 
+        The two subdeacons, and deacons turn and reverence the altar, 
         then turn and reverence the Bishop.
     - at: 1:49
       for: 4
-      role: SERVERS
-      text: the servers take the dikiri, trikiri and censers to the altar  
+      text: the subdeacons and servers take the dikiri, trikiri and censers to the altar  
     - for: 4
       role: DEACONS
       text: |
@@ -467,7 +467,7 @@
   annotations:
     - at: 0:0
       for: 7
-      role: SERVERS
+      role: SUBDEACON, SERVER
       text: |
         As the final litany is chanted *commerating our most holy...*
         Three servers come down in front of the Ambo
@@ -545,7 +545,7 @@
       text: |
         Extra servers carrying candles come first
     - for: 2
-      role: SERVERS
+      role: SUBDEACON
       text: the **dikiri**
     - for: 2
       role: SERVERS
@@ -560,7 +560,7 @@
       role: SERVERS
       text: the fan on the right
     - for: 2
-      role: SERVERS
+      role: SUBDEACON
       text: the trikiri
     - at: 0:16
       for: 2
@@ -606,7 +606,7 @@
         Presents the Gospel to Bishop to kiss.
         Be sure to hold it high enough for the Bishop.
     - for: 16
-      role: SERVERS
+      role: SUBDEACON
       text: |
         Hand the Dikiri and Trikiri to the Bishop.
         And move just behind the first deacon.
@@ -618,7 +618,7 @@
       text: with the censer leading, return to the sanctuary
     - at: 1:22
       to: end
-      role: SERVERS
+      role: SUBDEACONS
       text: |
         The senior servers return to escort the Bishop to the Ambo,
         and return to the sanctuary, where they wait to take the
@@ -666,7 +666,7 @@
       for: 4
       text: Ignore the many observing deacons
     - for: 8
-      role: SERVERS
+      role: SUBDEACONS
       text: |
         Dikiri on the **right**, Trikiri on the **left**.
         So that they are the bishops left and right hand as
@@ -681,7 +681,7 @@
         *should always be done before any action by the deacon*
     - at: 0:44
       for: 4
-      role: SERVERS
+      role: SUBDEACONS
       text: |
          Note the position of Trikiri and Dikiri
 
@@ -1265,6 +1265,13 @@
         by the first deacon before the Lord's prayer.  
         These are not in the rubrics book!
   annotations:
+    - from : 16
+      to: 45
+      role: SECOND DEACON
+      text: |
+        takes the censer from the bishop and continues to bless the 
+        south, east, north, and west sides of the Altar, and
+        returning to the south-east corner, censes the Bishop 3 times.
     - from: 48
       role: FIRST DEACON
       text: |
@@ -1284,16 +1291,16 @@
     - from: 1:38
       text: |
         The following prayer and action begins as the priest concludes with
-        the words *Amoung the first ... and rightly divides the word of thy truth*
+        the words *Amoung the first ... and rightly divides the word of thy truth!*
     - from: 1:58
       role: FIRST DEACON
       text: |
         *For His Eminence, The Most Reverend Michael, Archbishop of*
-        *New York, of the Diocese of New York, and New Jersey.*
+        *New York, of the Diocese of New York, and New Jersey...*
     - from: 2:06
       role: FIRST DEACON
       text: |
-        *Who here offers* -- and turning enters the sanctuary --
+        *who here offers* -- and turning enters the sanctuary --
         *These Holy Gifts* -- pointing to the Diskos and Chalice
     - from: 2:09
       role: FIRST DEACON
@@ -1313,16 +1320,16 @@
     - from: 2:25
       role: FIRST DEACON
       text: |
-        *For the honorable priesthood and the diaconate in Christ*
+        *For the honorable priesthood the diaconate in Christ*
     - from: 2:29
       role: FIRST DEACON
       text: |
         Goes and stands again under the arch of he Royal doors, while saying:
-        *For every priestly and monastic order*
+        *For every priestly and monastic order.*
     - from: 2:35
       role: FIRST DEACON
       text: |
-        *For this land, its civil authorities and armed forces*
+        *For this land, its civil authorities and armed forces.*
     - from: 2:42
       role: FIRST DEACON
       text: |
@@ -1330,6 +1337,8 @@
         *For the good estate of God's Holy Churches*
                                                                 
 - clip: 33
+  chapter: Anaphora Part 4 continued
+  join: true
   annotations:
     - from: 0
       role: FIRST DEACON
@@ -1345,7 +1354,7 @@
     - from: 0:20
       role: FIRST DEACON
       text: |
-        *For the salvation of the people here present, and*
+        *For the salvation of all the people here present, and*
         *for those they have in mind.*
     - from: 0:28
       role: FIRST DEACON
@@ -1358,16 +1367,30 @@
         Returns to the high place, makes the usual reverences,
         and receives a blessing from the Bishop, kissing His
         hand and shoulder.
-
-
+    - from: 1:00
+      role: SECOND DEACON
+      text: |
+        Goes out the south door, to give the litany before the
+        Lords Prayer in the usual fashion (pgs 140-143)
 
 - clip: 34
   chapter: After Communion
   cards:
+  cards:
+    - for: 20
+      text: |
+        Holy Communion now proceeds in the usual fashion.
+
+        The clergy in order of rank receive the body, 
+        from the Bishop, stating their rank and name,
+        and kissing the Bishops hand and shoulder.
+
+        And again receiving the precious blood in the
+        usual manner.
     - for: 6
       text: |
-        After Communion
-
+        The video continues after the clergy and faithful
+        have received communion.
 - clip: 35
   chapter: Litany of Thanksgiving
   cards:
