@@ -136,6 +136,7 @@ def as_list(v):
 ANN_KEYS   = {"at", "from", "for", "to", "role", "text", "speed", "cut",
               "mute", "audio", "hold", "notes", "note", "todos", "todo"}
 AUDIO_MODES = ("mute", "fast", "normal")
+LONG_HOLD = 30.0    # an INFERRED length past this is probably not intended
 
 
 def is_span(e):
@@ -390,6 +391,16 @@ def validate(path):
                      f"{fmt(hidden[0])}-{fmt(hidden[1])} — that footage is "
                      f"removed, so it will not appear  ({label})")
                 continue
+
+            # Only when the length was inferred from the next annotation. An
+            # explicit `for:` or `to:` is a decision, however long it runs.
+            if ("for" not in e and "to" not in e
+                    and en is not None and en - st > LONG_HOLD):
+                warn(f"{where} annotation {i}",
+                     f"holds {en - st:.0f}s — no `for:` or `to:`, so it stays "
+                     f"up until the next annotation at {fmt(en)}. Add a "
+                     f"`for:` if it should clear sooner  ({label})")
+
             if dur is not None:
                 if st >= dur:
                     how = ("starts exactly at the clip's end"
