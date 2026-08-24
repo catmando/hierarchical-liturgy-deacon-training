@@ -23,6 +23,7 @@ USAGE
     python3 build.py --clip 3 --play          # open it in VLC when it works
     python3 build.py --clip 3 --timecode --draft   # show ORIGINAL clip times
     python3 build.py --fade 0           # no audio fade at clip ends
+    python3 build.py --cut-fade 0       # no audio fade leading into cuts
 
     The sheet defaults to annotations.yaml. It is validated before anything
     is built, and errors stop the build; --no-check overrides that.
@@ -196,6 +197,7 @@ W, H, FPS, CRF, PRESET = 1920, 1080, 30, 18, "slow"
 DRAFT_CRF, DRAFT_PRESET = 30, "ultrafast"
 AUDIO_HOLD = 4.0    # seconds at full volume before `audio: normal` fades out
 CLIP_FADE = 3.0     # default audio fade at the end of every clip
+CUT_FADE  = 1.5     # default audio fade leading into a cut
 
 ROLE_COLOURS = {
     "D1": "&H00A5FF&", "D2": "&H80D0A0&", "SD": "&HD0C070&",
@@ -401,15 +403,16 @@ def time_map(t, segs):
     return out
 
 
-def build_edited_clip(src, dst, segs, fade=0.0):
+def build_edited_clip(src, dst, segs, fade=0.0, cut_fade=0.0):
     """Re-encode one clip with cuts and speed changes applied.
 
     fade is an audio fade at the very end of the finished clip, so the sound
-    settles rather than cutting dead into whatever follows. It happens inside
-    the clip's existing length — nothing is made longer. The picture is left
-    alone.
+    settles rather than cutting dead into whatever follows. cut_fade does the
+    same immediately before a cut, where the sound would otherwise jump. Both
+    happen inside existing footage — nothing is made longer — and neither
+    touches the picture.
     """
-    spec = hashlib.md5((src + f"|v2|{PRESET}|{CRF}|{fade:.3f}|" +
+    spec = hashlib.md5((src + f"|v2|{PRESET}|{CRF}|{fade:.3f}|{cut_fade:.3f}|" +
                         repr([(round(a,3), round(b,3), round(f,4), m)
                               for a, b, f, m in segs])).encode()).hexdigest()
     sidecar = dst + ".spec"
@@ -458,6 +461,17 @@ def build_edited_clip(src, dst, segs, fade=0.0):
                 chain.append(f"afade=t=out:st={hold:.3f}:d={fade:.3f}")
         else:                                   # "mute", the default
             chain = ["asetpts=PTS-STARTPTS"] + atempo_chain(f) + ["volume=0"]
+        # Removed footage next? Then the sound is about to jump, so ease it
+        # down first. Skipped where the segment already fades of its own
+        # accord, to avoid attenuating twice.
+        nxt = segs[i + 1][0] if i + 1 < len(segs) else None
+        if (cut_fade > 0.05 and nxt is not None and nxt > b + 0.01
+                and amode != "normal"):
+            seg_out = (b - a) / f
+            st = max(seg_out - cut_fade, 0.0)
+            if seg_out - st > 0.05:
+                chain.append(f"afade=t=out:st={st:.3f}:d={seg_out - st:.3f}")
+
         ach = ",".join(chain)
         parts.append(f"[0:a]atrim=start={aa:.3f}:end={ab:.3f},{ach}[a{i}]")
         labels.append(f"[v{i}][a{i}]")
@@ -785,6 +799,12 @@ def main():
                          f"dead (default {CLIP_FADE:g}; 0 turns it off). The "
                          f"picture is untouched and no clip gets longer — the "
                          f"fade happens inside the clip's existing length.")
+    ap.add_argument("--cut-fade", type=float, default=CUT_FADE, metavar="SEC",
+                    dest="cut_fade",
+                    help=f"fade the AUDIO out over SEC seconds leading into a "
+                         f"cut, so the sound eases down instead of jumping "
+                         f"(default {CUT_FADE:g}; 0 turns it off). Inside the "
+                         f"footage that survives — nothing gets longer.")
     ap.add_argument("--timecode", action="store_true",
                     help="burn the ORIGINAL clip time into the corner of a "
                          "preview. The number on screen is the number to type "
@@ -1039,7 +1059,8 @@ def main():
                     skip_spans.append((n, st, st + d, srole, lbl))
         dst = os.path.join(WORK, f"{n:03d}_edit.mp4")
         if not a.subs_only:
-            build_edited_clip(src, dst, segs, fade=a.fade)
+            build_edited_clip(src, dst, segs, fade=a.fade,
+                              cut_fade=a.cut_fade)
         edited_name[n] = f"{n:03d}_edit.mp4"
         newdur = sum((b - aa) / f for aa, b, f, _ in segs)
         cuts = sum(1 for st, d, f, _ in clean if f is None)

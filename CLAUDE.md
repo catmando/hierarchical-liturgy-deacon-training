@@ -52,6 +52,7 @@ python3 build.py --clip 3 --draft        # ~4x faster re-encode, blocky
 python3 build.py --clip 3 --play         # open in VLC if the build succeeds
 python3 build.py --clip 3 --timecode     # burn ORIGINAL clip time on screen
 python3 build.py --fade 1.5              # audio fade at each clip end (default 3, 0 = off)
+python3 build.py --cut-fade 0            # audio fade into each cut (default 1.5, 0 = off)
 python3 build.py --subs-only     # regenerate annotations only, fast
 python3 build.py --sheet other.yaml
 python3 build.py --speed 6       # default rate for spans saying speed: true
