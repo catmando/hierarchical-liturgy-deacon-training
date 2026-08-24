@@ -58,10 +58,22 @@ def _first(d, *names):
 
 def resolve(entries, dur=None):
     """Resolve each annotation to (start, end), mirroring build.py exactly:
-    an explicit time wins, otherwise continue CONT_GAP after the previous end.
+    an explicit time wins, otherwise continue CONT_GAP after the previous end,
+    and with no length given the annotation holds until the next one starts.
     """
+    def stated_start(e):
+        v = e.get("at", e.get("from")) if isinstance(e, dict) else None
+        if v is None:
+            return None
+        if isinstance(v, str) and v.strip().lower().startswith(("next", "c")):
+            return None
+        try:
+            return parse_time(str(v))
+        except Exception:
+            return None
+
     out, prev_end = [], None
-    for e in entries:
+    for i, e in enumerate(entries):
         if not isinstance(e, dict):
             out.append((None, None)); continue
         raw = e.get("at", e.get("from"))
@@ -85,7 +97,9 @@ def resolve(entries, dur=None):
                 else:
                     en = parse_time(str(t))
             else:
-                en = st + DEFAULT_DUR
+                nxt = entries[i + 1] if i + 1 < len(entries) else None
+                ns = stated_start(nxt) if nxt is not None else None
+                en = ns if (ns is not None and ns > st) else st + DEFAULT_DUR
         except Exception:
             out.append((None, None)); continue
         out.append((st, en))

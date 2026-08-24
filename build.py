@@ -56,7 +56,17 @@ TIMES
     at: (or from:)  when it appears. LEAVE IT OUT and it picks up 0.2s
                     after the previous annotation ends, or at 0 if it is
                     the first in the clip.
-    for:            how long it stays up (default 4)
+    for:            how long it stays up. Leave it out and the annotation
+                    holds until the next one starts, so a run of cues needs
+                    only the moments they happen:
+
+                        - at: 1:16
+                          text: do thing 1
+                        - at: 1:20
+                          text: do thing 2
+
+                    Falls back to 4s when there is no next annotation, or
+                    when the next one's start is itself relative.
     to:             an absolute end instead of a duration. `to: end` runs
                     to the end of the clip — on spans too, so `cut: true`
                     with `to: end` trims a clip's tail.
@@ -585,6 +595,22 @@ def read_sheet(path):
                  + _as_list(_first(b, "cuts", "cut")))
         spans = [e for e in spans if isinstance(e, dict)]
 
+        # Annotations only, in order — so one can see when the next begins.
+        anns = [x for x in entries if isinstance(x, dict) and not is_span(x)]
+
+        def stated_start(e):
+            """The start an annotation gives outright, or None when it depends
+            on what came before — those cannot end the one before them."""
+            v = _first(e, "at", "from")
+            if v is None:
+                return None
+            if isinstance(v, str) and v.strip().lower().startswith(("next", "c")):
+                return None
+            try:
+                return parse_time(str(v))
+            except Exception:
+                return None
+
         prev_end, ai, si = None, 0, 0
         for e in entries:
             if not isinstance(e, dict): continue
@@ -602,9 +628,18 @@ def read_sheet(path):
                 st = 0.0 if prev_end is None else prev_end + gap
             else:
                 st = parse_time(str(raw_at))
-            if "for" in e:   dur = parse_time(str(e["for"]))
-            elif "to" in e:  dur = end_of(e["to"], n) - st
-            else:            dur = DEFAULT_DUR
+            if "for" in e:
+                dur = parse_time(str(e["for"]))
+            elif "to" in e:
+                dur = end_of(e["to"], n) - st
+            else:
+                # No length given: hold until the next annotation starts, so a
+                # run of cues needs only the moments they happen. Falls back to
+                # the default when there is no next one, or when its start is
+                # itself relative and would make this circular.
+                nxt = anns[ai] if ai < len(anns) else None
+                ns = stated_start(nxt) if nxt is not None else None
+                dur = (ns - st) if (ns is not None and ns > st) else DEFAULT_DUR
             prev_end = st + dur
             rows.append((f"{where} annotation {ai}", {
                 "type": "annotation", "clip": str(n),

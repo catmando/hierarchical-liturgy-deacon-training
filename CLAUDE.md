@@ -125,7 +125,9 @@ Singular and plural are synonyms throughout: `annotation`/`annotations`,
 **Timing.** Write times bare — `1:27`, `1:03:23`, `0:04`, `87`, `4.5`. On an
 annotation `at:` (or `from:`) is the start and may be **left out**, in which
 case it picks up 0.2s after the previous annotation ends, or at 0 if it is
-the first in the clip. `for:` is a duration (default 4); `to:` is an absolute
+the first in the clip. `for:` is a duration — leave it out and the annotation holds until the next
+one starts, falling back to 4s when there is no next or its start is itself
+relative. `to:` is an absolute
 end, and **`to: end` runs to the end of the clip** — on spans too, so a cut
 `from: 60, to: end` trims the tail. `at: next+1.5` waits longer. Resolves in
 sheet order.
