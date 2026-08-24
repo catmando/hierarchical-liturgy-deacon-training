@@ -606,7 +606,7 @@
         Presents the Gospel to Bishop to kiss.
         Be sure to hold it high enough for the Bishop.
     - for: 16
-      role: SUBDEACON
+      role: SUBDEACONS
       text: |
         Hand the Dikiri and Trikiri to the Bishop.
         And move just behind the first deacon.
@@ -849,7 +849,7 @@
         presents Omophoron to the Bishop to kiss.
 
 - clip: 20
-  chapter: Gospel is Returned to the altar
+  chapter: Gospel is Returned to the Altar
   cards:
     - for: 6
       text: |
