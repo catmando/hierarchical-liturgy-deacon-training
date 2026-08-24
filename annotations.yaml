@@ -880,8 +880,8 @@
   cards:
     - for: 6
       text: |
-        Augmented Litany Begins after the Sermon
-        as usual
+        THe Second Deacon Begins The Augmented Litany
+        after the Sermon as usual
   annotations:
     - at: 0:15
       to: end
@@ -892,7 +892,95 @@
   cards:
     - for: 6
       text: |
-        Augmented Litany through censing before great entrance
+        Augmented Litany through Censing before Great Entrance
+
+        There are several important differences,
+        so watch carefully.
+
+  annotations:
+    - at: 0:06
+      to: 0:54
+      role: SUBDEACON
+      text: |
+        during the augmented litany,
+        uncovers the gifts in preparation for the Bishop's
+        commerations.  Note the placement of the various
+        cloths, and utensils.
+    - at: 1:20
+      to: 1:54
+      speed: 6x
+      audio: normal
+    - at: 2:09
+      to: 2:30
+      role: DEACONS
+      text: |
+        perform the full rubrics for dismissing the catechumens.
+        (pg 113)
+    - to: 3:43
+      role: FIRST DEACON
+      text: |
+         censes the sanctuary - altar, table of oblation, high place,
+         the icons, Bishop (9x), the clergy and servers, then stops. 
+    - at: 4:12
+      for: 8
+      role: ALTAR SERVERS
+      text: |
+        bring out the pitcher of water, with a server having a towel
+        on his shoulders, carrying the bowl.
+    - at: 4:22
+      for: 8
+      role: SUBDEACONS
+      text: |
+        prepare to hold the omophoron above the Bishop during the 
+        washing of the hands.  
+        **Be sure the buttons are facing the Royal Doors**
+    - at: 4:38
+      for: 6
+      role: SUBDEACONS
+      text: |
+        raise the Omophoron after the Bishop has passed through the
+        Royal Doors
+    - at: 4:46
+      for: 6
+      text: |
+        note: in some traditions the Bishop will sprinkle the water
+        towards the congregation.  Wait a few seconds before
+        presenting the towel.
+    - at: 5:08
+      for: 6
+      role: SUBDEACONS
+      text: |
+        reattach the Omophoron.
+    - at: 5:24
+      for: 38
+      role: DEACONS
+      text: |
+        follow the rubrics on pg 118 as normal:
+        *That we may receive the King of all...* X 3
+    - at: 6:02
+      for: 4
+      role: ALTAR SERVER
+      text: |
+        takes the Bishop's miter.
+    - at: 6:15
+      for: 5
+      role: DEACONS
+      text: |
+        proceed to the table of oblation,
+        the second deacon carrying a censer.
+    - for: 6
+      role: SECOND DEACON
+      text: |
+        hands the censer to the Bishop,
+        kissing His hand.
+    - at: 6:31
+      to: end
+      role: SECOND DEACON
+      text: | 
+        receives the censer back from the Bishop,
+        kneels, and receives the Aer on his shoulder,
+        and the censes the doors, the iconostasis,
+        and the people.
 
 - clip: 23
   chapter: Clergy Kissing the Bishops Shoulder
