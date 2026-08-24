@@ -9,6 +9,7 @@ Writes two files into output/:
 
     rubric_online.md   linked contents, timecodes hyperlinked to the video
     rubric_print.md    no links, page breaks between chapters
+    rubric.html        the same, styled and self-contained
 
 Both carry the same words. The online one is for reading beside the video;
 the printed one is for the ambo, the vestry, or a pocket.
@@ -26,7 +27,7 @@ Timecodes are positions in the ORIGINAL clip, matching the sheet. Chapter
 headings additionally carry their position in the finished video when
 output/chapters.txt is present from a full build.
 """
-import argparse, os, re, sys
+import argparse, base64, html, mimetypes, os, re, sys
 
 try:
     import yaml
@@ -195,6 +196,252 @@ def render(sheet, linked, video_url):
     return "\n".join(L).rstrip() + "\n"
 
 
+ROLE_TINT = {
+    "FIRST DEACON":  "#e0912c",
+    "SECOND DEACON": "#7aa84b",
+    "DEACONS":       "#4f9d90",
+    "SUBDEACONS":    "#9b74b8",
+    "SUBDEACON":     "#9b74b8",
+    "SERVERS":       "#7d8598",
+    "SERVER":        "#7d8598",
+    "PRIEST":        "#c25f63",
+    "CHOIR":         "#b3893c",
+}
+
+
+def tint(role):
+    return ROLE_TINT.get(role.split(",")[0].strip().upper(), "#8b8378")
+
+
+def data_uri(path):
+    """Images must travel inside the file — an artifact cannot fetch them."""
+    if not os.path.exists(path):
+        return None
+    mime = mimetypes.guess_type(path)[0] or "image/png"
+    with open(path, "rb") as f:
+        return f"data:{mime};base64," + base64.b64encode(f.read()).decode()
+
+
+def inline_md(t):
+    """The sheet's **bold**, *italic* and _underline_, as HTML."""
+    t = html.escape(str(t))
+    t = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", t)
+    t = re.sub(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)", r"<em>\1</em>", t)
+    t = re.sub(r"(?<!\w)_(.+?)_(?!\w)", r"<u>\1</u>", t)
+    return t.replace("\n", "<br>")
+
+
+def render_html(sheet, video_url):
+    durs, chap_at = clip_durations(), video_chapter_starts()
+    H = []
+    add = H.append
+
+    secs = []
+    for b in blocks(sheet):
+        if b.get("skip") is True or b.get("join") is True:
+            continue
+        t = _first(b, "chapter", "chapters")
+        if t:
+            secs.append((b["clip"], str(t).strip()))
+
+    add('<title>Deacon’s Rubric</title>')
+    add('<link rel="preconnect" href="https://fonts.googleapis.com">')
+    add('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>')
+    add('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
+        'family=Cormorant+Garamond:wght@500;600&family=IBM+Plex+Mono:wght@400;500'
+        '&display=swap">')
+    add("<style>" + CSS + "</style>")
+
+    add('<header class="masthead">')
+    add('  <p class="eyebrow">Hierarchical Divine Liturgy</p>')
+    add('  <h1>A Rubric for Deacons</h1>')
+    add('  <p class="standfirst">Filmed 20 June 2026 &middot; OCA, Diocese of '
+        'New York and New Jersey. Times are positions within each clip, so a '
+        'direction here sits at the same moment in the footage.</p>')
+    add("</header>")
+
+    add('<nav class="toc" aria-label="Contents"><h2>Contents</h2><ol>')
+    for n, t in secs:
+        at = chap_at.get(t)
+        stamp = (f'<span class="tc">{mmss(at)}</span>' if at is not None else "")
+        add(f'  <li><span class="num">{n}</span>'
+            f'<a href="#c{n}">{html.escape(t)}</a>{stamp}</li>')
+    add("</ol></nav>")
+
+    for b in blocks(sheet):
+        n = b["clip"]
+        if b.get("skip") is True:
+            continue
+        title = _first(b, "chapter", "chapters")
+        joined = b.get("join") is True
+
+        if title and not joined:
+            t = str(title).strip()
+            at = chap_at.get(t)
+            add(f'<section class="chapter" id="c{n}">')
+            add(f'  <h2>{html.escape(t)}</h2>')
+            meta = [f"clip {n}"]
+            if durs.get(n):
+                meta.append(mmss(durs[n]))
+            if at is not None:
+                stamp = mmss(at)
+                meta.append(
+                    f'<a href="{html.escape(video_url)}'
+                    f'{"&" if "?" in video_url else "?"}t={int(at)}s">{stamp} in the video</a>'
+                    if video_url else f"{stamp} in the video")
+            add('  <p class="meta">' + " &middot; ".join(meta) + "</p>")
+
+        for c in as_list(_first(b, "cards", "card")):
+            if not isinstance(c, dict):
+                continue
+            img = str(c.get("image", "")).strip()
+            if img:
+                uri = data_uri(img)
+                if uri:
+                    add(f'  <figure><img src="{uri}" alt="'
+                        f'{html.escape(str(c.get("chapter") or "diagram"))}">'
+                        f'</figure>')
+            txt = str(c.get("text", "")).strip()
+            if txt:
+                add('  <blockquote class="card"><p class="onscreen">on screen</p>'
+                    + f"<p>{inline_md(txt)}</p></blockquote>")
+
+        note = _first(b, "notes", "note")
+        for item in (note if isinstance(note, list) else [note] if note else []):
+            if str(item).strip():
+                add(f'  <p class="note">{inline_md(str(item).strip())}</p>')
+
+        entries = as_list(_first(b, "annotations", "annotation"))
+        anns = [e for e in entries if isinstance(e, dict) and not is_span(e)]
+        if anns:
+            add('  <ol class="cues">')
+            for (st, _e), e in zip(resolve(anns, durs.get(n)), anns):
+                text = str(e.get("text", "")).strip()
+                if not text:
+                    continue
+                role = str(e.get("role", "")).strip()
+                add('    <li>')
+                add(f'      <span class="tc">{mmss(st) if st is not None else "&mdash;"}</span>')
+                add('      <div class="cue">')
+                if role:
+                    add(f'        <span class="role" style="--tint:{tint(role)}">'
+                        f'{html.escape(role)}</span>')
+                add(f'        <p>{inline_md(text)}</p>')
+                add("      </div>")
+                add("    </li>")
+            add("  </ol>")
+
+        if not joined:
+            add("</section>")
+
+    return "\n".join(H) + "\n"
+
+
+CSS = """
+:root{
+  --ground:#faf7f0; --panel:#f4efe4; --ink:#23201a; --muted:#6f6a5f;
+  --gold:#9c7518; --rule:#e0d7c6; --quote:#efe8d9;
+}
+:root:not([data-theme="light"]){ }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12100e; --panel:#1a1713; --ink:#e8e2d6; --muted:#968d7e;
+    --gold:#d9b45b; --rule:#2f2a23; --quote:#1e1a15;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12100e; --panel:#1a1713; --ink:#e8e2d6; --muted:#968d7e;
+  --gold:#d9b45b; --rule:#2f2a23; --quote:#1e1a15;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font:400 17px/1.62 Georgia,"Times New Roman",serif;
+  padding:0 1.5rem 6rem;
+}
+.masthead,.toc,.chapter{max-width:44rem;margin:0 auto}
+.masthead{padding:4.5rem 0 2rem;border-bottom:1px solid var(--rule)}
+.eyebrow{
+  margin:0 0 .6rem; font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.74rem; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--gold);
+}
+h1{
+  margin:0; font-family:"Cormorant Garamond",Georgia,serif; font-weight:600;
+  font-size:clamp(2.6rem,6vw,3.9rem); line-height:1.04; text-wrap:balance;
+  letter-spacing:-.01em;
+}
+.standfirst{color:var(--muted);max-width:34rem;margin:1.1rem 0 0}
+.toc{padding:2.5rem 0 1rem}
+.toc h2{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.74rem;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--muted);
+  font-weight:500; margin:0 0 1rem;
+}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:.1rem}
+.toc li{display:grid;grid-template-columns:2.2rem 1fr auto;align-items:baseline;
+  gap:.5rem;padding:.3rem 0;border-bottom:1px solid transparent}
+.toc li:hover{border-bottom-color:var(--rule)}
+.num{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.8rem;
+  color:var(--muted); font-variant-numeric:tabular-nums;
+}
+.toc a{color:var(--ink);text-decoration:none}
+.toc a:hover{color:var(--gold)}
+.chapter{padding:3.2rem 0 1rem;border-top:1px solid var(--rule);margin-top:2.6rem}
+.chapter h2{
+  font-family:"Cormorant Garamond",Georgia,serif; font-weight:600;
+  font-size:clamp(1.9rem,4vw,2.5rem); line-height:1.12; margin:0;
+  text-wrap:balance;
+}
+.meta{
+  margin:.55rem 0 1.6rem; color:var(--muted);
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.76rem;
+  letter-spacing:.05em; font-variant-numeric:tabular-nums;
+}
+.meta a{color:var(--gold)}
+blockquote.card{
+  margin:0 0 1.6rem; padding:1.15rem 1.35rem; background:var(--quote);
+  border-left:3px solid var(--gold); border-radius:2px;
+}
+blockquote.card p{margin:0}
+.onscreen{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.66rem;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
+  margin:0 0 .5rem !important;
+}
+.note{color:var(--muted);margin:0 0 1.5rem}
+figure{margin:0 0 1.6rem;overflow-x:auto}
+figure img{width:100%;height:auto;display:block;border:1px solid var(--rule);border-radius:3px}
+ol.cues{list-style:none;margin:0;padding:0;display:grid;gap:1.35rem}
+ol.cues li{display:grid;grid-template-columns:4.2rem 1fr;gap:1rem;align-items:baseline}
+.tc{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.82rem;
+  color:var(--muted); font-variant-numeric:tabular-nums; letter-spacing:.02em;
+}
+.cue p{margin:.15rem 0 0}
+.role{
+  display:inline-block; font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.66rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tint); border:1px solid var(--tint); border-radius:2px;
+  padding:.1rem .42rem; opacity:.95;
+}
+u{text-decoration:underline;text-underline-offset:.18em}
+a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+@media (max-width:640px){
+  ol.cues li{grid-template-columns:1fr;gap:.2rem}
+  .toc li{grid-template-columns:2rem 1fr;}
+  .toc li .tc{grid-column:2}
+}
+@media print{
+  body{background:#fff;color:#000;font-size:11pt}
+  .chapter{page-break-before:always;border-top:0}
+  .toc{page-break-after:always}
+  a{color:#000;text-decoration:none}
+}
+"""
+
+
 def main():
     ap = argparse.ArgumentParser(description="Build the written rubric.")
     ap.add_argument("--sheet", default="annotations.yaml")
@@ -213,6 +460,12 @@ def main():
             f.write(text)
         print(f"  {path}   {len(text.splitlines())} lines, "
               f"{len(text.split())} words")
+
+    doc = render_html(a.sheet, a.video)
+    path = os.path.join(OUT, "rubric.html")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(doc)
+    print(f"  {path}   {len(doc) / 1024:.0f} KB (images embedded)")
 
 
 if __name__ == "__main__":
