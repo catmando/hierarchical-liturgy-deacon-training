@@ -275,6 +275,35 @@ Respect that.**
 
 ## 10. Editorial cleanup, outstanding
 
+**A full consistency pass is deferred until the first annotation draft is
+finished** — the user's explicit instruction, so that wording is not polished
+twice. This section is the running list; the user adds to it as things occur
+to them. Do not start it early, and do not let it distract from the draft.
+
+### Roles — get the vocabulary right first
+
+The `role:` values are inconsistent already. Counted across the sheet on
+24 Aug 2026:
+
+    27  FIRST DEACON        6  ALTAR SERVERS       2  PRIEST
+    26  SERVERS             5  SUBDEACONS          2  ALTAR SERVER
+    18  SECOND DEACON       1  SUBDEACON           1  CHOIR
+    13  DEACONS
+
+Three spellings of the server role and two of subdeacon. Before normalising
+the strings, settle the **substance**: is `SERVERS` the same office as
+`ALTAR SERVERS`, and where does `SUBDEACONS` genuinely differ? A subdeacon is
+tonsured and a server is not, and they do different things at a hierarchical
+liturgy — so this is a question about accuracy, not tidiness, and the user's
+priest and the footage decide it.
+
+Only once that is settled: pick one spelling per office, singular or plural
+consistently, and apply it everywhere.
+
+### Then, wording
+
+- Terms, case, spelling, grammar and punctuation across every annotation,
+  card, chapter and note — one pass, at the end.
 - Source notes skip section 11 and use 20 twice.
 - Transliterations vary: *Ton Des Postin / Ton Despotin*; *Eis Polla Eti Thes
   Posta* (= *Eis polla eti, despota*); *Kolbuk / Klobuk*; *Matiya / Mantiya*;
