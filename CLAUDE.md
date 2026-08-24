@@ -306,6 +306,15 @@ priest and the footage decide it.
 Only once that is settled: pick one spelling per office, singular or plural
 consistently, and apply it everywhere.
 
+### Content still to place
+
+Things the user wants said somewhere, not yet written into the sheet.
+
+- **Deacons kiss the Holy Table before touching it.** Wanted in the
+  introduction. Widely forgotten in parish practice, and a bishop will insist
+  on it — which is the point worth making, and the reason it belongs early
+  rather than buried at the moment it first applies.
+
 ### Left/right vs north/south — a real ambiguity, not just wording
 
 Ten clips mention the dikiri and trikiri (6, 11, 12, 14, 15, 18, 20, 26, 27),
