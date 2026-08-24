@@ -84,10 +84,12 @@ def render(sheet, linked, video_url):
     add("")
     add("*For deacons, subdeacons and altar servers*")
     add("")
-    add("This assumes the parish Liturgy is already second nature. It covers "
-        "only what changes when the bishop serves.")
+    add("This assumes the parish Liturgy is already second nature — in the "
+        "Russian recension a deacon serves it regularly. What follows focuses "
+        "on what changes when the bishop serves.")
     add("")
-    add("Filmed 20 June 2026 · OCA, Diocese of New York and New Jersey. "
+    add("OCA, Russian recension · Diocese of New York and New Jersey · "
+        "Filmed 20 June 2026. "
         "Times are positions within each clip, so a direction here sits at the "
         "same moment in the footage.")
     add("")
@@ -259,11 +261,13 @@ def render_html(sheet, video_url):
     add('  <p class="eyebrow">Deacons &middot; Subdeacons &middot; Altar servers</p>')
     add('  <h1>Rubrics for Serving at a Hierarchical Liturgy</h1>')
     add('  <p class="standfirst">This assumes the parish Liturgy is already '
-        'second nature. It covers only what changes when the bishop '
+        'second nature &mdash; in the Russian recension a deacon serves it '
+        'regularly. What follows focuses on what changes when the bishop '
         'serves.</p>')
-    add('  <p class="colophon">Filmed 20 June 2026 &middot; OCA, Diocese of New '
-        'York and New Jersey. Times are positions within each clip, so a '
-        'direction here sits at the same moment in the footage.</p>')
+    add('  <p class="colophon">OCA, Russian recension &middot; Diocese of New '
+        'York and New Jersey &middot; Filmed 20 June 2026. Times are positions '
+        'within each clip, so a direction here sits at the same moment in the '
+        'footage.</p>')
     add("</header>")
 
     add('<nav class="toc" aria-label="Contents"><h2>Contents</h2><ol>')
