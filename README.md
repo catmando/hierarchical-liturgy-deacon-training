@@ -200,7 +200,7 @@ Directories are named for the order the pipeline runs them.
 | `restore_raw_clips.sh` | fetch and verify footage | ✅ |
 | `check_environment.sh` | machine readiness check | ✅ |
 | `check_sheet.py` | validate the edit sheet without building | ✅ |
-| `make_document.py` | build the written rubric from the sheet | ✅ |
+| `make_document.py` | build the written rubric — md, HTML, PDF, Word | ✅ |
 | `make_manifest.sh` | regenerate `raw_clips.tsv` | ✅ |
 | `annotations.yaml` | the edit sheet | ✅ |
 | `raw_clips.tsv` | manifest: sizes and SHA-256 | ✅ |

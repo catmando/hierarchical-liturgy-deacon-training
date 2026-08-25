@@ -580,6 +580,15 @@ cannot drift from the video. Regenerate whenever either changes:
 python3 make_document.py --video https://youtu.be/aRs9oqKMCd8
 ```
 
+It writes five files into `output/`: `rubric_online.md`, `rubric_print.md`,
+`rubric.html`, and — when `weasyprint` and `pandoc` are installed —
+`rubric.pdf` for printing and `rubric.docx` for Word. Both diagrams survive
+into the PDF and the Word file.
+
+```bash
+brew install weasyprint pandoc     # once, if the last two are wanted
+```
+
 Chapter headings then link into the video at the right second. Always
 regenerate *after* a rebuild — the timings come from `output/chapters.txt`,
 so a stale document sends readers to the wrong moment.

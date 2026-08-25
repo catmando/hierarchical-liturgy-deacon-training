@@ -10,6 +10,12 @@ Writes two files into output/:
     rubric_online.md   linked contents, timecodes hyperlinked to the video
     rubric_print.md    no links, page breaks between chapters
     rubric.html        the same, styled and self-contained
+    rubric.pdf         for printing        (needs weasyprint)
+    rubric.docx        for editing in Word (needs pandoc)
+
+The last two are written only if those tools are installed:
+
+    brew install weasyprint pandoc
 
 Both carry the same words. The online one is for reading beside the video;
 the printed one is for the ambo, the vestry, or a pocket.
@@ -27,7 +33,7 @@ Timecodes are positions in the ORIGINAL clip, matching the sheet. Chapter
 headings additionally carry their position in the finished video when
 output/chapters.txt is present from a full build.
 """
-import argparse, base64, html, mimetypes, os, re, sys
+import argparse, base64, html, mimetypes, os, re, shutil, subprocess, sys
 
 try:
     import yaml
@@ -279,6 +285,7 @@ def render_html(sheet, video_url):
             f'<a href="#c{n}">{html.escape(t)}</a>{stamp}</li>')
     add("</ol></nav>")
 
+    open_sec = False
     for b in blocks(sheet):
         n = b["clip"]
         if b.get("skip") is True:
@@ -289,7 +296,10 @@ def render_html(sheet, video_url):
         if title and not joined:
             t = str(title).strip()
             at = chap_at.get(t)
+            if open_sec:
+                add("</section>")
             add(f'<section class="chapter" id="c{n}">')
+            open_sec = True
             add(f'  <h2>{html.escape(t)}</h2>')
             meta = [f"clip {n}"]
             if durs.get(n):
@@ -301,6 +311,10 @@ def render_html(sheet, video_url):
                     f'{"&" if "?" in video_url else "?"}t={int(at)}s">{stamp} in the video</a>'
                     if video_url else f"{stamp} in the video")
             add('  <p class="meta">' + " &middot; ".join(meta) + "</p>")
+
+        if not open_sec:
+            add('<section class="preamble">')
+            open_sec = True
 
         for c in as_list(_first(b, "cards", "card")):
             if not isinstance(c, dict):
@@ -343,8 +357,8 @@ def render_html(sheet, video_url):
                 add("    </li>")
             add("  </ol>")
 
-        if not joined:
-            add("</section>")
+    if open_sec:
+        add("</section>")
 
     return "\n".join(H) + "\n"
 
@@ -405,6 +419,7 @@ h1{
 }
 .toc a{color:var(--ink);text-decoration:none}
 .toc a:hover{color:var(--gold)}
+.preamble{max-width:44rem;margin:0 auto;padding:1.5rem 0 0}
 .chapter{padding:3.2rem 0 1rem;border-top:1px solid var(--rule);margin-top:2.6rem}
 .chapter h2{
   font-family:"Cormorant Garamond",Georgia,serif; font-weight:600;
@@ -451,12 +466,63 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   .toc li .tc{grid-column:2}
 }
 @media print{
-  body{background:#fff;color:#000;font-size:11pt}
-  .chapter{page-break-before:always;border-top:0}
-  .toc{page-break-after:always}
+  @page{ margin:16mm 15mm; }
+  body{background:#fff;color:#000;font-size:10.5pt;line-height:1.5;padding:0}
+  .masthead{padding:0 0 1.2rem;border-bottom:1px solid #bbb}
+  .masthead,.toc,.chapter{max-width:none}
+  h1{font-size:26pt}
+  .eyebrow,.onscreen{color:#555}
+  .standfirst,.colophon,.note,.meta{color:#222}
+  .toc{page-break-after:always;padding-top:1.2rem}
+  .toc li:hover{border-bottom-color:transparent}
+  .preamble{max-width:none;padding:0 0 1rem}
+  /* the opening card should not strand itself on a page of its own */
+  .preamble + .chapter{page-break-before:avoid}
+  .chapter{page-break-before:always;border-top:0;margin-top:0;padding:0 0 1rem}
+  .chapter h2{font-size:16pt;break-after:avoid}
+  .meta{break-after:avoid}
   a{color:#000;text-decoration:none}
+  /* never split a direction, a card or a plan across a page */
+  ol.cues li,blockquote.card,figure{break-inside:avoid;page-break-inside:avoid}
+  blockquote.card{background:#f1f1f1;border-left-color:#777}
+  .role{color:#000;border-color:#777}
+  .tc{color:#333}
+  figure img{border:1px solid #999}
 }
 """
+
+
+def convert():
+    """PDF and Word, when the tools for them are on the machine."""
+    made = []
+
+    if shutil.which("weasyprint"):
+        pdf = os.path.join(OUT, "rubric.pdf")
+        # --encoding matters: without it the em dashes come out as mojibake
+        r = subprocess.run(["weasyprint", "--encoding", "utf-8",
+                            os.path.join(OUT, "rubric.html"), pdf],
+                           capture_output=True, text=True)
+        if r.returncode == 0 and os.path.exists(pdf):
+            made.append(pdf)
+        else:
+            print("  weasyprint failed:", (r.stderr or "").strip()[:120])
+    else:
+        print("  rubric.pdf skipped — brew install weasyprint")
+
+    if shutil.which("pandoc"):
+        # run from output/ so the ../art/ image paths resolve
+        r = subprocess.run(["pandoc", "rubric_print.md", "-o", "rubric.docx"],
+                           cwd=OUT, capture_output=True, text=True)
+        docx = os.path.join(OUT, "rubric.docx")
+        if r.returncode == 0 and os.path.exists(docx):
+            made.append(docx)
+        else:
+            print("  pandoc failed:", (r.stderr or "").strip()[:120])
+    else:
+        print("  rubric.docx skipped — brew install pandoc")
+
+    for f in made:
+        print(f"  {f}   {os.path.getsize(f) / 1024:.0f} KB")
 
 
 def main():
@@ -483,6 +549,7 @@ def main():
     with open(path, "w", encoding="utf-8") as f:
         f.write(doc)
     print(f"  {path}   {len(doc) / 1024:.0f} KB (images embedded)")
+    convert()
 
 
 if __name__ == "__main__":
