@@ -39,7 +39,8 @@ Timecodes are positions in the ORIGINAL clip, matching the sheet. Chapter
 headings additionally carry their position in the finished video when
 output/chapters.txt is present from a full build.
 """
-import argparse, base64, html, mimetypes, os, re, shutil, subprocess, sys
+import argparse, base64, datetime, html, mimetypes, os, re, shutil
+import subprocess, sys
 
 try:
     import yaml
@@ -50,6 +51,18 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from check_sheet import resolve, clip_durations, is_span, as_list, _first
 
 OUT = "output"
+
+
+def build_stamp():
+    """When this was generated and from which commit, so it is obvious at
+    a glance whether the page in front of you is the current one."""
+    when = datetime.datetime.now().strftime("%d %b %Y, %H:%M")
+    try:
+        sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
+                             capture_output=True, text=True).stdout.strip()
+    except Exception:
+        sha = ""
+    return f"generated {when}" + (f" \u00b7 {sha}" if sha else "")
 
 
 def mmss(t):
@@ -121,6 +134,8 @@ def render(sheet, linked, video_url, base=OUT):
     add("This assumes the parish Liturgy is already second nature — in the "
         "Russian recension a deacon serves it regularly. What follows focuses "
         "on what changes when the bishop serves.")
+    add("")
+    add(f"`{build_stamp()}`")
     add("")
     add("OCA, Russian recension · Diocese of New York and New Jersey · "
         "Filmed 20 June 2026. "
@@ -301,6 +316,7 @@ def render_html(sheet, video_url):
         'second nature &mdash; in the Russian recension a deacon serves it '
         'regularly. What follows focuses on what changes when the bishop '
         'serves.</p>')
+    add(f'  <p class="build">{html.escape(build_stamp())}</p>')
     add('  <p class="colophon">OCA, Russian recension &middot; Diocese of New '
         'York and New Jersey &middot; Filmed 20 June 2026. Times are positions '
         'within each clip, so a direction here sits at the same moment in the '
@@ -351,8 +367,9 @@ def render_html(sheet, video_url):
                 # player here when it scrolls into view. Adopting an existing
                 # lazy-loaded iframe is unreliable, and YouTube's own `end`
                 # cannot be trusted — see END_GUARD.
-                add(f'  <div class="player" data-vid="{vid}" '
-                    f'data-start="{st_i}" data-end="{en_i}">'
+                add(f'  <div class="player"><div class="slot" '
+                    f'data-vid="{vid}" data-start="{st_i}" '
+                    f'data-end="{en_i}"></div>'
                     f'<noscript><a href="https://www.youtube.com/watch?v={vid}'
                     f'&amp;t={st_i}s">Watch this section</a></noscript></div>')
 
@@ -450,7 +467,7 @@ END_GUARD = """
 
   function queue(box) { ready ? build(box) : pending.push(box); }
 
-  var boxes = document.querySelectorAll(".player[data-vid]");
+  var boxes = document.querySelectorAll(".player .slot[data-vid]");
   if (!window.IntersectionObserver) {
     boxes.forEach(queue);
   } else {
@@ -503,6 +520,11 @@ h1{
   letter-spacing:-.01em;
 }
 .standfirst{color:var(--ink);max-width:34rem;margin:1.2rem 0 0;font-size:1.12rem}
+.build{
+  margin:1.1rem 0 0; color:var(--gold);
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
+}
 .colophon{
   color:var(--muted); max-width:34rem; margin:1rem 0 0;
   font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.76rem;
@@ -554,6 +576,7 @@ blockquote.card p{margin:0}
   background:#000;
 }
 .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.player .slot{position:absolute;inset:0}
 .player noscript a{position:absolute;inset:0;display:grid;place-items:center;
   color:var(--gold);font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:.8rem;letter-spacing:.05em}
