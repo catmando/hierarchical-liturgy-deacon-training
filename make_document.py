@@ -193,9 +193,10 @@ def render(sheet, linked, video_url, base=OUT):
                 stamp = mmss(at)
                 if linked and video_url:
                     sec = int(at + 0.5)
-                    bits.append(f"[{stamp} in the video]({video_url}&t={sec}s)"
-                                if "?" in video_url else
-                                f"[{stamp} in the video]({video_url}?t={sec}s)")
+                    bits.append(
+                        f"[open on YouTube at {stamp}]({video_url}&t={sec}s)"
+                        if "?" in video_url else
+                        f"[open on YouTube at {stamp}]({video_url}?t={sec}s)")
                 else:
                     bits.append(f"{stamp} in the video")
             add(f"*{' · '.join(bits)}*")
@@ -312,6 +313,9 @@ def render_html(sheet, video_url):
     add('<header class="masthead">')
     add('  <p class="eyebrow">Deacons &middot; Subdeacons &middot; Altar servers</p>')
     add('  <h1>Rubrics for Serving at a Hierarchical Liturgy</h1>')
+    add('  <p class="hint">The player in each section plays only that '
+        'section and stops at its end. The link beside the heading opens the '
+        'whole video on YouTube instead.</p>')
     add('  <p class="standfirst">This assumes the parish Liturgy is already '
         'second nature &mdash; in the Russian recension a deacon serves it '
         'regularly. What follows focuses on what changes when the bishop '
@@ -355,7 +359,7 @@ def render_html(sheet, video_url):
                 meta.append(
                     f'<a href="{html.escape(video_url)}'
                     f'{"&" if "?" in video_url else "?"}t={int(at + 0.5)}s">'
-                    f'{stamp} in the video</a>'
+                    f'open on YouTube at {stamp}</a>'
                     if video_url else f"{stamp} in the video")
             add('  <p class="meta">' + " &middot; ".join(meta) + "</p>")
 
@@ -371,8 +375,7 @@ def render_html(sheet, video_url):
                     f'data-vid="{vid}" data-start="{st_i}" '
                     f'data-end="{en_i}"></div>'
                     f'<noscript><a href="https://www.youtube.com/watch?v={vid}'
-                    f'&amp;t={st_i}s">Watch this section</a></noscript></div>'
-                    f'<p class="guard" data-for="{st_i}">guard: not started</p>')
+                    f'&amp;t={st_i}s">Watch this section</a></noscript></div>')
 
         if not open_sec:
             add('<section class="preamble">')
@@ -442,10 +445,6 @@ END_GUARD = """
 
   function build(box) {
     var end = parseFloat(box.getAttribute("data-end"));
-    var start = box.getAttribute("data-start");
-    var say = document.querySelector('.guard[data-for="' + start + '"]');
-    function note(m) { if (say) say.textContent = "guard: " + m; }
-    note("player built, stops at " + end + "s");
     box.textContent = "";
     new YT.Player(box, {
       videoId: box.getAttribute("data-vid"),
@@ -456,18 +455,12 @@ END_GUARD = """
       },
       events: {
         /* YouTube honours `end` erratically, so stop it here too. */
-        onReady: function () { note("ready, stops at " + end + "s"); },
-        onError: function (e) { note("ERROR " + e.data); },
         onStateChange: function (ev) {
-          note("state " + ev.data);
           if (ev.data !== YT.PlayerState.PLAYING) return;
           var tick = setInterval(function () {
             var t = ev.target.getCurrentTime && ev.target.getCurrentTime();
-            note("at " + (typeof t === "number" ? t.toFixed(1) : "?") +
-                 "s, stops at " + end + "s");
             if (typeof t === "number" && t >= end) {
               ev.target.pauseVideo();
-              note("PAUSED at " + t.toFixed(1) + "s");
               clearInterval(tick);
             }
           }, 200);
@@ -536,10 +529,10 @@ h1{
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
 }
-.guard{
-  margin:-1.2rem 0 1.6rem; color:var(--gold);
-  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.7rem;
-  letter-spacing:.06em;
+.hint{
+  margin:1.4rem 0 0; padding:.7rem .95rem; background:var(--quote);
+  border-left:3px solid var(--gold); border-radius:2px;
+  color:var(--muted); font-size:.92rem; max-width:34rem;
 }
 .colophon{
   color:var(--muted); max-width:34rem; margin:1rem 0 0;
@@ -641,7 +634,7 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   .role{color:#000;border-color:#777}
   .tc{color:#333}
   figure img{border:1px solid #999}
-  .player,.guard{display:none}
+  .player{display:none}
 }
 """
 
