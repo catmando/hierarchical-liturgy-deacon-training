@@ -345,10 +345,14 @@ def render_html(sheet, video_url):
             span = spans.get(t)
             if vid and span:
                 st_i, en_i = int(span[0]), int(span[1])
+                # end= is kept, but YouTube honours it unreliably, so the
+                # stop is enforced from the page as well — see END_GUARD
                 add(f'  <div class="player"><iframe loading="lazy" '
+                    f'data-end="{en_i}" '
                     f'title="{html.escape(t)} — video" allowfullscreen '
                     f'src="https://www.youtube.com/embed/{vid}'
-                    f'?start={st_i}&amp;end={en_i}&amp;rel=0"></iframe></div>')
+                    f'?start={st_i}&amp;end={en_i}&amp;rel=0'
+                    f'&amp;enablejsapi=1"></iframe></div>')
 
         if not open_sec:
             add('<section class="preamble">')
@@ -398,8 +402,57 @@ def render_html(sheet, video_url):
     if open_sec:
         add("</section>")
 
+    if video_id(video_url):
+        add(END_GUARD)
+
     return "\n".join(H) + "\n"
 
+
+END_GUARD = """
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+/* YouTube's own `end` parameter is unreliable, so each player is also stopped
+   from here. Players are wired up only as they scroll into view, so a page of
+   thirty-odd costs nothing until it is used. */
+(function () {
+  var waiting = [], ready = false;
+  window.onYouTubeIframeAPIReady = function () {
+    ready = true;
+    waiting.splice(0).forEach(attach);
+  };
+  function attach(frame) {
+    var end = parseFloat(frame.getAttribute("data-end") || "0");
+    if (!end || !window.YT || !YT.Player) return;
+    new YT.Player(frame, {
+      events: {
+        onStateChange: function (ev) {
+          if (ev.data !== YT.PlayerState.PLAYING) return;
+          var tick = setInterval(function () {
+            var t = ev.target.getCurrentTime && ev.target.getCurrentTime();
+            if (typeof t === "number" && t >= end) {
+              ev.target.pauseVideo();
+              clearInterval(tick);
+            }
+          }, 250);
+        }
+      }
+    });
+  }
+  var seen = new WeakSet();
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting || seen.has(e.target)) return;
+      seen.add(e.target);
+      io.unobserve(e.target);
+      ready ? attach(e.target) : waiting.push(e.target);
+    });
+  }, { rootMargin: "300px" });
+  document.querySelectorAll(".player iframe").forEach(function (f) {
+    io.observe(f);
+  });
+})();
+</script>
+"""
 
 CSS = """
 :root{
