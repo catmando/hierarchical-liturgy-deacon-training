@@ -583,7 +583,10 @@ def render_html(sheet, video_url, posters=None, staging=False):
                         f'<img src="{src}" alt="" loading="lazy" '
                         f'width="{POSTER_W}" height="{round(POSTER_W*9/16)}">'
                         f'<span class="play" aria-hidden="true"></span>'
-                        f'</button>{nos}</div>')
+                        f'</button>{nos}</div>'
+                        f'<div class="pctl"><button type="button" '
+                        f'class="reset" hidden>&#8634; Back to the start'
+                        f'</button></div>')
                 else:
                     add(f'  <div class="player"><div class="slot" {data}>'
                         f'</div>{nos}</div>')
@@ -672,17 +675,23 @@ END_GUARD = """
   }
 
   /* Put the still back where the player was. The button is the very node that
-     was taken out, so its click handler is still on it. */
+     was taken out, so its click handler is still on it. Everything left in
+     the frame is cleared first: destroy() removes the iframe, but a reset
+     pressed before the API arrived has only a placeholder to clear. */
   function restore(player, ctx) {
-    if (!ctx) return;
-    try { player.destroy(); } catch (e) {}
-    if (!ctx.btn.parentNode) ctx.box.appendChild(ctx.btn);
+    if (!ctx || ctx.gone) return;
+    ctx.gone = true;
+    if (ctx.reset) ctx.reset.hidden = true;
+    try { if (player) player.destroy(); } catch (e) {}
+    while (ctx.box.firstChild) ctx.box.removeChild(ctx.box.firstChild);
+    ctx.box.appendChild(ctx.btn);
   }
 
   function build(box, auto, ctx) {
+    if (ctx && ctx.gone) return;    /* reset pressed while the API loaded */
     var end = parseFloat(box.getAttribute("data-end"));
     box.textContent = "";
-    new YT.Player(box, {
+    var player = new YT.Player(box, {
       videoId: box.getAttribute("data-vid"),
       playerVars: {
         start: parseInt(box.getAttribute("data-start"), 10),
@@ -711,6 +720,7 @@ END_GUARD = """
         }
       }
     });
+    if (ctx) ctx.player = player;
   }
 
   function queue(box, auto, ctx) {
@@ -728,7 +738,16 @@ END_GUARD = """
       slot.setAttribute("data-" + k, btn.getAttribute("data-" + k));
     });
     box.replaceChild(slot, btn);
-    queue(slot, true, { box: box, btn: btn });
+
+    var row = box.nextElementSibling;
+    var reset = row && row.classList.contains("pctl")
+      ? row.querySelector(".reset") : null;
+    var ctx = { box: box, btn: btn, reset: reset, player: null, gone: false };
+    if (reset) {
+      reset.hidden = false;
+      reset.onclick = function () { restore(ctx.player, ctx); };
+    }
+    queue(slot, true, ctx);
   }
 
   document.querySelectorAll(".player > .poster").forEach(function (btn) {
@@ -845,7 +864,7 @@ blockquote.card p{margin:0}
 }
 .note{color:var(--muted);margin:0 0 1.5rem}
 .player{
-  position:relative; width:100%; aspect-ratio:16/9; margin:0 0 1.7rem;
+  position:relative; width:100%; aspect-ratio:16/9; margin:0;
   border:1px solid var(--rule); border-radius:3px; overflow:hidden;
   background:#000;
 }
@@ -878,6 +897,18 @@ blockquote.card p{margin:0}
 @media (prefers-reduced-motion:reduce){
   .player .poster img,.player .play{transition:none}
 }
+/* The row is always here, occupying its height whether the button shows or
+   not, so starting a section does not shove the page around. */
+.pctl{min-height:1.6rem;margin:.55rem 0 1.5rem;display:flex}
+.reset{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);background:none;border:1px solid var(--rule);
+  border-radius:2px;padding:.3rem .7rem;cursor:pointer;
+  transition:color .15s ease,border-color .15s ease;
+}
+.reset:hover{color:var(--gold);border-color:var(--gold)}
+.reset:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .staging{
   background:var(--gold);color:#12100e;text-align:center;
   font-family:"IBM Plex Mono",ui-monospace,monospace;
@@ -935,7 +966,7 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   .role{color:#000;border-color:#777}
   .tc{color:#333}
   figure img{border:1px solid #999}
-  .player{display:none}
+  .player,.pctl{display:none}
 }
 """
 

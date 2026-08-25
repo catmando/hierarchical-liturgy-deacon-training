@@ -681,6 +681,12 @@ from where it stopped, so a second click would run on into the next section.
 Rebuilding from the poster re-applies `start` every time, which is the only
 way a bounded section replays correctly.
 
+A **"Back to the start"** button appears under the section that is playing,
+and only that one, doing the same teardown on demand — without it the only
+way back to the still was to let the section run out. Its row keeps its
+height whether the button shows or not, so starting a section does not shove
+the rest of the page down.
+
 Two things follow, and both are the point:
 
 - **Each section looks like itself.** YouTube cannot do this — the poster is
