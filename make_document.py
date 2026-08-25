@@ -121,20 +121,40 @@ def blocks(sheet):
     return [b for b in doc if isinstance(b, dict) and "clip" in b]
 
 
-def render(sheet, linked, video_url, base=OUT):
+def front(sheet):
+    """The intro block, if the sheet has one. Front matter belongs with the
+    content it describes, not hardcoded in here."""
+    with open(sheet, encoding="utf-8") as f:
+        doc = yaml.safe_load(f)
+    for b in doc:
+        if isinstance(b, dict) and isinstance(b.get("intro"), dict):
+            return b["intro"]
+    return {}
+
+
+def render(sheet, linked, video_url, base=OUT, dl=""):
     durs = clip_durations()
     chap_at = video_chapter_starts()
     L = []
     add = L.append
 
-    add("# Rubrics for Serving at a Hierarchical Liturgy")
+    fm = front(sheet)
+    add("# " + str(fm.get("title", "Rubrics for a Hierarchical Liturgy")))
     add("")
-    add("*For deacons, subdeacons and altar servers*")
-    add("")
-    add("This assumes the parish Liturgy is already second nature — in the "
-        "Russian recension a deacon serves it regularly. What follows focuses "
-        "on what changes when the bishop serves.")
-    add("")
+    if fm.get("subtitle"):
+        add("*" + str(fm["subtitle"]).strip() + "*")
+        add("")
+    if video_url:
+        add(f"[Watch the whole video]({video_url}) · "
+            f"[Download PDF]({dl}rubric.pdf) · "
+            f"[Download Word]({dl}rubric.docx)")
+        add("")
+    for sec in fm.get("sections") or []:
+        if sec.get("heading"):
+            add("## " + str(sec["heading"]).strip())
+            add("")
+        add(str(sec.get("text", "")).strip())
+        add("")
     add(f"`{build_stamp()}`")
     add("")
     add("OCA, Russian recension · Diocese of New York and New Jersey · "
@@ -311,18 +331,31 @@ def render_html(sheet, video_url):
     add("<style>" + CSS + "</style>")
 
     add('<header class="masthead">')
-    add('  <p class="eyebrow">Deacons &middot; Subdeacons &middot; Altar servers</p>')
-    add('  <h1>Rubrics for Serving at a Hierarchical Liturgy</h1>')
-    add('  <p class="standfirst">This assumes the parish Liturgy is already '
-        'second nature &mdash; in the Russian recension a deacon serves it '
-        'regularly. What follows focuses on what changes when the bishop '
-        'serves.</p>')
+    fm = front(sheet)
+    if fm.get("subtitle"):
+        add(f'  <p class="eyebrow">{html.escape(str(fm["subtitle"]).strip())}</p>')
+    add("  <h1>" + html.escape(str(fm.get(
+        "title", "Rubrics for a Hierarchical Liturgy"))) + "</h1>")
+    if video_url:
+        add('  <p class="actions">'
+            f'<a href="{html.escape(video_url)}">Watch the whole video</a>'
+            '<a href="rubric.pdf">Download PDF</a>'
+            '<a href="rubric.docx">Download Word</a></p>')
     add(f'  <p class="build">{html.escape(build_stamp())}</p>')
     add('  <p class="colophon">OCA, Russian recension &middot; Diocese of New '
         'York and New Jersey &middot; Filmed 20 June 2026. Times are positions '
         'within each clip, so a direction here sits at the same moment in the '
         'footage.</p>')
     add("</header>")
+
+    for sec in fm.get("sections") or []:
+        add('<section class="intro">')
+        if sec.get("heading"):
+            add(f'  <h2>{html.escape(str(sec["heading"]).strip())}</h2>')
+        for para in str(sec.get("text", "")).strip().split("\n\n"):
+            if para.strip():
+                add(f"  <p>{inline_md(para.strip())}</p>")
+        add("</section>")
 
     add('<nav class="toc" aria-label="Contents"><h2>Contents</h2><ol>')
     for n, t in secs:
@@ -527,6 +560,21 @@ h1{
   font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.76rem;
   line-height:1.7; letter-spacing:.02em;
 }
+.actions{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.4rem 0 0}
+.actions a{
+  display:inline-block; padding:.42rem .85rem; border:1px solid var(--rule);
+  border-radius:2px; color:var(--ink); text-decoration:none;
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.74rem;
+  letter-spacing:.06em;
+}
+.actions a:hover{border-color:var(--gold);color:var(--gold)}
+.intro{max-width:44rem;margin:0 auto;padding:2.2rem 0 0}
+.intro h2{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.74rem;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--gold);
+  font-weight:500; margin:0 0 .7rem;
+}
+.intro p{margin:0 0 .9rem}
 .toc{padding:2.5rem 0 1rem}
 .toc h2{
   font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.74rem;
@@ -607,6 +655,9 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   h1{font-size:26pt}
   .eyebrow,.onscreen{color:#555}
   .standfirst,.colophon,.note,.meta{color:#222}
+  .actions{display:none}
+  .intro{max-width:none;padding:1.4rem 0 0}
+  .intro h2{color:#555}
   .toc{page-break-after:always;padding-top:1.2rem}
   .toc li:hover{border-bottom-color:transparent}
   .preamble{max-width:none;padding:0 0 1rem}
@@ -630,7 +681,7 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
 def for_github(sheet, video_url):
     """Copies meant to be committed: GitHub renders the markdown in the repo,
     and Pages serves the HTML from docs/."""
-    md = render(sheet, True, video_url, base=".")
+    md = render(sheet, True, video_url, base=".", dl="docs/")
     with open("RUBRIC.md", "w", encoding="utf-8") as f:
         f.write(md)
     print(f"  RUBRIC.md   {len(md.splitlines())} lines   (GitHub renders this)")
@@ -671,8 +722,13 @@ def convert():
     else:
         print("  rubric.docx skipped — brew install pandoc")
 
+    # Pages serves docs/, so the download links only work if the files are
+    # there — output/ is ignored by git and never reaches the site.
     for f in made:
         print(f"  {f}   {os.path.getsize(f) / 1024:.0f} KB")
+        if os.path.isdir("docs"):
+            shutil.copy2(f, os.path.join("docs", os.path.basename(f)))
+            print(f"    -> docs/{os.path.basename(f)}")
 
 
 def main():

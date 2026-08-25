@@ -2,9 +2,45 @@
 
 *For deacons, subdeacons and altar servers*
 
-This assumes the parish Liturgy is already second nature — in the Russian recension a deacon serves it regularly. What follows focuses on what changes when the bishop serves.
+[Watch the whole video](https://youtu.be/aRs9oqKMCd8) · [Download PDF](docs/rubric.pdf) · [Download Word](docs/rubric.docx)
 
-`generated 25 Aug 2026, 02:08 · 3a87026`
+## How to use this
+
+Every section below carries the part of the video it describes.
+Press play and it stops where the section ends, so you can read
+a direction and watch it without hunting through an hour of
+footage.
+
+If you would rather watch straight through, or print the whole
+thing and make your own notes, the links at the top of this page
+will do it.
+
+Times shown beside each heading are positions within that clip,
+so they match the moment in the footage rather than the running
+time of the whole service.
+
+## If you are short of subdeacons
+
+The rubrics below name subdeacons throughout, because that is
+what a hierarchical Liturgy assumes. Most parishes will not have
+two, and the offices are filled by appointment rather than left
+empty.
+
+**With no subdeacons**, appoint two senior altar servers to do
+their work. They should be vested and know the whole sequence
+beforehand — this is not a role to hand to someone on the day.
+
+**A young server** carries the water, the basin and the towel for
+the washing of the hands.
+
+**One server to the north and one to the south**, each
+responsible for the censer on their own side, and for fetching
+and returning what is needed there.
+
+_[Add the rest here — the roles above are only the ones we have
+talked through, and you know the others.]_
+
+`generated 25 Aug 2026, 02:16 · 9816244`
 
 OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
 

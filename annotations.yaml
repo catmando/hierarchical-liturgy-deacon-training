@@ -91,6 +91,52 @@
 #    of your sentence silently becomes a key. Run check_sheet.py to catch it.
 # ═══════════════════════════════════════════════════════════════════════
 
+# ═══════════════════════════════════════════════════════════════════════
+#  FRONT MATTER — the written rubric only. None of this reaches the video.
+#  Edit freely; `text:` takes the same markdown as everywhere else.
+# ═══════════════════════════════════════════════════════════════════════
+
+- intro:
+    title: Rubrics for Serving at a Hierarchical Liturgy
+    subtitle: For deacons, subdeacons and altar servers
+
+    sections:
+      - heading: How to use this
+        text: |
+          Every section below carries the part of the video it describes.
+          Press play and it stops where the section ends, so you can read
+          a direction and watch it without hunting through an hour of
+          footage.
+
+          If you would rather watch straight through, or print the whole
+          thing and make your own notes, the links at the top of this page
+          will do it.
+
+          Times shown beside each heading are positions within that clip,
+          so they match the moment in the footage rather than the running
+          time of the whole service.
+
+      - heading: If you are short of subdeacons
+        text: |
+          The rubrics below name subdeacons throughout, because that is
+          what a hierarchical Liturgy assumes. Most parishes will not have
+          two, and the offices are filled by appointment rather than left
+          empty.
+
+          **With no subdeacons**, appoint two senior altar servers to do
+          their work. They should be vested and know the whole sequence
+          beforehand — this is not a role to hand to someone on the day.
+
+          **A young server** carries the water, the basin and the towel for
+          the washing of the hands.
+
+          **One server to the north and one to the south**, each
+          responsible for the censer on their own side, and for fetching
+          and returning what is needed there.
+
+          _[Add the rest here — the roles above are only the ones we have
+          talked through, and you know the others.]_
+
 # ─── Opening card, before everything ───────────────────────────────────
 - clip: 0
   card:

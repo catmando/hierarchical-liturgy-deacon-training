@@ -249,6 +249,24 @@ def validate(path):
     seen = {}
     for i, b in enumerate(doc):
         where = f"block {i + 1}"
+        if isinstance(b, dict) and "intro" in b and "clip" not in b:
+            intro = b["intro"]
+            if not isinstance(intro, dict):
+                err(where, "intro: expected a block with title/subtitle/sections")
+                continue
+            for k in intro:
+                if k not in ("title", "subtitle", "text", "sections"):
+                    err(f"{where} intro", f"unknown key {k!r}")
+            for j, sec in enumerate(intro.get("sections") or [], 1):
+                if not isinstance(sec, dict):
+                    err(f"{where} intro section {j}", "expected heading and text")
+                    continue
+                for k in sec:
+                    if k not in ("heading", "text"):
+                        err(f"{where} intro section {j}", f"unknown key {k!r}")
+                if not str(sec.get("text", "")).strip():
+                    err(f"{where} intro section {j}", "no text")
+            continue
         if not isinstance(b, dict):
             err(where, f"expected a clip block, got {type(b).__name__}"); continue
         if "clip" not in b:
