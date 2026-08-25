@@ -64,20 +64,42 @@ def md_escape(t):
     return str(t).replace("|", "\\|")
 
 
-def video_chapter_starts(path=os.path.join(OUT, "chapters.txt")):
-    """title -> seconds, from a full build's FFMETADATA chapters."""
-    out = {}
+def video_chapters(path=os.path.join(OUT, "chapters.txt")):
+    """[(title, start, end)] from a full build's FFMETADATA chapters.
+
+    A chapter's own END runs past the next chapter's START, because a leading
+    card pulls the next chapter backwards to cover it. So a chapter really
+    ends where the next one begins; only the last keeps its own END.
+    """
+    rows, start, end = [], None, None
     if not os.path.exists(path):
-        return out
-    start = None
+        return rows
     for line in open(path, encoding="utf-8"):
         line = line.strip()
         if line.startswith("START="):
             start = int(line[6:]) / 1000.0
+        elif line.startswith("END="):
+            end = int(line[4:]) / 1000.0
         elif line.startswith("title=") and start is not None:
-            out.setdefault(line[6:], start)
-            start = None
+            rows.append([line[6:], start, end])
+            start = end = None
+    for i in range(len(rows) - 1):
+        rows[i][2] = rows[i + 1][1]
+    return [tuple(r) for r in rows]
+
+
+def video_chapter_starts(path=os.path.join(OUT, "chapters.txt")):
+    """title -> seconds."""
+    out = {}
+    for t, st, _en in video_chapters(path):
+        out.setdefault(t, st)
     return out
+
+
+def video_id(url):
+    """The bare id from a youtu.be/… or watch?v=… link."""
+    m = re.search(r"(?:youtu\.be/|[?&]v=|/embed/)([A-Za-z0-9_-]{6,})", url or "")
+    return m.group(1) if m else None
 
 
 def blocks(sheet):
@@ -251,6 +273,7 @@ def inline_md(t):
 
 def render_html(sheet, video_url):
     durs, chap_at = clip_durations(), video_chapter_starts()
+    spans = {t: (st, en) for t, st, en in video_chapters() if en and en > st}
     H = []
     add = H.append
 
@@ -317,6 +340,15 @@ def render_html(sheet, video_url):
                     f'{"&" if "?" in video_url else "?"}t={int(at)}s">{stamp} in the video</a>'
                     if video_url else f"{stamp} in the video")
             add('  <p class="meta">' + " &middot; ".join(meta) + "</p>")
+
+            vid = video_id(video_url)
+            span = spans.get(t)
+            if vid and span:
+                st_i, en_i = int(span[0]), int(span[1])
+                add(f'  <div class="player"><iframe loading="lazy" '
+                    f'title="{html.escape(t)} — video" allowfullscreen '
+                    f'src="https://www.youtube.com/embed/{vid}'
+                    f'?start={st_i}&amp;end={en_i}&amp;rel=0"></iframe></div>')
 
         if not open_sec:
             add('<section class="preamble">')
@@ -449,6 +481,12 @@ blockquote.card p{margin:0}
   margin:0 0 .5rem !important;
 }
 .note{color:var(--muted);margin:0 0 1.5rem}
+.player{
+  position:relative; width:100%; aspect-ratio:16/9; margin:0 0 1.7rem;
+  border:1px solid var(--rule); border-radius:3px; overflow:hidden;
+  background:#000;
+}
+.player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 figure{margin:0 0 1.6rem;overflow-x:auto}
 figure img{width:100%;height:auto;display:block;border:1px solid var(--rule);border-radius:3px}
 ol.cues{list-style:none;margin:0;padding:0;display:grid;gap:1.35rem}
@@ -494,6 +532,7 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   .role{color:#000;border-color:#777}
   .tc{color:#333}
   figure img{border:1px solid #999}
+  .player{display:none}
 }
 """
 
