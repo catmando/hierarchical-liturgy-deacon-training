@@ -4,7 +4,7 @@
 
 [Watch the whole video](https://youtu.be/aRs9oqKMCd8) · [Download PDF](docs/rubric.pdf) · [Download Word](docs/rubric.docx)
 
-## How to use this
+## How to use this webpage
 
 Every section below carries the part of the video it describes.
 Press play and it stops where the section ends, so you can read
@@ -19,28 +19,35 @@ Times shown beside each heading are positions within that clip,
 so they match the moment in the footage rather than the running
 time of the whole service.
 
-## If you are short of subdeacons
+## Assigning The Roles
 
-The rubrics below name subdeacons throughout, because that is
-what a hierarchical Liturgy assumes. Most parishes will not have
-two, and the offices are filled by appointment rather than left
-empty.
+The rubrics below call on subdeacons throughout.  You may have to
+appoint one or even two subdeacons choosing adult, experienced
+altar servers for the role.  They should be vested and know the 
+whole sequence beforehand — this is not a role to hand to someone
+on the day.  Another option is to have deacons act as subdeacons.
 
-**With no subdeacons**, appoint two senior altar servers to do
-their work. They should be vested and know the whole sequence
-beforehand — this is not a role to hand to someone on the day.
+Another important role, is the altar server who will bring out the
+bowl, pitcher and towel for the washing of the Bishops hands.
+Usually this is a junior server who will be greatly encouraged by
+playing this important role.
 
-**A young server** carries the water, the basin and the towel for
-the washing of the hands.
+Having two more adult servers who will keep an eye on things on
+the north and south sides of the altar is a good idea.  They should
+watch the subdeacons for direction, and can be a great help in 
+keeping things running smoothly by paying attention.
 
-**One server to the north and one to the south**, each
-responsible for the censer on their own side, and for fetching
-and returning what is needed there.
+## Help us Make this better!
 
-_[Add the rest here — the roles above are only the ones we have
-talked through, and you know the others.]_
+This site came out of the 2026 Diocese of NY and NJ Deaconal 
+Retreat.  The video was recorded at the retreat, and was edited
+and annotated by Dn. Mitch VanDuyn, of St. John the Baptist 
+Rochester NY.  
 
-`generated 25 Aug 2026, 02:16 · 9816244`
+Please forgive me for any errors, or omissions, and your corrections
+and input are most welcome.
+
+`generated 25 Aug 2026, 02:33 · 45fd66c`
 
 OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
 

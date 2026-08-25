@@ -101,7 +101,7 @@
     subtitle: For deacons, subdeacons and altar servers
 
     sections:
-      - heading: How to use this
+      - heading: How to use this webpage
         text: |
           Every section below carries the part of the video it describes.
           Press play and it stops where the section ends, so you can read
@@ -116,26 +116,33 @@
           so they match the moment in the footage rather than the running
           time of the whole service.
 
-      - heading: If you are short of subdeacons
+      - heading: Assigning The Roles
         text: |
-          The rubrics below name subdeacons throughout, because that is
-          what a hierarchical Liturgy assumes. Most parishes will not have
-          two, and the offices are filled by appointment rather than left
-          empty.
+          The rubrics below call on subdeacons throughout.  You may have to
+          appoint one or even two subdeacons choosing adult, experienced
+          altar servers for the role.  They should be vested and know the 
+          whole sequence beforehand — this is not a role to hand to someone
+          on the day.  Another option is to have deacons act as subdeacons.
 
-          **With no subdeacons**, appoint two senior altar servers to do
-          their work. They should be vested and know the whole sequence
-          beforehand — this is not a role to hand to someone on the day.
+          Another important role, is the altar server who will bring out the
+          bowl, pitcher and towel for the washing of the Bishops hands.
+          Usually this is a junior server who will be greatly encouraged by
+          playing this important role.
 
-          **A young server** carries the water, the basin and the towel for
-          the washing of the hands.
+          Having two more adult servers who will keep an eye on things on
+          the north and south sides of the altar is a good idea.  They should
+          watch the subdeacons for direction, and can be a great help in 
+          keeping things running smoothly by paying attention.
+      
+      - heading: Help us Make this better!
+        text: |
+          This site came out of the 2026 Diocese of NY and NJ Deaconal 
+          Retreat.  The video was recorded at the retreat, and was edited
+          and annotated by Dn. Mitch VanDuyn, of St. John the Baptist 
+          Rochester NY.  
 
-          **One server to the north and one to the south**, each
-          responsible for the censer on their own side, and for fetching
-          and returning what is needed there.
-
-          _[Add the rest here — the roles above are only the ones we have
-          talked through, and you know the others.]_
+          Please forgive me for any errors, or omissions, and your corrections
+          and input are most welcome.
 
 # ─── Opening card, before everything ───────────────────────────────────
 - clip: 0
