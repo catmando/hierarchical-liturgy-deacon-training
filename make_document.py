@@ -313,9 +313,6 @@ def render_html(sheet, video_url):
     add('<header class="masthead">')
     add('  <p class="eyebrow">Deacons &middot; Subdeacons &middot; Altar servers</p>')
     add('  <h1>Rubrics for Serving at a Hierarchical Liturgy</h1>')
-    add('  <p class="hint">The player in each section plays only that '
-        'section and stops at its end. The link beside the heading opens the '
-        'whole video on YouTube instead.</p>')
     add('  <p class="standfirst">This assumes the parish Liturgy is already '
         'second nature &mdash; in the Russian recension a deacon serves it '
         'regularly. What follows focuses on what changes when the bishop '
@@ -356,11 +353,7 @@ def render_html(sheet, video_url):
                 meta.append(mmss(durs[n]))
             if at is not None:
                 stamp = mmss(at)
-                meta.append(
-                    f'<a href="{html.escape(video_url)}'
-                    f'{"&" if "?" in video_url else "?"}t={int(at + 0.5)}s">'
-                    f'open on YouTube at {stamp}</a>'
-                    if video_url else f"{stamp} in the video")
+                meta.append(f"{stamp} in the video")
             add('  <p class="meta">' + " &middot; ".join(meta) + "</p>")
 
             vid = video_id(video_url)
@@ -528,11 +521,6 @@ h1{
   margin:1.1rem 0 0; color:var(--gold);
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
-}
-.hint{
-  margin:1.4rem 0 0; padding:.7rem .95rem; background:var(--quote);
-  border-left:3px solid var(--gold); border-radius:2px;
-  color:var(--muted); font-size:.92rem; max-width:34rem;
 }
 .colophon{
   color:var(--muted); max-width:34rem; margin:1rem 0 0;

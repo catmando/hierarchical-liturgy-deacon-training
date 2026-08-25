@@ -4,7 +4,7 @@
 
 This assumes the parish Liturgy is already second nature — in the Russian recension a deacon serves it regularly. What follows focuses on what changes when the bishop serves.
 
-`generated 25 Aug 2026, 02:07 · 0a33230`
+`generated 25 Aug 2026, 02:08 · 3a87026`
 
 OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
 
