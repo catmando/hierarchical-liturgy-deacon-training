@@ -105,7 +105,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## The Bishop Enters the Nave
 
-*clip 2 · 1:20 · [1:10 in the video](https://youtu.be/aRs9oqKMCd8?t=70s)*
+*clip 2 · 1:20 · [1:10 in the video](https://youtu.be/aRs9oqKMCd8?t=71s)*
 
 > The Bishop Greets the Clergy, and Enters the Nave
 
@@ -245,7 +245,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## The Blessing of the Dikiri and Trikiri
 
-*clip 6 · 2:10 · [6:15 in the video](https://youtu.be/aRs9oqKMCd8?t=375s)*
+*clip 6 · 2:10 · [6:15 in the video](https://youtu.be/aRs9oqKMCd8?t=376s)*
 
 > The Blessing of the Dikiri and Trikiri
 > ***
@@ -288,7 +288,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## Final Prayers before the Liturgy
 
-*clip 7 · 1:31 · [8:31 in the video](https://youtu.be/aRs9oqKMCd8?t=511s)*
+*clip 7 · 1:31 · [8:31 in the video](https://youtu.be/aRs9oqKMCd8?t=512s)*
 
 > Final Prayers before the Liturgy
 >
@@ -355,7 +355,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## Completion of the Washing of Hands and the Second Litany
 
-*clip 9 · 0:30 · [11:36 in the video](https://youtu.be/aRs9oqKMCd8?t=696s)*
+*clip 9 · 0:30 · [11:36 in the video](https://youtu.be/aRs9oqKMCd8?t=697s)*
 
 > Completion of the Washing of Hands and the Second Litany
 >
@@ -379,7 +379,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## The Second Antiphon
 
-*clip 10 · 0:21 · [12:16 in the video](https://youtu.be/aRs9oqKMCd8?t=736s)*
+*clip 10 · 0:21 · [12:16 in the video](https://youtu.be/aRs9oqKMCd8?t=737s)*
 
 > The Second Antiphon
 >
@@ -517,7 +517,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## Troparion, Kontakion, Save the Pious and the Thrice Holy
 
-*clip 15 · 3:58 · [18:01 in the video](https://youtu.be/aRs9oqKMCd8?t=1081s)*
+*clip 15 · 3:58 · [18:01 in the video](https://youtu.be/aRs9oqKMCd8?t=1082s)*
 
 > Troparion, Kontakion, Save the Pious and the Thrice Holy
 >
@@ -586,7 +586,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## Lesser Censing, and Epistle Reading
 
-*clip 17 · 3:17 · [23:08 in the video](https://youtu.be/aRs9oqKMCd8?t=1388s)*
+*clip 17 · 3:17 · [23:08 in the video](https://youtu.be/aRs9oqKMCd8?t=1389s)*
 
 > Lesser Censing, and Epistle Reading
 
@@ -712,7 +712,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## Augmented Litany Begins
 
-*clip 21 · 0:22 · [29:15 in the video](https://youtu.be/aRs9oqKMCd8?t=1755s)*
+*clip 21 · 0:22 · [29:15 in the video](https://youtu.be/aRs9oqKMCd8?t=1756s)*
 
 > The Second deacon Begins The Augmented Litany
 > after the Sermon as usual
@@ -721,7 +721,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## Augmented Litany through censing before great entrance
 
-*clip 22 · 7:10 · [29:36 in the video](https://youtu.be/aRs9oqKMCd8?t=1776s)*
+*clip 22 · 7:10 · [29:36 in the video](https://youtu.be/aRs9oqKMCd8?t=1777s)*
 
 > Augmented Litany through Censing before Great Entrance
 >
@@ -801,7 +801,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## Clergy Kissing the Bishops Shoulder
 
-*clip 23 · 0:09 · [36:24 in the video](https://youtu.be/aRs9oqKMCd8?t=2184s)*
+*clip 23 · 0:09 · [36:24 in the video](https://youtu.be/aRs9oqKMCd8?t=2185s)*
 
 > Clergy Kissing the Bishops Shoulder
 >
@@ -813,7 +813,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## The Bishop makes His Commemorations
 
-*clip 25 · 0:09 · [36:40 in the video](https://youtu.be/aRs9oqKMCd8?t=2200s)*
+*clip 25 · 0:09 · [36:40 in the video](https://youtu.be/aRs9oqKMCd8?t=2201s)*
 
 > The Bishop now  makes His Commemorations
 
@@ -826,7 +826,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## Covering the Gifts and The Great Entrance
 
-*clip 26 · 4:31 · [36:55 in the video](https://youtu.be/aRs9oqKMCd8?t=2215s)*
+*clip 26 · 4:31 · [36:55 in the video](https://youtu.be/aRs9oqKMCd8?t=2216s)*
 
 > Covering the Gifts and The Great Entrance
 
@@ -946,7 +946,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## Conclusion of the Great Entrance
 
-*clip 27 · 0:30 · [41:13 in the video](https://youtu.be/aRs9oqKMCd8?t=2473s)*
+*clip 27 · 0:30 · [41:13 in the video](https://youtu.be/aRs9oqKMCd8?t=2474s)*
 
 > Conclusion of the Great Entrance
 >
@@ -1029,7 +1029,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## The anaphora part 3
 
-*clip 31 · 1:04 · [46:33 in the video](https://youtu.be/aRs9oqKMCd8?t=2793s)*
+*clip 31 · 1:04 · [46:33 in the video](https://youtu.be/aRs9oqKMCd8?t=2794s)*
 
 > The anaphora part 3: Epiclesis
 >
@@ -1164,7 +1164,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## After Communion
 
-*clip 34 · 1:22 · [51:51 in the video](https://youtu.be/aRs9oqKMCd8?t=3111s)*
+*clip 34 · 1:22 · [51:51 in the video](https://youtu.be/aRs9oqKMCd8?t=3112s)*
 
 > Holy Communion now proceeds in the usual fashion.
 >
@@ -1198,7 +1198,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 ## Conclusion
 
-*clip 37 · 0:21 · [59:06 in the video](https://youtu.be/aRs9oqKMCd8?t=3546s)*
+*clip 37 · 0:21 · [59:06 in the video](https://youtu.be/aRs9oqKMCd8?t=3547s)*
 
 > Conclusion
 

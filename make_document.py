@@ -177,9 +177,10 @@ def render(sheet, linked, video_url, base=OUT):
             if at is not None:
                 stamp = mmss(at)
                 if linked and video_url:
-                    bits.append(f"[{stamp} in the video]({video_url}&t={int(at)}s)"
+                    sec = int(at + 0.5)
+                    bits.append(f"[{stamp} in the video]({video_url}&t={sec}s)"
                                 if "?" in video_url else
-                                f"[{stamp} in the video]({video_url}?t={int(at)}s)")
+                                f"[{stamp} in the video]({video_url}?t={sec}s)")
                 else:
                     bits.append(f"{stamp} in the video")
             add(f"*{' · '.join(bits)}*")
@@ -337,14 +338,15 @@ def render_html(sheet, video_url):
                 stamp = mmss(at)
                 meta.append(
                     f'<a href="{html.escape(video_url)}'
-                    f'{"&" if "?" in video_url else "?"}t={int(at)}s">{stamp} in the video</a>'
+                    f'{"&" if "?" in video_url else "?"}t={int(at + 0.5)}s">'
+                    f'{stamp} in the video</a>'
                     if video_url else f"{stamp} in the video")
             add('  <p class="meta">' + " &middot; ".join(meta) + "</p>")
 
             vid = video_id(video_url)
             span = spans.get(t)
             if vid and span:
-                st_i, en_i = int(span[0]), int(span[1])
+                st_i, en_i = int(span[0] + 0.5), int(span[1] + 0.5)
                 # end= is kept, but YouTube honours it unreliably, so the
                 # stop is enforced from the page as well — see END_GUARD
                 add(f'  <div class="player"><iframe loading="lazy" '
