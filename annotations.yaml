@@ -119,6 +119,9 @@
         Children with flowers.
         Parish Council President — bread and salt.
 
+    # the plan of who stands where; art/greeting_plan.svg is the source
+    - for: 10
+      image: art/greeting_plan.png
 
   annotations:
     # No `at:` on the first annotation → starts at 0.
