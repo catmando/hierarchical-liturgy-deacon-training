@@ -160,6 +160,7 @@
 # ─── 1 ─────────────────────────────────────────────────────────────────
 - clip: 1
   chapter: Greeting of the Hierarch at the Doors
+  thumbnail: 0:12
 
   # Plays BEFORE clip 1. No chapter:, so it folds into chapter 1 and becomes
   # its title card.
@@ -236,6 +237,7 @@
 # ─── 2 ─────────────────────────────────────────────────────────────────
 - clip: 2
   chapter: The Bishop Enters the Nave
+  thumbnail: 0:36
   card: 
     for: 4
     text: The Bishop Greets the Clergy, and Enters the Nave
@@ -265,7 +267,8 @@
       text: Wisdom!
 
     - for: 4
-      text: Deacons turn around and walk forward toward cathedra
+      role: DEACONS
+      text: turn around and walk forward toward cathedra
 
     - for: 4
       role: CHOIR
@@ -274,14 +277,15 @@
 
     - at: 42
       for: 5
+      role: DEACONS
       text: >
-        Deacons walk past cathedra, turn around and continue to cense the Bishop
+        walk past cathedra, turn around and continue to cense the Bishop
 
     - at: 56
       for: 4
-      role: SERVERS
+      role: DEACONS, SERVERS
       text: >
-        Deacons turn towards the altar, as Bishop walks past, giving their
+        turn towards the altar, as Bishop walks past, giving their
         censers away
     
     - at: 1:00
@@ -297,6 +301,7 @@
 # ─── 3 ─────────────────────────────────────────────────────────────────
 - clip: 3
   chapter: Entrance Prayers
+  thumbnail: 0:11
 
   card:
     for: 4
@@ -316,7 +321,7 @@
 
 - clip: 4
   chapter: Preparing to Vest the Bishop
-
+  thumbnail: 1:34
   card: 
     for: 4
     text: Preparing to Vest the Bishop
@@ -363,7 +368,7 @@
 
 - clip: 5
   chapter: Vesting the Bishop
-
+  thumbnail: 1:17
   card: 
     for: 20
     text: |
@@ -417,12 +422,12 @@
 
 - clip: 6
   chapter: The Blessing of the Dikiri and Trikiri
-
+  thumbnail: 0:40
   card: 
     for: 6
     text: |
       The Blessing of the Dikiri and Trikiri
-      ***
+      
       As the cross and Encolpion are placed,
       the Dikiri and Trikiri are brought from the altar,
       followed by the clergy.
@@ -462,7 +467,7 @@
 
 - clip: 7
   chapter: Final Prayers before the Liturgy
-
+  thumbnail: 0:04
   card: 
     for: 7
     text: |
@@ -511,7 +516,7 @@
       
 - clip: 8
   chapter: Washing of the Hands 
-
+  thumbnail: 0:44
   card: 
     for: 9
     text: |
@@ -537,7 +542,7 @@
 
 - clip: 9
   chapter: Completion of the Washing of Hands and the Second Litany 
-
+  thumbnail: 0:22
   card: 
     for: 9
     text: |
@@ -565,7 +570,7 @@
 
 - clip: 10
   chapter: The Second Antiphon 
-
+  thumbnail: 0:20
   card: 
     for: 10
     text: |
@@ -579,7 +584,7 @@
       
 - clip: 11
   chapter: The Beginning of the Little Entrance
-
+  thumbnail: 0:08
   card: 
     for: 30
     text: |
@@ -637,7 +642,7 @@
 
 - clip: 12
   chapter: The Conclusion of the Little Entrance
-
+  thumbnail: 0:27
   cards:
     - for: 6
       text: |
@@ -686,7 +691,7 @@
 
 - clip: 14
   chapter: Hierarchical Censing After the Great Entrance
-
+  thumbnail: 0:28
   card:
     - for: 10
       text: |
@@ -707,7 +712,7 @@
 
 - clip: 15
   chapter: Troparion, Kontakion, Save the Pious and the Thrice Holy
-
+  thumbnail: 2:00
   card:
     - for: 10
       text: |
@@ -767,6 +772,7 @@
 
 - clip: 16
   chapter: Conclusion of Thrice Holy
+  thumbnail: 0:02
   card:
     - for: 8
       text: |
@@ -790,6 +796,7 @@
 
 - clip: 17
   chapter: Lesser Censing, and Epistle Reading
+  thumbnail: 0:48
   cards:
     - for: 6
       text: |
@@ -844,6 +851,7 @@
 
 - clip: 18
   chapter: Alleluias and the Gospel Book Goes Out
+  thumbnail: 0:32
   cards:
     - for: 6
       text: |
@@ -872,6 +880,7 @@
 
 - clip: 19
   chapter: Reading of the Gospel
+  thumbnail: 0:05
   cards:
     - for: 6
       text: |
@@ -907,6 +916,7 @@
 
 - clip: 20
   chapter: Gospel is Returned to the Altar
+  thumbnail: 0:19
   cards:
     - for: 6
       text: |
@@ -934,6 +944,7 @@
 
 - clip: 21
   chapter: Augmented Litany Begins
+  thumbnail: 0:06
   cards:
     - for: 6
       text: |
@@ -946,6 +957,7 @@
 
 - clip: 22
   chapter: Augmented Litany through censing before great entrance
+  thumbnail: 0:37
   cards:
     - for: 6
       text: |
@@ -1041,6 +1053,7 @@
 
 - clip: 23
   chapter: Clergy Kissing the Bishops Shoulder
+  thumbnail: 0:06
   cards:
     - for: 6
       text: |
@@ -1055,6 +1068,7 @@
 
 - clip: 25
   chapter: The Bishop makes His Commemorations
+  thumbnail: 0:02
   cards:
     - for: 6
       text: |
@@ -1069,6 +1083,7 @@
 
 - clip: 26
   chapter: Covering the Gifts and The Great Entrance
+  thumbnail: 0:25
   cards:
     - for: 6
       text: |
@@ -1185,6 +1200,7 @@
 
 - clip: 27
   chapter: Conclusion of the Great Entrance
+  thumbnail: 0:04
   cards:
     - for: 15
       text: |
@@ -1211,6 +1227,7 @@
 
 - clip: 28
   chapter: Litany of Supplication and the Creed
+  thumbnail: 0:06
   cards:
     - for: 6
       text: |
@@ -1227,6 +1244,7 @@
       cut: true
 
 - clip: 29
+  thumbnail: 2:09
   chapter: The anaphora part 1
   cards:
     - for: 6
@@ -1274,6 +1292,7 @@
 
 - clip: 30
   chapter: The anaphora part 2
+  thumbnail: 1:32
   cards:
     - for: 6
       text: |
@@ -1284,6 +1303,7 @@
 
 - clip: 31
   chapter: The anaphora part 3
+  thumbnail: 0:56
   cards:
     - for: 6
       text: |
@@ -1313,6 +1333,7 @@
 
 - clip: 32
   chapter: The anaphora part 4
+  thumbnail: 2:34
   cards:
     - for: 6
       text: |
@@ -1432,7 +1453,7 @@
 
 - clip: 34
   chapter: After Communion
-  cards:
+  thumbnail: 0:07
   cards:
     - for: 10
       text: |
@@ -1450,6 +1471,7 @@
         have received communion.
 - clip: 35
   chapter: Litany of Thanksgiving
+  thumbnail: 0
   cards:
     - for: 6
       text: |
@@ -1457,6 +1479,7 @@
 
 - clip: 36
   chapter: Final blessing and Many Years
+  thumbnail: 0:20
   cards:
     - for: 6
       text: |
@@ -1464,7 +1487,49 @@
 
 - clip: 37
   chapter: Conclusion
+  thumbnail: 0:05
+
   cards:
     - for: 6
       text: |
         Conclusion
+
+# ---------------------------------------------------------------------------
+# Appendices. Prose that belongs with the rubric but sits at no moment in the
+# video, so each section is a lettered chapter in the contents with no
+# timecode. Add or remove `sections:` freely; the contents list follows.
+# ---------------------------------------------------------------------------
+- appendix:
+    sections:
+      - heading: Glossary
+        text: |
+          **Dikirion** — the two-branched candlestick, signifying the two
+          natures of Christ. **Trikirion** — the three-branched candlestick,
+          signifying the Trinity.
+
+          **Zhezl** — the bishop's staff. Written *jezel* in some of the
+          notes; the same object is called simply "the staff" elsewhere, and
+          one spelling should win before this is published.
+
+          **Orlets** — the eagle rug the bishop stands on.
+
+          [Dummy text — replace. Worth settling here: *Ton Despotin*,
+          *klobuk*, *mantiya*, and the transliterations flagged in CLAUDE.md
+          section 10.]
+
+      - heading: Serving without Two Deacons
+        text: |
+          The rubrics throughout assume two deacons, which is the normal case
+          at a hierarchical liturgy. Where fewer are available the duties do
+          not disappear; they are reassigned.
+
+          With one deacon, he takes the first deacon's part throughout, and
+          the litanies that would alternate fall to him.
+
+          Where there are no subdeacons, two senior altar servers should be
+          appointed to their duties, though they do not vest as subdeacons
+          and do not handle the dikirion and trikirion at the blessing.
+
+          [Dummy text — replace once the diocesan roles chart is in hand. It
+          is the outstanding item that could change annotation text rather
+          than timings.]

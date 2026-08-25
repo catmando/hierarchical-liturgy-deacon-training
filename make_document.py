@@ -289,6 +289,30 @@ def front(sheet):
     return {}
 
 
+def appendices(sheet):
+    """[(letter, heading, text)] from the sheet's appendix: blocks.
+
+    Each section is a chapter in its own right — listed in the contents and
+    linkable — but it belongs to no clip and sits at no time in the video, so
+    it carries a letter instead of a number and no timecode. More than one
+    appendix: block is allowed; their sections run together in sheet order.
+    """
+    with open(sheet, encoding="utf-8") as f:
+        doc = yaml.safe_load(f)
+    out = []
+    for b in doc or []:
+        if not (isinstance(b, dict) and isinstance(b.get("appendix"), dict)):
+            continue
+        for sec in b["appendix"].get("sections") or []:
+            if not isinstance(sec, dict):
+                continue
+            head = str(sec.get("heading", "")).strip()
+            text = str(sec.get("text", "")).strip()
+            if head and text:
+                out.append((chr(ord("A") + len(out)), head, text))
+    return out
+
+
 def render(sheet, linked, video_url, base=OUT, dl=""):
     durs = clip_durations()
     chap_at = video_chapter_starts()
@@ -345,6 +369,12 @@ def render(sheet, linked, video_url, base=OUT, dl=""):
             add(f"{n}. [{title}](#{anchor}){stamp}")
         else:
             add(f"{n}. {title}{stamp}")
+    for letter, head, _t in appendices(sheet):
+        if linked:
+            anchor = re.sub(r"[^a-z0-9]+", "-", head.lower()).strip("-")
+            add(f"{letter}. [{head}](#{anchor})")
+        else:
+            add(f"{letter}. {head}")
     add("")
     add("---")
     add("")
@@ -427,6 +457,17 @@ def render(sheet, linked, video_url, base=OUT, dl=""):
                 '<div style="page-break-after: always"></div>')
             add("")
 
+    for letter, head, text in appendices(sheet):
+        add(f"## {head}")
+        add("")
+        add(f"*Appendix {letter}*")
+        add("")
+        add(text)
+        add("")
+        add("---" if linked else
+            '<div style="page-break-after: always"></div>')
+        add("")
+
     return "\n".join(L).rstrip() + "\n"
 
 
@@ -487,6 +528,7 @@ def render_html(sheet, video_url, posters=None, staging=False):
     add = H.append
 
     secs = chapter_sections(sheet)
+    apps = appendices(sheet)
 
     add('<title>Serving a Hierarchical Liturgy</title>')
     if staging:
@@ -533,6 +575,9 @@ def render_html(sheet, video_url, posters=None, staging=False):
         stamp = (f'<span class="tc">{mmss(at)}</span>' if at is not None else "")
         add(f'  <li><span class="num">{n}</span>'
             f'<a href="#c{n}">{html.escape(t)}</a>{stamp}</li>')
+    for i, (letter, head, _t) in enumerate(apps, 1):
+        add(f'  <li><span class="num">{letter}</span>'
+            f'<a href="#a{i}">{html.escape(head)}</a></li>')
     add("</ol></nav>")
 
     open_sec = False
@@ -637,6 +682,15 @@ def render_html(sheet, video_url, posters=None, staging=False):
             add("  </ol>")
 
     if open_sec:
+        add("</section>")
+
+    for i, (letter, head, text) in enumerate(apps, 1):
+        add(f'<section class="chapter appendix" id="a{i}">')
+        add(f'  <h2>{html.escape(head)}</h2>')
+        add(f'  <p class="meta">appendix {letter}</p>')
+        for para in text.split("\n\n"):
+            if para.strip():
+                add(f"  <p>{inline_md(para.strip())}</p>")
         add("</section>")
 
     if video_id(video_url):
@@ -909,6 +963,8 @@ blockquote.card p{margin:0}
 }
 .reset:hover{color:var(--gold);border-color:var(--gold)}
 .reset:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.appendix p{margin:0 0 1rem;max-width:38rem}
+.appendix p.meta{margin-bottom:1.4rem}
 .staging{
   background:var(--gold);color:#12100e;text-align:center;
   font-family:"IBM Plex Mono",ui-monospace,monospace;

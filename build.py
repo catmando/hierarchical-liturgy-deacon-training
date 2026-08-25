@@ -60,6 +60,11 @@ Singular and plural key names mean the same thing everywhere:
 annotation/annotations, card/cards, cut/cuts, note/notes, todo/todos,
 thumbnail/thumb.
 
+The sheet may also carry `intro:` and `appendix:` blocks. Those are prose for
+the written rubric, they sit at no moment in the video, and this build steps
+over them — see make_document.py. A block with neither `clip:` nor one of
+those keys is still an error, so a misspelling is not silently ignored.
+
 TIMES
   Write them bare — 1:27, 1:03:23, 0:04, 87 and 4.5 all work.
 
@@ -527,6 +532,10 @@ def _text(v):
     return str(v)
 
 
+MATTER_KEYS = ("intro", "appendix")
+"""Blocks that carry prose for the written rubric and never reach the video."""
+
+
 def read_sheet(path):
     """Flatten the YAML sheet into rows.
 
@@ -590,10 +599,11 @@ def read_sheet(path):
     rows = []
     for bi, b in enumerate(doc, 1):
         if not isinstance(b, dict): die(f"{path}: block {bi} is not a clip block")
-        # Front matter — the intro: block is written for the rubric and never
-        # reaches the video, so the build steps over it. check_sheet.py and
-        # make_document.py skip it the same way.
-        if "clip" not in b and "intro" in b:
+        # Prose blocks — intro: and appendix: are written for the rubric and
+        # never reach the video, so the build steps over them. check_sheet.py
+        # and make_document.py skip the same set. A block with no clip: and
+        # none of these keys is still an error, so a typo is not swallowed.
+        if "clip" not in b and any(k in b for k in MATTER_KEYS):
             continue
         n = b.get("clip")
         if not isinstance(n, int): die(f"{path}: block {bi} has no whole-number clip:")

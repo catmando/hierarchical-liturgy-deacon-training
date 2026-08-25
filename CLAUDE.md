@@ -127,6 +127,28 @@ content they describe.
           …
 ```
 
+It may also carry any number of **`appendix:` blocks** — prose that belongs
+with the rubric but sits at no moment in the video. Each `section` is a
+chapter in its own right: listed in the contents, linkable, and carrying a
+**letter** rather than a clip number and no timecode. Sections run together
+in sheet order across every appendix block.
+
+```yaml
+- appendix:
+    sections:
+      - heading: Glossary
+        text: |
+          …
+```
+
+Both prose blocks are skipped by `build.py`, which is a thing to be careful
+about: a block with no `clip:` used to be fatal, and that is exactly how the
+`intro:` block broke the build (§8b). `build.py` now keeps the list in
+`MATTER_KEYS`, and `check_sheet.py` imports it, so adding another prose block
+type means changing one tuple. A block with neither `clip:` nor one of those
+keys is still an error, so a misspelled `appendex:` is caught rather than
+silently dropped.
+
 ```yaml
 - clip: 1
   chapter: Greeting of the Hierarch at the Doors

@@ -18,7 +18,8 @@ except ModuleNotFoundError:
     sys.exit("ERROR: PyYAML missing — run: pip3 install --break-system-packages pyyaml")
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from build import parse_time, CONT_GAP, DEFAULT_DUR   # one definition, not two
+from build import (parse_time, CONT_GAP, DEFAULT_DUR,   # one definition, not two
+                   MATTER_KEYS)
 
 
 def clip_durations():
@@ -250,23 +251,38 @@ def validate(path):
     seen = {}
     for i, b in enumerate(doc):
         where = f"block {i + 1}"
-        if isinstance(b, dict) and "intro" in b and "clip" not in b:
-            intro = b["intro"]
-            if not isinstance(intro, dict):
-                err(where, "intro: expected a block with title/subtitle/sections")
+        matter = ([k for k in MATTER_KEYS if k in b] if isinstance(b, dict)
+                  and "clip" not in b else [])
+        if matter:
+            kind = matter[0]
+            body = b[kind]
+            if not isinstance(body, dict):
+                err(where, f"{kind}: expected a block with "
+                           f"title/subtitle/sections")
                 continue
-            for k in intro:
+            for k in body:
                 if k not in ("title", "subtitle", "text", "sections"):
-                    err(f"{where} intro", f"unknown key {k!r}")
-            for j, sec in enumerate(intro.get("sections") or [], 1):
+                    err(f"{where} {kind}", f"unknown key {k!r}")
+            secs = body.get("sections") or []
+            if kind == "appendix" and not secs:
+                err(f"{where} appendix", "no sections: — an appendix is a "
+                                         "list of sections, each with a "
+                                         "heading and text")
+            for j, sec in enumerate(secs, 1):
                 if not isinstance(sec, dict):
-                    err(f"{where} intro section {j}", "expected heading and text")
+                    err(f"{where} {kind} section {j}",
+                        "expected heading and text")
                     continue
                 for k in sec:
                     if k not in ("heading", "text"):
-                        err(f"{where} intro section {j}", f"unknown key {k!r}")
+                        err(f"{where} {kind} section {j}", f"unknown key {k!r}")
                 if not str(sec.get("text", "")).strip():
-                    err(f"{where} intro section {j}", "no text")
+                    err(f"{where} {kind} section {j}", "no text")
+                # an appendix section is a chapter in its own right, so it
+                # needs a heading to be listed and linked
+                if kind == "appendix" and not str(sec.get("heading", "")).strip():
+                    err(f"{where} appendix section {j}",
+                        "no heading: — it is what the contents list links to")
             continue
         if not isinstance(b, dict):
             err(where, f"expected a clip block, got {type(b).__name__}"); continue
