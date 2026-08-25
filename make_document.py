@@ -13,6 +13,12 @@ Writes two files into output/:
     rubric.pdf         for printing        (needs weasyprint)
     rubric.docx        for editing in Word (needs pandoc)
 
+Two more are written outside output/, because they are meant to be committed
+and read on GitHub:
+
+    RUBRIC.md          rendered by GitHub in the repository itself
+    docs/index.html    served by GitHub Pages, styled, diagrams and all
+
 The last two are written only if those tools are installed:
 
     brew install weasyprint pandoc
@@ -80,7 +86,7 @@ def blocks(sheet):
     return [b for b in doc if isinstance(b, dict) and "clip" in b]
 
 
-def render(sheet, linked, video_url):
+def render(sheet, linked, video_url, base=OUT):
     durs = clip_durations()
     chap_at = video_chapter_starts()
     L = []
@@ -165,7 +171,7 @@ def render(sheet, linked, video_url):
             if img:
                 alt = (str(c["chapter"]) if c.get("chapter")
                        else f"{title or f'clip {n}'} — plan")
-                add(f"![{md_escape(alt)}]({os.path.relpath(img, OUT)})")
+                add(f"![{md_escape(alt)}]({os.path.relpath(img, base)})")
                 add("")
             txt = str(c.get("text", "")).strip()
             if txt:
@@ -492,6 +498,21 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
 """
 
 
+def for_github(sheet, video_url):
+    """Copies meant to be committed: GitHub renders the markdown in the repo,
+    and Pages serves the HTML from docs/."""
+    md = render(sheet, True, video_url, base=".")
+    with open("RUBRIC.md", "w", encoding="utf-8") as f:
+        f.write(md)
+    print(f"  RUBRIC.md   {len(md.splitlines())} lines   (GitHub renders this)")
+
+    os.makedirs("docs", exist_ok=True)
+    doc = render_html(sheet, video_url)
+    with open(os.path.join("docs", "index.html"), "w", encoding="utf-8") as f:
+        f.write(doc)
+    print(f"  docs/index.html   {len(doc) / 1024:.0f} KB   (GitHub Pages)")
+
+
 def convert():
     """PDF and Word, when the tools for them are on the machine."""
     made = []
@@ -543,6 +564,8 @@ def main():
             f.write(text)
         print(f"  {path}   {len(text.splitlines())} lines, "
               f"{len(text.split())} words")
+
+    for_github(a.sheet, a.video)
 
     doc = render_html(a.sheet, a.video)
     path = os.path.join(OUT, "rubric.html")
