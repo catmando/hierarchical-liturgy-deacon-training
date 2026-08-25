@@ -666,9 +666,25 @@ card, so every chapter after the first sits 10s earlier.
 - https://github.com/catmando/hierarchical-liturgy-deacon-training/blob/main/RUBRIC.md
   — the same words, rendered by GitHub itself
 
-Both are **public and indexable**, unlike the unlisted video. `RUBRIC.md` and
-`docs/index.html` are the only generated files that are committed; everything
-in `output/` stays ignored.
+Both are **public and indexable**, unlike the unlisted video. `RUBRIC.md`,
+`docs/index.html`, `docs/posters/` and the two download files are the only
+generated things that are committed; everything in `output/` stays ignored.
+
+**Published 25 Aug 2026** with poster frames, the section reset control and
+four appendices. All 34 chapters kept their id, title, timecode and player
+span through that change, so links already sent out still land where they
+did — worth re-checking the same way after any future regeneration, since
+about five people were holding the link at the time.
+
+`docs/staging/` is deliberately **untracked**. It cannot reach the site, and
+that is what makes it safe: publishing is `git add` of explicit paths, never
+`git add docs/`. It is left on disk rather than deleted, per the project's
+no-deletion rule.
+
+One wrinkle to expect: the build stamp on the page names the commit that was
+checked out when the page was *generated*, which is the commit before the one
+that publishes it. That is accurate rather than wrong, but it does mean the
+stamp always trails the publishing commit by one.
 
 **Written rubric:** `make_document.py` builds it from the same sheet, so it
 cannot drift from the video. Regenerate whenever either changes:
