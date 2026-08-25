@@ -9,6 +9,8 @@ Reads a single YAML edit sheet and writes into output/:
     chapters.txt        FFMETADATA chapter marks
     youtube_chapters.txt
     boundaries.tsv      for reference
+    thumbnails.tsv      poster moments, mapped into master.mp4 time, for
+                        make_document.py
 
 USAGE
     python3 build.py                    # full build
@@ -45,13 +47,18 @@ cannot go missing.
     annotations:  on-screen text, and speed/cut spans, in time order
     notes:        published — goes into the written document
     todos:        yours alone; never on screen, never printed
+    thumbnail:    the moment to use as this section's poster frame on the
+                  written-rubric web page. Original clip time, like every
+                  other time here, so --timecode shows you what to type.
+                  Leave it out and a frame is picked automatically.
     skip: true    leave this clip out of the build entirely
     join: true    this clip continues the one before it: no chapter of its
                   own, and the previous clip does not fade out at its end.
                   It must carry no cards, or one would sit in the join.
 
 Singular and plural key names mean the same thing everywhere:
-annotation/annotations, card/cards, cut/cuts, note/notes, todo/todos.
+annotation/annotations, card/cards, cut/cuts, note/notes, todo/todos,
+thumbnail/thumb.
 
 TIMES
   Write them bare — 1:27, 1:03:23, 0:04, 87 and 4.5 all work.
@@ -583,6 +590,11 @@ def read_sheet(path):
     rows = []
     for bi, b in enumerate(doc, 1):
         if not isinstance(b, dict): die(f"{path}: block {bi} is not a clip block")
+        # Front matter — the intro: block is written for the rubric and never
+        # reaches the video, so the build steps over it. check_sheet.py and
+        # make_document.py skip it the same way.
+        if "clip" not in b and "intro" in b:
+            continue
         n = b.get("clip")
         if not isinstance(n, int): die(f"{path}: block {bi} has no whole-number clip:")
         where = f"clip {n}"
@@ -598,6 +610,11 @@ def read_sheet(path):
         if title:
             rows.append((where, {"type": "chapter", "clip": str(n),
                                  "text": _text(title)}))
+
+        thumb = _first(b, "thumbnail", "thumb")
+        if thumb is not None:
+            rows.append((where, {"type": "thumbnail", "clip": str(n),
+                                 "start": str(thumb)}))
 
         cards = _as_list(_first(b, "cards", "card"))
         for ci, c in enumerate(cards, 1):
@@ -922,6 +939,7 @@ def main():
     skips = set()
     joined = set()          # clips that continue the previous one
     chapter_titles = {}
+    thumbs = {}            # clip -> poster moment, in ORIGINAL clip time
     anns = defaultdict(list)
     last_end = {}          # clip -> end of the most recent row, for "C"
     warnings = []
@@ -975,6 +993,14 @@ def main():
         if typ == "chapter":
             if n and text:
                 chapter_titles[n] = md_plain(" ".join(split_lines(text)))
+            continue
+
+        if typ == "thumbnail":
+            if n:
+                try:
+                    thumbs[n] = parse_time(row.get("start", ""))
+                except ValueError as e:
+                    warnings.append(f"{ln}: thumbnail — {e} — ignored")
             continue
 
         if typ in ("card", "title"):
@@ -1099,8 +1125,13 @@ def main():
     def add_cards(bucket, i, tag):
         """Cards belong to the clip they are written under, so a skipped clip
         takes only its own cards with it — never the one introducing the clip
-        after it."""
-        if a.subs_only: return
+        after it.
+
+        --subs-only must still put cards in the sequence: they occupy real
+        time in the finished video, so leaving them out drifts every later
+        annotation, chapter mark and boundary earlier by the total card
+        length. make_card() already skips an unchanged card, so this costs
+        nothing when only the text has moved."""
         for j, (dur, text, img, lead, ctitle) in enumerate(bucket.get(i, [])):
             nm = f"{i:03d}_{tag}{j:02d}.mp4"
             make_card(os.path.join(WORK, nm), text, dur, img)
@@ -1171,6 +1202,34 @@ def main():
         for st, nm, label, is_card, cno, d, lead in rows_out:
             f.write(f"{ass_time(st)}\t{nm}\t{label}\n")
         f.write(f"{ass_time(total)}\t[END]\t\n")
+
+    # ---------------- thumbnails ----------------
+    # `thumbnail:` names a moment in the ORIGINAL clip, like every other time in
+    # the sheet, but the poster is grabbed from master.mp4 — so map it through
+    # this clip's own edits and add the clip's offset in the finished video.
+    # make_document.py cannot work this out for itself: all it ever sees is
+    # chapters.txt, which knows nothing about cuts.
+    thumb_rows = []
+    for cn in sorted(thumbs):
+        if cn not in starts:
+            if not only:
+                warnings.append(f"clip {cn:02d}: thumbnail on a clip that is "
+                                f"not in the video — ignored")
+            continue
+        t0 = thumbs[cn]
+        segs = seg_map.get(cn)
+        mapped = time_map(t0, segs) if segs else t0
+        if mapped is None:
+            warnings.append(f"clip {cn:02d}: thumbnail at {t0:g}s falls inside "
+                            f"a cut, so that frame is not in the video "
+                            f"— ignored")
+            continue
+        thumb_rows.append((starts[cn] + mapped, cn, t0))
+
+    with open(out("preview_thumbnails.tsv" if only else "thumbnails.tsv"), "w") as f:
+        f.write("master_s\tclip\torig_s\n")
+        for ms, cn, t0 in thumb_rows:
+            f.write(f"{ms:.3f}\t{cn}\t{t0:.3f}\n")
 
     # ---------------- annotations ----------------
     events = []

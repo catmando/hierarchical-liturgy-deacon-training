@@ -62,7 +62,8 @@ python3 build.py --youtube       # burn subs into youtube.mp4, slow
 
 **Outputs, all into `output/`:** `master.mp4`, `liturgy_training.mkv`
 (chapters + annotations embedded, subtitle track flagged default),
-`annotations.ass`, `chapters.txt`, `youtube_chapters.txt`, `boundaries.tsv`.
+`annotations.ass`, `chapters.txt`, `youtube_chapters.txt`, `boundaries.tsv`,
+`thumbnails.tsv`.
 Preview mode writes `output/preview.*` instead and leaves the real outputs
 alone.
 
@@ -135,10 +136,24 @@ content they describe.
   todos:        # the user's own; never on screen, never printed
   skip: true    # leave this clip out
   join: true    # continue the previous clip: no chapter, no fade between
+  thumbnail:    # the moment to use as this section's poster on the web page
 ```
 
+**`thumbnail:`** picks the still shown for this section on the written-rubric
+page — one bare time, in **original clip time** like everything else, so
+`--timecode` shows you exactly what to type. Leave it out and a frame is
+chosen automatically: the longest run of footage in the section, a little way
+in. The automatic choice deliberately steps over title cards, because a card
+makes a useless thumbnail and every card looks like every other one.
+
+`build.py` maps the time through the clip's cuts and speed spans and writes
+`output/thumbnails.tsv`; `make_document.py` reads that and grabs the frame out
+of `master.mp4`. Pointing a `thumbnail:` inside a cut is an **error**, not a
+warning — that frame is not in the finished video at all.
+
 Singular and plural are synonyms throughout: `annotation`/`annotations`,
-`card`/`cards`, `cut`/`cuts`, `note`/`notes`, `todo`/`todos`.
+`card`/`cards`, `cut`/`cuts`, `note`/`notes`, `todo`/`todos`. `thumb` is a
+synonym for `thumbnail`.
 
 **Timing.** Write times bare — `1:27`, `1:03:23`, `0:04`, `87`, `4.5`. On an
 annotation `at:` (or `from:`) is the start and may be **left out**, in which
@@ -282,6 +297,40 @@ To re-check after any change to the mux:
 python3 build.py --clip 3
 ffprobe -v error -show_chapters output/preview.mkv | grep -i title
 ```
+
+---
+
+## 8b. ✅ Resolved: two bugs found 25 Aug 2026
+
+Both were latent in the committed code and neither announced itself. Found
+while wiring up poster frames, fixed and verified the same night.
+
+**`build.py` could not read its own sheet.** The `intro:` block added for the
+rubric has no `clip:`, and `read_sheet()` died on it — *"block 1 has no
+whole-number clip"*. `check_sheet.py` and `make_document.py` both skipped
+front matter; the build did not. So from the moment the intro was written,
+**the video could not be rebuilt at all**, and nothing revealed it because
+only `make_document.py` had been run since. `read_sheet()` now steps over it
+like the other two.
+
+**`--subs-only` dropped every card, and so mistimed everything.**
+`add_cards()` returned early under `--subs-only` to avoid re-encoding cards,
+but it returned *before* adding them to the sequence. Cards occupy real time
+in the finished video, so every annotation, chapter mark and boundary came
+out early by the total card length ahead of it — 22s by chapter 2, growing to
+**5:25** by the end. It fails silently: the run looks normal and prints a
+plausible total.
+
+> Caught by comparing the reported total against the published video:
+> **54:09 against 59:34**, a gap of 5:25 across 34 cards ≈ 9.5s each. After
+> the fix the build reports **59:34.33**, and all 34 chapter times match the
+> live page again. `make_card()` already skips an unchanged card, so the
+> early return bought nothing.
+
+The lesson worth keeping: `--subs-only` writes `chapters.txt`, and
+`make_document.py` builds every video link from `chapters.txt`. A quiet error
+there reaches the published page. **After any `--subs-only`, check the
+reported total length against the video before regenerating the document.**
 
 ---
 
@@ -618,6 +667,67 @@ brew install weasyprint pandoc     # once, if the last two are wanted
 Chapter headings then link into the video at the right second. Always
 regenerate *after* a rebuild — the timings come from `output/chapters.txt`,
 so a stale document sends readers to the wrong moment.
+
+---
+
+### Poster frames on the rubric page
+
+Every section on the page shows a **still from that section** with a play
+button, not a YouTube embed. Clicking one builds the real player, which then
+stops at the section end exactly as before.
+
+Two things follow, and both are the point:
+
+- **Each section looks like itself.** YouTube cannot do this — the poster is
+  a property of the video, not the embed, so all 34 sections would otherwise
+  show the one thumbnail. The stills come out of `master.mp4`.
+- **The page contacts YouTube only on a click.** Not even the IFrame API is
+  fetched before that. Verified in headless Chrome: 34 posters and **zero**
+  iframes at load; one click yields exactly one iframe with
+  `start`/`end`/`autoplay` set, and the other 33 posters untouched.
+
+Posters are **files** in `posters/` beside the page, not data URIs, so
+changing one `thumbnail:` rewrites one small JPEG instead of the whole
+page — which is what keeps the git history of a 34-poster page sane. They are
+grabbed only when the moment changes, tracked in `posters/index.tsv`. 34
+posters cost about 850 KB.
+
+Autoplay after the click is the browser's decision. It works in Chrome and
+usually in Safari; if a browser refuses, the reader sees a loaded, paused
+player and clicks once more. Nothing breaks.
+
+### The staging page
+
+`docs/index.html` is the published page and **its link has been emailed out**,
+so it must not move while something is being tried. Staging is a
+subdirectory of the same Pages site:
+
+```bash
+python3 make_document.py --staging --video https://youtu.be/aRs9oqKMCd8
+```
+
+writes **only** `docs/staging/index.html` and its posters. `RUBRIC.md`,
+`docs/index.html`, `docs/rubric.pdf` and `docs/rubric.docx` are left alone;
+the staging page links up to the live PDF and Word files rather than keeping
+a second copy. It carries a banner and `robots: noindex`.
+
+Once committed and pushed it is served at
+`https://catmando.github.io/hierarchical-liturgy-deacon-training/staging/`.
+
+**Test it locally first** — a staging push commits ~850 KB of posters, so it
+is not the place to iterate:
+
+```bash
+python3 make_document.py --staging --video https://youtu.be/aRs9oqKMCd8
+cd docs && python3 -m http.server 8000     # then open localhost:8000/staging/
+```
+
+Serve from **`docs/`**, not from `docs/staging/` — the download links point
+one level up, which is right on Pages but 404s if the server root is inside
+`staging/`.
+
+When it is right, drop `--staging` to regenerate the real page, and delete
+`docs/staging/`.
 
 ---
 

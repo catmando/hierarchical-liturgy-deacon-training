@@ -109,6 +109,163 @@ def video_chapter_starts(path=os.path.join(OUT, "chapters.txt")):
     return out
 
 
+POSTER_W    = 560      # poster width in px; the column is ~700 at most
+POSTER_Q    = 6        # ffmpeg -q:v, 2 best .. 31 worst
+AUTO_LEAD   = 14.0     # seconds into a section for an automatic grab
+AUTO_FRAC   = 0.35     # ...or this far through it, whichever is sooner
+MIN_RUN     = 1.0      # a stretch of footage shorter than this is not worth
+                       # grabbing from, and absorbs cross-file rounding
+MASTER      = os.path.join(OUT, "master.mp4")
+
+
+def declared_thumbnails(path=os.path.join(OUT, "thumbnails.tsv")):
+    """clip -> seconds into master.mp4, from a `thumbnail:` in the sheet.
+
+    build.py writes this, because only it knows how the cuts and speed spans
+    move a time written against the original clip. Absent file means nobody
+    has declared one yet, which is the normal state early on.
+    """
+    out = {}
+    if not os.path.exists(path):
+        return out
+    for i, line in enumerate(open(path, encoding="utf-8")):
+        if i == 0 or not line.strip():
+            continue
+        bits = line.rstrip("\n").split("\t")
+        if len(bits) < 2:
+            continue
+        try:
+            out[int(bits[1])] = float(bits[0])
+        except ValueError:
+            pass
+    return out
+
+
+def poster_frames(jobs, outdir):
+    """Grab one still per section out of master.mp4.
+
+    jobs is [(name, seconds)]; returns name -> filename relative to outdir.
+    Files are kept rather than inlined, so a regeneration that changes one
+    thumbnail rewrites one small JPEG instead of the whole page — which is
+    what keeps the git history of a 34-poster page reasonable.
+    """
+    if not os.path.exists(MASTER):
+        print(f"  posters skipped — {MASTER} not found (run build.py)")
+        return {}
+    d = os.path.join(outdir, "posters")
+    os.makedirs(d, exist_ok=True)
+
+    idx_path = os.path.join(d, "index.tsv")
+    have = {}
+    if os.path.exists(idx_path):
+        for line in open(idx_path, encoding="utf-8"):
+            bits = line.rstrip("\n").split("\t")
+            if len(bits) == 2:
+                have[bits[0]] = bits[1]
+
+    made, grabbed = {}, 0
+    for name, secs in jobs:
+        fn = f"{name}.jpg"
+        made[name] = f"posters/{fn}"
+        stamp = f"{secs:.3f}"
+        full = os.path.join(d, fn)
+        if have.get(name) == stamp and os.path.exists(full):
+            continue          # same moment, already grabbed
+        r = subprocess.run(
+            ["ffmpeg", "-v", "error", "-y", "-ss", stamp, "-i", MASTER,
+             "-frames:v", "1", "-vf", f"scale={POSTER_W}:-2",
+             "-q:v", str(POSTER_Q), full],
+            capture_output=True, text=True)
+        if r.returncode != 0 or not os.path.exists(full):
+            print(f"  poster {name} failed:", (r.stderr or "").strip()[:100])
+            made.pop(name, None)
+            continue
+        have[name] = stamp
+        grabbed += 1
+
+    with open(idx_path, "w", encoding="utf-8") as f:
+        for name in sorted(have):
+            if name in made:
+                f.write(f"{name}\t{have[name]}\n")
+
+    kb = sum(os.path.getsize(os.path.join(d, f"{n}.jpg"))
+             for n in made) / 1024
+    print(f"  {d}/   {len(made)} posters, {kb:.0f} KB "
+          f"({grabbed} freshly grabbed)")
+    return made
+
+
+def card_spans(path=os.path.join(OUT, "boundaries.tsv")):
+    """[(start, end)] of the title cards inside master.mp4.
+
+    A poster grabbed on a card is just the card's own words in small type,
+    which is useless as a thumbnail and identical to every other card. The
+    build already lists every segment here, cards included, so an automatic
+    grab can step over them.
+    """
+    rows = []
+    if not os.path.exists(path):
+        return []
+    for line in open(path, encoding="utf-8"):
+        bits = line.rstrip("\n").split("\t")
+        if len(bits) < 2:
+            continue
+        try:
+            h, m, sec = bits[0].split(":")
+            rows.append((int(h) * 3600 + int(m) * 60 + float(sec), bits[1]))
+        except ValueError:
+            continue
+    out = []
+    for i, (t, nm) in enumerate(rows):
+        if re.search(r"_(?:end)?card\d+\.mp4$", nm):
+            out.append((t, rows[i + 1][0] if i + 1 < len(rows) else t))
+    return sorted(out)
+
+
+def poster_plan(secs_titles, spans, thumbs, cards=()):
+    """[(name, seconds)] — where each section's poster frame comes from.
+
+    A `thumbnail:` on the clip wins. Failing that, one declared anywhere
+    inside the section is used, which is how a joined clip can supply the
+    poster for the chapter it continues. Failing that, a frame a little way
+    in — far enough to clear a title card, not so far as to miss the point.
+    """
+    jobs = []
+    for n, t in secs_titles:
+        span = spans.get(t)
+        if not span:
+            continue
+        st, en = span
+        if n in thumbs:
+            at = thumbs[n]
+        else:
+            inside = sorted(v for v in thumbs.values() if st <= v < en)
+            if inside:
+                at = inside[0]
+            else:
+                # What is left of the section once its cards are taken out.
+                # Comparing times across two files needs slack: chapters.txt
+                # is in milliseconds and boundaries.tsv in centiseconds, so a
+                # chapter can begin a few thousandths before its own card.
+                free, cur = [], st
+                for cs, ce in cards:
+                    if ce <= st or cs >= en:
+                        continue
+                    cs, ce = max(cs, st), min(ce, en)
+                    if cs - cur > MIN_RUN:
+                        free.append((cur, cs))
+                    cur = max(cur, ce)
+                if en - cur > MIN_RUN:
+                    free.append((cur, en))
+                if free:
+                    fs, fe = max(free, key=lambda p: p[1] - p[0])
+                else:
+                    fs, fe = st, en     # a section that is nothing but a card
+                at = fs + min(AUTO_LEAD, (fe - fs) * AUTO_FRAC)
+        jobs.append((f"c{n}", max(0.0, min(at, en - 0.2))))
+    return jobs
+
+
 def video_id(url):
     """The bare id from a youtu.be/… or watch?v=… link."""
     m = re.search(r"(?:youtu\.be/|[?&]v=|/embed/)([A-Za-z0-9_-]{6,})", url or "")
@@ -308,21 +465,32 @@ def inline_md(t):
     return t.replace("\n", "<br>")
 
 
-def render_html(sheet, video_url):
-    durs, chap_at = clip_durations(), video_chapter_starts()
-    spans = {t: (st, en) for t, st, en in video_chapters() if en and en > st}
-    H = []
-    add = H.append
-
-    secs = []
+def chapter_sections(sheet):
+    """[(clip, title)] for the clips that open a chapter — the sections that
+    get a heading, and so a player and a poster."""
+    out = []
     for b in blocks(sheet):
         if b.get("skip") is True or b.get("join") is True:
             continue
         t = _first(b, "chapter", "chapters")
         if t:
-            secs.append((b["clip"], str(t).strip()))
+            out.append((b["clip"], str(t).strip()))
+    return out
+
+
+def render_html(sheet, video_url, posters=None, staging=False):
+    posters = posters or {}
+    up = "../" if staging else ""      # staging shares the live downloads
+    durs, chap_at = clip_durations(), video_chapter_starts()
+    spans = {t: (st, en) for t, st, en in video_chapters() if en and en > st}
+    H = []
+    add = H.append
+
+    secs = chapter_sections(sheet)
 
     add('<title>Serving a Hierarchical Liturgy</title>')
+    if staging:
+        add('<meta name="robots" content="noindex">')
     add('<link rel="preconnect" href="https://fonts.googleapis.com">')
     add('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>')
     add('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
@@ -330,6 +498,8 @@ def render_html(sheet, video_url):
         '&display=swap">')
     add("<style>" + CSS + "</style>")
 
+    if staging:
+        add('<p class="staging">Staging &middot; not the published page</p>')
     add('<header class="masthead">')
     fm = front(sheet)
     if fm.get("subtitle"):
@@ -339,8 +509,8 @@ def render_html(sheet, video_url):
     if video_url:
         add('  <p class="actions">'
             f'<a href="{html.escape(video_url)}">Watch the whole video</a>'
-            '<a href="rubric.pdf">Download PDF</a>'
-            '<a href="rubric.docx">Download Word</a></p>')
+            f'<a href="{up}rubric.pdf">Download PDF</a>'
+            f'<a href="{up}rubric.docx">Download Word</a></p>')
     add(f'  <p class="build">{html.escape(build_stamp())}</p>')
     add('  <p class="colophon">OCA, Russian recension &middot; Diocese of New '
         'York and New Jersey &middot; Filmed 20 June 2026. Times are positions '
@@ -397,11 +567,26 @@ def render_html(sheet, video_url):
                 # player here when it scrolls into view. Adopting an existing
                 # lazy-loaded iframe is unreliable, and YouTube's own `end`
                 # cannot be trusted — see END_GUARD.
-                add(f'  <div class="player"><div class="slot" '
-                    f'data-vid="{vid}" data-start="{st_i}" '
-                    f'data-end="{en_i}"></div>'
-                    f'<noscript><a href="https://www.youtube.com/watch?v={vid}'
-                    f'&amp;t={st_i}s">Watch this section</a></noscript></div>')
+                src = posters.get(f"c{n}")
+                data = (f'data-vid="{vid}" data-start="{st_i}" '
+                        f'data-end="{en_i}"')
+                nos = (f'<noscript><a href="https://www.youtube.com/watch?v='
+                       f'{vid}&amp;t={st_i}s">Watch this section</a></noscript>')
+                if src:
+                    # A still from this very moment, not an iframe: nothing is
+                    # fetched from YouTube until the reader asks for it, and
+                    # every section looks like itself rather than like the
+                    # one thumbnail the whole video shares.
+                    add(f'  <div class="player">'
+                        f'<button type="button" class="poster" {data} '
+                        f'aria-label="Play this section">'
+                        f'<img src="{src}" alt="" loading="lazy" '
+                        f'width="{POSTER_W}" height="{round(POSTER_W*9/16)}">'
+                        f'<span class="play" aria-hidden="true"></span>'
+                        f'</button>{nos}</div>')
+                else:
+                    add(f'  <div class="player"><div class="slot" {data}>'
+                        f'</div>{nos}</div>')
 
         if not open_sec:
             add('<section class="preamble">')
@@ -459,17 +644,29 @@ def render_html(sheet, video_url):
 
 END_GUARD = """
 <script>
-/* The callback has to exist before the API script runs, or the API fires it
-   into nothing and no player is ever built. */
+/* Posters are stills; the real player is built on click. Nothing is fetched
+   from YouTube until then — not even the API — so a page of 34 sections costs
+   34 small images instead of 34 embedded players.
+
+   The callback has to exist before the API script is inserted, or the API
+   fires it into nothing and no player is ever built. */
 (function () {
-  var pending = [], ready = false;
+  var pending = [], ready = false, asked = false;
 
   window.onYouTubeIframeAPIReady = function () {
     ready = true;
-    pending.splice(0).forEach(build);
+    pending.splice(0).forEach(function (j) { build(j[0], j[1]); });
   };
 
-  function build(box) {
+  function api() {
+    if (asked) return;
+    asked = true;
+    var s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(s);
+  }
+
+  function build(box, auto) {
     var end = parseFloat(box.getAttribute("data-end"));
     box.textContent = "";
     new YT.Player(box, {
@@ -477,6 +674,7 @@ END_GUARD = """
       playerVars: {
         start: parseInt(box.getAttribute("data-start"), 10),
         end: parseInt(end, 10),
+        autoplay: auto ? 1 : 0,
         rel: 0
       },
       events: {
@@ -495,24 +693,33 @@ END_GUARD = """
     });
   }
 
-  function queue(box) { ready ? build(box) : pending.push(box); }
-
-  var boxes = document.querySelectorAll(".player .slot[data-vid]");
-  if (!window.IntersectionObserver) {
-    boxes.forEach(queue);
-  } else {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        io.unobserve(e.target);
-        queue(e.target);
-      });
-    }, { rootMargin: "400px" });
-    boxes.forEach(function (b) { io.observe(b); });
+  function queue(box, auto) {
+    if (ready) { build(box, auto); } else { pending.push([box, auto]); api(); }
   }
+
+  /* YT.Player replaces the element it is handed, so give it a throwaway div
+     rather than the button, whose parent carries the aspect ratio. */
+  function swap(btn) {
+    var slot = document.createElement("div");
+    slot.className = "slot";
+    ["vid", "start", "end"].forEach(function (k) {
+      slot.setAttribute("data-" + k, btn.getAttribute("data-" + k));
+    });
+    btn.parentNode.replaceChild(slot, btn);
+    queue(slot, true);
+  }
+
+  document.querySelectorAll(".player > .poster").forEach(function (btn) {
+    btn.addEventListener("click", function () { swap(btn); });
+  });
+
+  /* No poster (no master.mp4 when the page was built): fall back to building
+     those players outright, so the page still works. */
+  document.querySelectorAll(".player > .slot[data-vid]").forEach(function (b) {
+    queue(b, false);
+  });
 })();
 </script>
-<script src="https://www.youtube.com/iframe_api"></script>
 """
 
 CSS = """
@@ -622,6 +829,39 @@ blockquote.card p{margin:0}
 }
 .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .player .slot{position:absolute;inset:0}
+.player .poster{
+  position:absolute;inset:0;display:block;width:100%;height:100%;
+  padding:0;border:0;background:#000;cursor:pointer;
+}
+.player .poster img{
+  width:100%;height:100%;object-fit:cover;display:block;opacity:.85;
+  transition:opacity .18s ease;
+}
+.player .poster:hover img,.player .poster:focus-visible img{opacity:1}
+.player .poster:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.player .play{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:4rem;height:4rem;border-radius:50%;display:grid;place-items:center;
+  background:rgba(12,10,8,.6);border:1px solid rgba(255,255,255,.55);
+  transition:background .18s ease,transform .18s ease;
+}
+.player .play::after{
+  content:"";width:0;height:0;margin-left:.3rem;
+  border-left:1rem solid #fff;
+  border-top:.6rem solid transparent;border-bottom:.6rem solid transparent;
+}
+.player .poster:hover .play{
+  background:var(--gold);transform:translate(-50%,-50%) scale(1.06);
+}
+@media (prefers-reduced-motion:reduce){
+  .player .poster img,.player .play{transition:none}
+}
+.staging{
+  background:var(--gold);color:#12100e;text-align:center;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:.55rem 1rem;margin:0;
+}
 .player noscript a{position:absolute;inset:0;display:grid;place-items:center;
   color:var(--gold);font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:.8rem;letter-spacing:.05em}
@@ -678,7 +918,7 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
 """
 
 
-def for_github(sheet, video_url):
+def for_github(sheet, video_url, posters=None):
     """Copies meant to be committed: GitHub renders the markdown in the repo,
     and Pages serves the HTML from docs/."""
     md = render(sheet, True, video_url, base=".", dl="docs/")
@@ -687,7 +927,7 @@ def for_github(sheet, video_url):
     print(f"  RUBRIC.md   {len(md.splitlines())} lines   (GitHub renders this)")
 
     os.makedirs("docs", exist_ok=True)
-    doc = render_html(sheet, video_url)
+    doc = render_html(sheet, video_url, posters)
     with open(os.path.join("docs", "index.html"), "w", encoding="utf-8") as f:
         f.write(doc)
     print(f"  docs/index.html   {len(doc) / 1024:.0f} KB   (GitHub Pages)")
@@ -736,11 +976,31 @@ def main():
     ap.add_argument("--sheet", default="annotations.yaml")
     ap.add_argument("--video", default="", metavar="URL",
                     help="video URL; chapter timecodes become links to it")
+    ap.add_argument("--staging", action="store_true",
+                    help="write only docs/staging/index.html, leaving the "
+                         "published page and the downloads untouched")
     a = ap.parse_args()
 
     if not os.path.exists(a.sheet):
         sys.exit(f"ERROR: {a.sheet} not found")
     os.makedirs(OUT, exist_ok=True)
+
+    # One poster plan, shared by every copy of the page.
+    spans = {t: (st, en) for t, st, en in video_chapters() if en and en > st}
+    jobs = poster_plan(chapter_sections(a.sheet), spans,
+                       declared_thumbnails(), card_spans())
+
+    if a.staging:
+        d = os.path.join("docs", "staging")
+        os.makedirs(d, exist_ok=True)
+        doc = render_html(a.sheet, a.video, poster_frames(jobs, d),
+                          staging=True)
+        with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as f:
+            f.write(doc)
+        print(f"  {d}/index.html   {len(doc) / 1024:.0f} KB   (staging)")
+        print("  RUBRIC.md, docs/index.html and the downloads "
+              "were not touched.")
+        return
 
     for linked, name in ((True, "rubric_online.md"), (False, "rubric_print.md")):
         text = render(a.sheet, linked, a.video)
@@ -750,9 +1010,13 @@ def main():
         print(f"  {path}   {len(text.splitlines())} lines, "
               f"{len(text.split())} words")
 
-    for_github(a.sheet, a.video)
+    docs_posters = poster_frames(jobs, "docs")
+    for_github(a.sheet, a.video, docs_posters)
 
-    doc = render_html(a.sheet, a.video)
+    # output/ sits beside docs/, so the print copy points at the same posters
+    # rather than keeping a second set of them.
+    doc = render_html(a.sheet, a.video,
+                      {k: "../docs/" + v for k, v in docs_posters.items()})
     path = os.path.join(OUT, "rubric.html")
     with open(path, "w", encoding="utf-8") as f:
         f.write(doc)

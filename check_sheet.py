@@ -115,6 +115,7 @@ CLIP_FIELDS = {
     "clip": (), "chapter": ("chapters",), "skip": (), "join": (),
     "annotations": ("annotation",), "speed": ("speeds",), "cuts": ("cut",),
     "cards": ("card",), "notes": ("note",), "todos": ("todo",),
+    "thumbnail": ("thumb",),
 }
 # notes: is published prose; todos: is private. Both may hang off a clip, a
 # card or a single annotation, and both take prose or a list of points.
@@ -404,6 +405,30 @@ def validate(path):
                     cuts.append((cst, cen))
             except Exception:
                 pass
+
+        # thumbnail: is a moment in the ORIGINAL clip, like every other time
+        # in the sheet. A cut frame is not in master.mp4 at all, so pointing at
+        # one would silently grab the wrong picture — that has to be an error.
+        raw_thumb = _first(b, "thumbnail", "thumb")
+        if raw_thumb is not None:
+            w = f"{where} thumbnail"
+            try:
+                tt = parse_time(str(raw_thumb))
+            except Exception as ex:
+                err(w, f"{raw_thumb!r} is not a time ({ex}) — "
+                       f"write it bare, e.g. 1:32")
+                tt = None
+            if tt is not None:
+                if tt < 0:
+                    err(w, f"{fmt(tt)} is before the start of the clip")
+                elif dur is not None and tt >= dur:
+                    err(w, f"{fmt(tt)} is past the end of clip {n} "
+                           f"({fmt(dur)})")
+                elif any(cs <= tt < ce for cs, ce in cuts):
+                    cs, ce = next((c for c in cuts if c[0] <= tt < c[1]))
+                    err(w, f"{fmt(tt)} falls inside the cut {fmt(cs)}-{fmt(ce)}"
+                           f", so that frame is not in the finished video. "
+                           f"Pick a moment that survives the edit.")
 
         for i, ((st, en), e) in enumerate(zip(spans, anns), 1):
             if st is None: continue
