@@ -566,7 +566,27 @@ in `master.mp4`, or previews get slow again.
 
 ---
 
-## 14. Distribution — thought about, not decided
+## 14. Published
+
+**Video:** https://youtu.be/aRs9oqKMCd8 — unlisted, 59:34, 35 chapters,
+annotations burned in. Built 25 August 2026 from `build.py --youtube`.
+An earlier cut at `o8MRc9T90hY` is superseded: it lacks the greeting plan
+card, so every chapter after the first sits 10s earlier.
+
+**Written rubric:** `make_document.py` builds it from the same sheet, so it
+cannot drift from the video. Regenerate whenever either changes:
+
+```bash
+python3 make_document.py --video https://youtu.be/aRs9oqKMCd8
+```
+
+Chapter headings then link into the video at the right second. Always
+regenerate *after* a rebuild — the timings come from `output/chapters.txt`,
+so a stale document sends readers to the wrong moment.
+
+---
+
+## 15. Distribution — thought about, not decided
 
 Raised 21 August 2026 while the user was at clip 9 of 37. Nothing is built;
 this records the analysis so it does not have to be redone.
