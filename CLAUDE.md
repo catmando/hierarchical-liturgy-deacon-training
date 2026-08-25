@@ -573,6 +573,16 @@ annotations burned in. Built 25 August 2026 from `build.py --youtube`.
 An earlier cut at `o8MRc9T90hY` is superseded: it lacks the greeting plan
 card, so every chapter after the first sits 10s earlier.
 
+**Written rubric, online:**
+- https://catmando.github.io/hierarchical-liturgy-deacon-training/ — the
+  styled version, served by GitHub Pages from `docs/index.html`
+- https://github.com/catmando/hierarchical-liturgy-deacon-training/blob/main/RUBRIC.md
+  — the same words, rendered by GitHub itself
+
+Both are **public and indexable**, unlike the unlisted video. `RUBRIC.md` and
+`docs/index.html` are the only generated files that are committed; everything
+in `output/` stays ignored.
+
 **Written rubric:** `make_document.py` builds it from the same sheet, so it
 cannot drift from the video. Regenerate whenever either changes:
 
