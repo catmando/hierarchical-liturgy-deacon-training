@@ -110,6 +110,22 @@ docstring, which documents every key. Read it before changing the parser.
 A list of clip blocks, in order. The clip number **is** the block, so it
 cannot go missing.
 
+The sheet may open with an **`intro:` block** — front matter for the written
+rubric, which never reaches the video. It carries `title`, `subtitle`, and any
+number of `sections:` of `heading` and `text`. Put introductory prose there
+rather than in `make_document.py`: words meant to be revised belong with the
+content they describe.
+
+```yaml
+- intro:
+    title: Rubrics for Serving at a Hierarchical Liturgy
+    subtitle: For deacons, subdeacons and altar servers
+    sections:
+      - heading: How to use this
+        text: |
+          …
+```
+
 ```yaml
 - clip: 1
   chapter: Greeting of the Hierarch at the Doors
