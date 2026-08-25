@@ -673,8 +673,13 @@ so a stale document sends readers to the wrong moment.
 ### Poster frames on the rubric page
 
 Every section on the page shows a **still from that section** with a play
-button, not a YouTube embed. Clicking one builds the real player, which then
-stops at the section end exactly as before.
+button, not a YouTube embed. Clicking one builds the real player; at the
+section end the player is **destroyed and the still put back**.
+
+That teardown is not cosmetic. A player left paused on its last frame resumes
+from where it stopped, so a second click would run on into the next section.
+Rebuilding from the poster re-applies `start` every time, which is the only
+way a bounded section replays correctly.
 
 Two things follow, and both are the point:
 

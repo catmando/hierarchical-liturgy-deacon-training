@@ -648,6 +648,11 @@ END_GUARD = """
    from YouTube until then — not even the API — so a page of 34 sections costs
    34 small images instead of 34 embedded players.
 
+   At the end of a section the player is destroyed and the poster put back,
+   rather than left paused on its last frame. A paused player resumes where it
+   stopped, which for a bounded section means it would run on into the next
+   one; rebuilding from the poster always re-applies `start`.
+
    The callback has to exist before the API script is inserted, or the API
    fires it into nothing and no player is ever built. */
 (function () {
@@ -655,7 +660,7 @@ END_GUARD = """
 
   window.onYouTubeIframeAPIReady = function () {
     ready = true;
-    pending.splice(0).forEach(function (j) { build(j[0], j[1]); });
+    pending.splice(0).forEach(function (j) { build(j[0], j[1], j[2]); });
   };
 
   function api() {
@@ -666,7 +671,15 @@ END_GUARD = """
     document.head.appendChild(s);
   }
 
-  function build(box, auto) {
+  /* Put the still back where the player was. The button is the very node that
+     was taken out, so its click handler is still on it. */
+  function restore(player, ctx) {
+    if (!ctx) return;
+    try { player.destroy(); } catch (e) {}
+    if (!ctx.btn.parentNode) ctx.box.appendChild(ctx.btn);
+  }
+
+  function build(box, auto, ctx) {
     var end = parseFloat(box.getAttribute("data-end"));
     box.textContent = "";
     new YT.Player(box, {
@@ -678,14 +691,21 @@ END_GUARD = """
         rel: 0
       },
       events: {
-        /* YouTube honours `end` erratically, so stop it here too. */
         onStateChange: function (ev) {
+          /* the whole video ran out — the last section can end this way */
+          if (ev.data === YT.PlayerState.ENDED) {
+            restore(ev.target, ctx);
+            return;
+          }
           if (ev.data !== YT.PlayerState.PLAYING) return;
+          /* YouTube honours `end` erratically, so stop it here too. */
           var tick = setInterval(function () {
             var t = ev.target.getCurrentTime && ev.target.getCurrentTime();
             if (typeof t === "number" && t >= end) {
-              ev.target.pauseVideo();
               clearInterval(tick);
+              try { ev.target.pauseVideo(); } catch (e) {}
+              /* a beat, so the picture stops before the still replaces it */
+              setTimeout(function () { restore(ev.target, ctx); }, 180);
             }
           }, 200);
         }
@@ -693,20 +713,22 @@ END_GUARD = """
     });
   }
 
-  function queue(box, auto) {
-    if (ready) { build(box, auto); } else { pending.push([box, auto]); api(); }
+  function queue(box, auto, ctx) {
+    if (ready) { build(box, auto, ctx); }
+    else { pending.push([box, auto, ctx]); api(); }
   }
 
   /* YT.Player replaces the element it is handed, so give it a throwaway div
      rather than the button, whose parent carries the aspect ratio. */
   function swap(btn) {
+    var box = btn.parentNode;
     var slot = document.createElement("div");
     slot.className = "slot";
     ["vid", "start", "end"].forEach(function (k) {
       slot.setAttribute("data-" + k, btn.getAttribute("data-" + k));
     });
-    btn.parentNode.replaceChild(slot, btn);
-    queue(slot, true);
+    box.replaceChild(slot, btn);
+    queue(slot, true, { box: box, btn: btn });
   }
 
   document.querySelectorAll(".player > .poster").forEach(function (btn) {
@@ -716,7 +738,7 @@ END_GUARD = """
   /* No poster (no master.mp4 when the page was built): fall back to building
      those players outright, so the page still works. */
   document.querySelectorAll(".player > .slot[data-vid]").forEach(function (b) {
-    queue(b, false);
+    queue(b, false, null);
   });
 })();
 </script>
