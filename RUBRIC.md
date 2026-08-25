@@ -19,23 +19,8 @@ Times shown beside each heading are positions within that clip,
 so they match the moment in the footage rather than the running
 time of the whole service.
 
-## Assigning The Roles
-
-The rubrics below call on subdeacons throughout.  You may have to
-appoint one or even two subdeacons choosing adult, experienced
-altar servers for the role.  They should be vested and know the 
-whole sequence beforehand — this is not a role to hand to someone
-on the day.  Another option is to have deacons act as subdeacons.
-
-Another important role, is the altar server who will bring out the
-bowl, pitcher and towel for the washing of the Bishops hands.
-Usually this is a junior server who will be greatly encouraged by
-playing this important role.
-
-Having two more adult servers who will keep an eye on things on
-the north and south sides of the altar is a good idea.  They should
-watch the subdeacons for direction, and can be a great help in 
-keeping things running smoothly by paying attention.
+There are also useful appendixes at the end of the document (see the
+table of contents)
 
 ## Help us Make this better!
 
@@ -47,7 +32,7 @@ Rochester NY.
 Please forgive me for any errors, or omissions, and your corrections
 and input are most welcome.
 
-`generated 25 Aug 2026, 02:33 · 45fd66c`
+`generated 25 Aug 2026, 14:30 · bb8f6c9`
 
 OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
 
@@ -89,6 +74,10 @@ OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2
 35. [Litany of Thanksgiving](#litany-of-thanksgiving) · 53:30
 36. [Final blessing and Many Years](#final-blessing-and-many-years) · 54:53
 37. [Conclusion](#conclusion) · 59:06
+A. [Glossary](#glossary)
+B. [Assigning The Roles](#assigning-the-roles)
+C. [The role of Altar servers](#the-role-of-altar-servers)
+D. [Serving with More or Less than Two Deacons](#serving-with-more-or-less-than-two-deacons)
 
 ---
 
@@ -170,21 +159,21 @@ Two additional servers should be in the narthex ready to follow and assist
 
   Wisdom!
 
-**0:30**
+**0:30** · **DEACONS**
 
-  Deacons turn around and walk forward toward cathedra
+  turn around and walk forward toward cathedra
 
 **0:34** · **CHOIR**
 
   While the first deacon, chants and the choir sings - "it is truly meet…"
 
-**0:42**
+**0:42** · **DEACONS**
 
-  Deacons walk past cathedra, turn around and continue to cense the Bishop
+  walk past cathedra, turn around and continue to cense the Bishop
 
-**0:56** · **SERVERS**
+**0:56** · **DEACONS, SERVERS**
 
-  Deacons turn towards the altar, as Bishop walks past, giving their censers away
+  turn towards the altar, as Bishop walks past, giving their censers away
 
 **1:00** · **SERVERS**
 
@@ -293,7 +282,7 @@ Two additional servers should be in the narthex ready to follow and assist
 *clip 6 · 2:10 · [open on YouTube at 6:15](https://youtu.be/aRs9oqKMCd8?t=376s)*
 
 > The Blessing of the Dikiri and Trikiri
-> ***
+>
 > As the cross and Encolpion are placed,
 > the Dikiri and Trikiri are brought from the altar,
 > followed by the clergy.
@@ -1246,5 +1235,94 @@ Two additional servers should be in the narthex ready to follow and assist
 *clip 37 · 0:21 · [open on YouTube at 59:06](https://youtu.be/aRs9oqKMCd8?t=3547s)*
 
 > Conclusion
+
+---
+
+## Glossary
+
+*Appendix A*
+
+**Dikirion** — the two-branched candlestick, signifying the two
+natures of Christ. **Trikirion** — the three-branched candlestick,
+signifying the Trinity.
+
+**Zhezl** — the bishop's staff. Written *jezel* in some of the
+notes; the same object is called simply "the staff" elsewhere, and
+one spelling should win before this is published.
+
+**Orlets** — the eagle rug the bishop stands on.
+
+---
+
+## Assigning The Roles
+
+*Appendix B*
+
+The rubrics above call on subdeacons throughout.  You may have to
+appoint one or even two subdeacons choosing adult, experienced
+altar servers for the role.  They should be vested and know the 
+whole sequence beforehand — this is not a role to hand to someone
+on the day.  Another option is to have deacons act as subdeacons.
+
+Another important role, is the altar server who will bring out the
+bowl, pitcher and towel for the washing of the Bishops hands.
+Usually this is a junior server who will be greatly encouraged by
+playing this important role.
+
+Having two more adult servers who will keep an eye on things on
+the north and south sides of the altar is a good idea.  They should
+watch the subdeacons for direction, and can be a great help in 
+keeping things running smoothly by paying attention.
+
+Additional altar servers can carry lamps in the entrances, and should
+behind the other clergy and servers.  See the little and great entrances
+for details.  Also try to line the servers up symmetrically if possible:
+for example if you have two smaller boys carrying lamps and one larger boy, 
+the larger boy should be in the middle.
+
+---
+
+## The role of Altar servers
+
+*Appendix C*
+
+The following analogy may be useful in helping younger boys to stay focused
+and on task:
+
+Christians, and especially Orthodox Christians are like God's special forces.
+We are in the world taking back territory that has been stolen by the evil 
+one.
+
+The temple in which we meet is like a protected forward fort in enemy territory.
+When we are in the temple, we are in a safe place, with more protection from
+evil than in the outside world.  We come to the temple to be healed from our
+wounds, to rest, and to be trained for the next battle.
+
+But at any fort you will always have guards, and that is precisely what the
+altar servers are.  And the more alert and focused the servers on their duty
+no matter how small it may seem, the harder time the enemy will have in attacking
+our fort.
+
+---
+
+## Serving with More or Less than Two Deacons
+
+*Appendix D*
+
+The rubrics throughout assume two deacons, which is the normal case
+at a hierarchical liturgy. Where fewer are available the duties do
+not disappear; they are reassigned.
+
+With one deacon, he takes the first deacon's part throughout, and
+the litanies that would alternate fall to him.
+
+Where there are no subdeacons, two senior altar servers should be
+appointed to their duties, though they do not vest as subdeacons
+and do not handle the dikirion and trikirion at the blessing.
+
+Where there are more than two deacons, the third and fourth deacons have
+take some of the roles of the second deacon as well.
+
+*TBD:  the excellent pocket sized deacons role chart here.*
 
 ---
