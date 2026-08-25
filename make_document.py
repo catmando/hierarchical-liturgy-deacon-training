@@ -347,14 +347,14 @@ def render_html(sheet, video_url):
             span = spans.get(t)
             if vid and span:
                 st_i, en_i = int(span[0] + 0.5), int(span[1] + 0.5)
-                # end= is kept, but YouTube honours it unreliably, so the
-                # stop is enforced from the page as well — see END_GUARD
-                add(f'  <div class="player"><iframe loading="lazy" '
-                    f'data-end="{en_i}" '
-                    f'title="{html.escape(t)} — video" allowfullscreen '
-                    f'src="https://www.youtube.com/embed/{vid}'
-                    f'?start={st_i}&amp;end={en_i}&amp;rel=0'
-                    f'&amp;enablejsapi=1"></iframe></div>')
+                # A placeholder, not an iframe: the IFrame API builds the
+                # player here when it scrolls into view. Adopting an existing
+                # lazy-loaded iframe is unreliable, and YouTube's own `end`
+                # cannot be trusted — see END_GUARD.
+                add(f'  <div class="player" data-vid="{vid}" '
+                    f'data-start="{st_i}" data-end="{en_i}">'
+                    f'<noscript><a href="https://www.youtube.com/watch?v={vid}'
+                    f'&amp;t={st_i}s">Watch this section</a></noscript></div>')
 
         if not open_sec:
             add('<section class="preamble">')
@@ -411,22 +411,29 @@ def render_html(sheet, video_url):
 
 
 END_GUARD = """
-<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-/* YouTube's own `end` parameter is unreliable, so each player is also stopped
-   from here. Players are wired up only as they scroll into view, so a page of
-   thirty-odd costs nothing until it is used. */
+/* The callback has to exist before the API script runs, or the API fires it
+   into nothing and no player is ever built. */
 (function () {
-  var waiting = [], ready = false;
+  var pending = [], ready = false;
+
   window.onYouTubeIframeAPIReady = function () {
     ready = true;
-    waiting.splice(0).forEach(attach);
+    pending.splice(0).forEach(build);
   };
-  function attach(frame) {
-    var end = parseFloat(frame.getAttribute("data-end") || "0");
-    if (!end || !window.YT || !YT.Player) return;
-    new YT.Player(frame, {
+
+  function build(box) {
+    var end = parseFloat(box.getAttribute("data-end"));
+    box.textContent = "";
+    new YT.Player(box, {
+      videoId: box.getAttribute("data-vid"),
+      playerVars: {
+        start: parseInt(box.getAttribute("data-start"), 10),
+        end: parseInt(end, 10),
+        rel: 0
+      },
       events: {
+        /* YouTube honours `end` erratically, so stop it here too. */
         onStateChange: function (ev) {
           if (ev.data !== YT.PlayerState.PLAYING) return;
           var tick = setInterval(function () {
@@ -435,25 +442,30 @@ END_GUARD = """
               ev.target.pauseVideo();
               clearInterval(tick);
             }
-          }, 250);
+          }, 200);
         }
       }
     });
   }
-  var seen = new WeakSet();
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (!e.isIntersecting || seen.has(e.target)) return;
-      seen.add(e.target);
-      io.unobserve(e.target);
-      ready ? attach(e.target) : waiting.push(e.target);
-    });
-  }, { rootMargin: "300px" });
-  document.querySelectorAll(".player iframe").forEach(function (f) {
-    io.observe(f);
-  });
+
+  function queue(box) { ready ? build(box) : pending.push(box); }
+
+  var boxes = document.querySelectorAll(".player[data-vid]");
+  if (!window.IntersectionObserver) {
+    boxes.forEach(queue);
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        io.unobserve(e.target);
+        queue(e.target);
+      });
+    }, { rootMargin: "400px" });
+    boxes.forEach(function (b) { io.observe(b); });
+  }
 })();
 </script>
+<script src="https://www.youtube.com/iframe_api"></script>
 """
 
 CSS = """
@@ -542,6 +554,9 @@ blockquote.card p{margin:0}
   background:#000;
 }
 .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.player noscript a{position:absolute;inset:0;display:grid;place-items:center;
+  color:var(--gold);font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.8rem;letter-spacing:.05em}
 figure{margin:0 0 1.6rem;overflow-x:auto}
 figure img{width:100%;height:auto;display:block;border:1px solid var(--rule);border-radius:3px}
 ol.cues{list-style:none;margin:0;padding:0;display:grid;gap:1.35rem}
