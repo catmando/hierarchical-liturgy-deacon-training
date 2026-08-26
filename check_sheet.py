@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate a YAML edit sheet without building anything.
 
-    python3 check_sheet.py                     # checks annotations.yaml
+    python3 check_sheet.py                     # checks annotations/
     python3 check_sheet.py annotations.draft.yaml
 
 Reports YAML syntax errors with line numbers, unknown or misspelled keys, bad
@@ -19,7 +19,7 @@ except ModuleNotFoundError:
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build import (parse_time, CONT_GAP, DEFAULT_DUR,   # one definition, not two
-                   MATTER_KEYS)
+                   MATTER_KEYS, sheet_files, default_sheet, SHEET_DIR)
 
 
 def clip_durations():
@@ -235,58 +235,76 @@ def validate(path):
 
     if not os.path.exists(path):
         return [f"{path}: not found"], [], ""
-    try:
-        with open(path, encoding="utf-8") as f:
-            doc = yaml.safe_load(f)
-    except yaml.YAMLError as e:
-        m = getattr(e, "problem_mark", None)
-        where = (f"{path}, line {m.line + 1}, column {m.column + 1}"
-                 if m else path)
-        return [f"YAML syntax error in {where}: "
-                f"{getattr(e, 'problem', e)}"], [], ""
-    if not isinstance(doc, list):
-        return [f"{path}: must be a list of clip blocks, "
-                f"each starting with '- clip:'"], [], ""
+
+    # A sheet may be one file or a directory of them; either way a syntax
+    # error has to name the file it is in, or you go hunting.
+    doc, origins = [], []
+    for f in sheet_files(path):
+        try:
+            with open(f, encoding="utf-8") as fh:
+                d = yaml.safe_load(fh)
+        except yaml.YAMLError as e:
+            m = getattr(e, "problem_mark", None)
+            at = (f"{f}, line {m.line + 1}, column {m.column + 1}" if m else f)
+            return [f"YAML syntax error in {at}: "
+                    f"{getattr(e, 'problem', e)}"], [], ""
+        if d is None:
+            continue                       # a file of nothing but comments
+        if not isinstance(d, list):
+            return [f"{f}: must be a list of blocks, "
+                    f"each starting with '- '"], [], ""
+        for k, b in enumerate(d, 1):
+            doc.append(b)
+            origins.append((os.path.basename(f), k))
+
+    def origin(i):
+        f, k = origins[i]
+        return f"{f} block {k}"
 
     seen = {}
     for i, b in enumerate(doc):
-        where = f"block {i + 1}"
-        matter = ([k for k in MATTER_KEYS if k in b] if isinstance(b, dict)
-                  and "clip" not in b else [])
-        if matter:
-            kind = matter[0]
-            body = b[kind]
-            if not isinstance(body, dict):
-                err(where, f"{kind}: expected a block with "
-                           f"title/subtitle/sections")
+        where = origin(i)
+        if isinstance(b, dict) and "clip" not in b and "intro" in b:
+            intro = b["intro"]
+            if not isinstance(intro, dict):
+                err(where, "intro: expected a block with title/subtitle/sections")
                 continue
-            for k in body:
+            for k in intro:
                 if k not in ("title", "subtitle", "text", "sections"):
-                    err(f"{where} {kind}", f"unknown key {k!r}")
-            secs = body.get("sections") or []
-            if kind == "appendix" and not secs:
-                err(f"{where} appendix", "no sections: — an appendix is a "
-                                         "list of sections, each with a "
-                                         "heading and text")
-            for j, sec in enumerate(secs, 1):
+                    err(f"{where} intro", f"unknown key {k!r}")
+            for j, sec in enumerate(intro.get("sections") or [], 1):
                 if not isinstance(sec, dict):
-                    err(f"{where} {kind} section {j}",
-                        "expected heading and text")
+                    err(f"{where} intro section {j}", "expected heading and text")
                     continue
                 for k in sec:
-                    if k not in ("heading", "text", "image"):
-                        err(f"{where} {kind} section {j}", f"unknown key {k!r}")
-                img = str(sec.get("image", "")).strip()
-                if img and not os.path.exists(img):
-                    err(f"{where} {kind} section {j}",
-                        f"image not found: {img}")
+                    if k not in ("heading", "text"):
+                        err(f"{where} intro section {j}", f"unknown key {k!r}")
                 if not str(sec.get("text", "")).strip():
-                    err(f"{where} {kind} section {j}", "no text")
-                # an appendix section is a chapter in its own right, so it
-                # needs a heading to be listed and linked
-                if kind == "appendix" and not str(sec.get("heading", "")).strip():
-                    err(f"{where} appendix section {j}",
-                        "no heading: — it is what the contents list links to")
+                    err(f"{where} intro section {j}", "no text")
+            continue
+
+        # An appendix is one block: the id after `appendix:` is the label the
+        # contents shows, and heading/text/image sit beside it.
+        if isinstance(b, dict) and "clip" not in b and "appendix" in b:
+            ident = b.get("appendix")
+            if ident is None or not str(ident).strip():
+                err(where, "appendix: needs an id for the contents list, "
+                           "e.g. `- appendix: A`")
+            elif isinstance(ident, (dict, list)):
+                err(where, f"appendix: expected an id such as A or 1, got a "
+                           f"{type(ident).__name__} — the old `sections:` form "
+                           f"is gone; give each appendix its own block")
+            for k in b:
+                if k not in ("appendix", "heading", "text", "image"):
+                    err(where, f"unknown key {k!r} (allowed: appendix, "
+                               f"heading, text, image)")
+            if not str(b.get("heading", "")).strip():
+                err(where, "no heading: — it is what the contents list links to")
+            if not str(b.get("text", "")).strip():
+                err(where, "no text:")
+            img = str(b.get("image", "")).strip()
+            if img and not os.path.exists(img):
+                err(where, f"image not found: {img}")
             continue
         if not isinstance(b, dict):
             err(where, f"expected a clip block, got {type(b).__name__}"); continue
@@ -390,6 +408,16 @@ def validate(path):
 
         for field in PROSE:
             if field in canon: check_prose(where, field, canon[field])
+
+    ids = {}
+    for i, b in enumerate(doc):
+        if isinstance(b, dict) and "clip" not in b and "appendix" in b:
+            k = str(b.get("appendix", "")).strip()
+            if k and k in ids:
+                err(origin(i), f"appendix id {k!r} is already used by "
+                               f"{ids[k]} — ids label the contents, so they "
+                               f"have to differ")
+            ids[k] = origin(i)
 
     # ---------------- timing: past the end of a clip, and overlaps -------------
     DURS = clip_durations()
@@ -539,8 +567,17 @@ def validate(path):
     n_ann  = sum(len([e for e in _entries(b) if not is_span(e)]) for b in blocks)
     n_span = sum(len([e for e in _entries(b) if is_span(e)]) + len(_spans(b))
                  for b in blocks)
-    summary = (f"{path}: {len(doc)} clip blocks, {n_ann} annotations"
-               + (f", {n_span} span(s)" if n_span else ""))
+    n_clip = sum(1 for b in blocks if "clip" in b)
+    n_app  = sum(1 for b in blocks if "clip" not in b and "appendix" in b)
+    bits = [f"{n_clip} clips"]
+    if n_app:
+        bits.append(f"{n_app} appendices")
+    bits.append(f"{n_ann} annotations")
+    if n_span:
+        bits.append(f"{n_span} span(s)")
+    files = len(sheet_files(path))
+    summary = (f"{path}: " + ", ".join(bits)
+               + (f"   ({files} files)" if files > 1 else ""))
     return errors, warnings, summary
 
 
@@ -552,7 +589,7 @@ def report(errors, warnings, summary, stream=sys.stdout):
 
 
 def main():
-    path = sys.argv[1] if len(sys.argv) > 1 else "annotations.yaml"
+    path = sys.argv[1] if len(sys.argv) > 1 else default_sheet()
     errors, warnings, summary = validate(path)
     report(errors, warnings, summary)
     print()

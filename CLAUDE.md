@@ -34,7 +34,7 @@ what to hold, which hand, what to say, and what cues trigger movement.
 | Roles vocabulary | evolving by design (§6) |
 | Roles chart | **ARRIVED 26 Aug 2026** (§6) |
 | Chapter titles in MKV | **VERIFIED WORKING** on real footage (§8) |
-| Edit sheet format | **DONE.** `annotations.yaml`; CSV removed entirely (§4) |
+| Edit sheet format | **DONE.** `annotations/`, split into three files 26 Aug 2026; CSV removed entirely (§4) |
 
 ---
 
@@ -102,11 +102,40 @@ docstring, which documents every key. Read it before changing the parser.
 
 ---
 
-## 4. The edit sheet — `annotations.yaml`
+## 4. The edit sheet — `annotations/`
 
 **`python3 build.py --help` is authoritative** — it prints the module
 docstring, which documents every key. Read it before changing the parser.
 `python3 check_sheet.py` validates a sheet without building anything.
+
+### Three files, read in name order
+
+The sheet outgrew one file on 26 Aug 2026 and is now a directory:
+
+```
+annotations/01_intro.yaml         front matter, and the format reference
+annotations/02_clips.yaml         the clips
+annotations/03_appendices.yaml    the appendices
+```
+
+Every .yaml in the directory is read, **sorted by name** — which is what the
+number prefixes are for. Splitting the clips further needs no code change:
+add `02b_clips_20-37.yaml` and it falls into place. A file of nothing but
+comments is skipped, so a header file is fine.
+
+`build.py` holds the one loader, `load_sheet()`; `check_sheet.py` and
+`make_document.py` import it rather than each opening YAML their own way.
+A single file still works — `--sheet old.yaml` — and `default_sheet()` picks
+the directory when it is there, so nothing had to change on the command line.
+
+Errors name the file and the block: *"04_bad.yaml block 2: no heading"*.
+That is the real gain of splitting, and it works across files — a duplicate
+appendix id reports which other file already used it.
+
+The original single file is parked at `junk/annotations.yaml.pre-split`.
+The split was textual, not a YAML round trip, so every comment and every line
+of prose survived unchanged: the generated rubric differed only by the build
+stamp and the content deliberately added.
 
 A list of clip blocks, in order. The clip number **is** the block, so it
 cannot go missing.
@@ -127,11 +156,25 @@ content they describe.
           …
 ```
 
-It may also carry any number of **`appendix:` blocks** — prose that belongs
-with the rubric but sits at no moment in the video. Each `section` is a
-chapter in its own right: listed in the contents, linkable, and carrying a
-**letter** rather than a clip number and no timecode. Sections run together
-in sheet order across every appendix block.
+**Appendices** are prose that belongs with the rubric but sits at no moment
+in the video. **One block each**, and the value after `appendix:` is the label
+the contents shows — `A`, `1`, `IV`, whatever suits:
+
+```yaml
+- appendix: A
+  heading: Glossary
+  text: |
+    …
+  image: art/roles_chart.png      # optional
+```
+
+They are chapters in their own right — listed in the contents and linkable —
+but carry that id rather than a clip number, and no timecode. They appear in
+file order; the id is a **label, not a position**, so reordering blocks does
+not renumber them. Anchors are `#appendix-a`, from the id.
+
+An earlier form nested them under `appendix: / sections:`. That is gone, and
+`check_sheet.py` says so by name if it meets one.
 
 ```yaml
 - appendix:
@@ -542,7 +585,7 @@ what the written sources are vaguest about.
 | file | what |
 |---|---|
 | `build.py` | the entire toolchain |
-| `annotations.yaml` | the edit sheet |
+| `annotations/` | the edit sheet, three files (§4) |
 | `raw_clips.tsv` | manifest: size, SHA-256, duration, codec of all 37 clips |
 | `normalize_and_join.sh` | raw → normalized → master; already run, don't re-run |
 | `restore_raw_clips.sh` | download the footage from the release and verify it |
@@ -575,7 +618,8 @@ by git lives in a subdirectory, so ffmpeg can write freely without ever
 showing up in `git status`.
 
 ```
-build.py, *.py, *.sh, annotations.yaml, raw_clips.tsv, README.md, CLAUDE.md
+build.py, *.py, *.sh, raw_clips.tsv, README.md, CLAUDE.md
+annotations/   the edit sheet: 01_intro, 02_clips, 03_appendices
 raw/          37 source clips · 6.8 GB   — not in git; on the release
 normalized/   build.py working files     — not in git; rebuildable
 output/       master, mkv, subs, chapters — not in git; rebuildable

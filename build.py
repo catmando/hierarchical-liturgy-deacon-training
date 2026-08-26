@@ -27,7 +27,8 @@ USAGE
     python3 build.py --fade 0           # no audio fade at clip ends
     python3 build.py --cut-fade 0       # no audio fade leading into cuts
 
-    The sheet defaults to annotations.yaml. It is validated before anything
+    The sheet defaults to the annotations/ directory, whose .yaml files are
+    read in name order. It is validated before anything
     is built, and errors stop the build; --no-check overrides that.
     To check without building: python3 check_sheet.py
 
@@ -535,6 +536,58 @@ def _text(v):
 MATTER_KEYS = ("intro", "appendix")
 """Blocks that carry prose for the written rubric and never reach the video."""
 
+SHEET_DIR = "annotations"
+
+
+def default_sheet():
+    """The sheet to use when none is named: the annotations/ directory if it
+    is there, else the older single file."""
+    if os.path.isdir(SHEET_DIR):
+        return SHEET_DIR
+    for cand in ("annotations.yaml", "annotations.yml"):
+        if os.path.exists(cand):
+            return cand
+    return SHEET_DIR
+
+
+def sheet_files(path):
+    """The YAML files a sheet is made of, in order.
+
+    A directory is every .yaml/.yml inside it, sorted by name — which is why
+    they carry number prefixes: 01_intro, 02_clips, 03_appendices. Splitting
+    the clips further is just a matter of adding 02b_… and so on. A plain
+    file is itself, so an older single-file sheet still builds.
+    """
+    if os.path.isdir(path):
+        fs = sorted(f for f in os.listdir(path)
+                    if f.endswith((".yaml", ".yml")) and not f.startswith("."))
+        if not fs:
+            die(f"{path}/ holds no .yaml files")
+        return [os.path.join(path, f) for f in fs]
+    return [path]
+
+
+def load_sheet(path):
+    """(blocks, origins) — every block across the sheet in order, with the
+    file and position each came from so an error can name them."""
+    try:
+        import yaml
+    except ModuleNotFoundError:
+        die("PyYAML is needed to read the sheet — "
+            "pip3 install --break-system-packages pyyaml")
+    blocks, origins = [], []
+    for f in sheet_files(path):
+        with open(f, encoding="utf-8") as fh:
+            doc = yaml.safe_load(fh)
+        if doc is None:
+            continue                     # a file of nothing but comments
+        if not isinstance(doc, list):
+            die(f"{f}: expected a list of blocks, each starting with '- '")
+        for i, b in enumerate(doc, 1):
+            blocks.append(b)
+            origins.append((os.path.basename(f), i))
+    return blocks, origins
+
 
 def read_sheet(path):
     """Flatten the YAML sheet into rows.
@@ -547,15 +600,7 @@ def read_sheet(path):
     explicit time wins, otherwise the annotation picks up CONT_GAP after the
     previous one ended, or at 0 if it is the first in its clip.
     """
-    try:
-        import yaml
-    except ModuleNotFoundError:
-        die("PyYAML is needed to read a .yaml sheet — "
-            "pip3 install --break-system-packages pyyaml")
-    with open(path, encoding="utf-8") as f:
-        doc = yaml.safe_load(f)
-    if not isinstance(doc, list):
-        die(f"{path}: expected a list of clip blocks, each starting with '- clip:'")
+    doc, _origins = load_sheet(path)
 
     def is_span(e):
         return isinstance(e, dict) and (
@@ -828,7 +873,7 @@ def main():
         epilog=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--sheet", dest="sheet", metavar="FILE",
-                    help="the edit sheet to read (default annotations.yaml)")
+                    help="the edit sheet: a directory of .yaml files, or one file (default: the annotations/ directory)")
     ap.add_argument("--fade", type=float, default=CLIP_FADE, metavar="SEC",
                     help=f"fade the AUDIO out over SEC seconds at the end of "
                          f"each clip, so the sound settles instead of cutting "
@@ -910,12 +955,9 @@ def main():
     os.makedirs(OUT, exist_ok=True)
 
     if a.sheet is None:
-        for cand in ("annotations.yaml", "annotations.yml"):
-            if os.path.exists(cand):
-                a.sheet = cand; break
-        else:
-            die("no edit sheet found — expected annotations.yaml")
-    if not os.path.exists(a.sheet): die(f"not found: {a.sheet}")
+        a.sheet = default_sheet()
+    if not os.path.exists(a.sheet):
+        die(f"not found: {a.sheet} — expected the {SHEET_DIR}/ directory")
 
     if a.draft:
         CRF, PRESET = DRAFT_CRF, DRAFT_PRESET

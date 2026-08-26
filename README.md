@@ -202,7 +202,7 @@ Directories are named for the order the pipeline runs them.
 | `check_sheet.py` | validate the edit sheet without building | ✅ |
 | `make_document.py` | build the written rubric — md, HTML, PDF, Word | ✅ |
 | `make_manifest.sh` | regenerate `raw_clips.tsv` | ✅ |
-| `annotations.yaml` | the edit sheet | ✅ |
+| `annotations/` | the edit sheet — `01_intro`, `02_clips`, `03_appendices` | ✅ |
 | `raw_clips.tsv` | manifest: sizes and SHA-256 | ✅ |
 | `CLAUDE.md` | project state and working notes | ✅ |
 | `raw/` | 37 source clips · 6.8 GB | ❌ release |

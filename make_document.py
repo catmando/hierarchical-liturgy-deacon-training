@@ -49,6 +49,7 @@ except ModuleNotFoundError:
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from check_sheet import resolve, clip_durations, is_span, as_list, _first
+from build import load_sheet, default_sheet
 
 OUT = "output"
 
@@ -273,45 +274,48 @@ def video_id(url):
 
 
 def blocks(sheet):
-    with open(sheet, encoding="utf-8") as f:
-        doc = yaml.safe_load(f)
+    doc, _ = load_sheet(sheet)
     return [b for b in doc if isinstance(b, dict) and "clip" in b]
 
 
 def front(sheet):
     """The intro block, if the sheet has one. Front matter belongs with the
     content it describes, not hardcoded in here."""
-    with open(sheet, encoding="utf-8") as f:
-        doc = yaml.safe_load(f)
+    doc, _ = load_sheet(sheet)
     for b in doc:
         if isinstance(b, dict) and isinstance(b.get("intro"), dict):
             return b["intro"]
     return {}
 
 
-def appendices(sheet):
-    """[(letter, heading, text)] from the sheet's appendix: blocks.
+def appendix_anchor(ident):
+    """The id is a label — A, 1, IV — so it is slugged before it can be an
+    HTML id."""
+    return "appendix-" + (re.sub(r"[^a-z0-9]+", "-", str(ident).lower()).strip("-")
+                          or "x")
 
-    Each section is a chapter in its own right — listed in the contents and
-    linkable — but it belongs to no clip and sits at no time in the video, so
-    it carries a letter instead of a number and no timecode. More than one
-    appendix: block is allowed; their sections run together in sheet order.
+
+def appendices(sheet):
+    """The sheet's appendix blocks, in file order.
+
+    Each is a chapter in its own right — listed in the contents and linkable —
+    but belongs to no clip and sits at no moment in the video, so it carries
+    the id written after `appendix:` instead of a clip number, and no
+    timecode. The id is a label, not a position: reorder the blocks and the
+    ids stay put until you change them.
     """
-    with open(sheet, encoding="utf-8") as f:
-        doc = yaml.safe_load(f)
+    doc, _ = load_sheet(sheet)
     out = []
     for b in doc or []:
-        if not (isinstance(b, dict) and isinstance(b.get("appendix"), dict)):
+        if not (isinstance(b, dict) and "clip" not in b and "appendix" in b):
             continue
-        for sec in b["appendix"].get("sections") or []:
-            if not isinstance(sec, dict):
-                continue
-            head = str(sec.get("heading", "")).strip()
-            text = str(sec.get("text", "")).strip()
-            if head and text:
-                out.append({"letter": chr(ord("A") + len(out)),
-                            "heading": head, "text": text,
-                            "image": str(sec.get("image", "")).strip()})
+        ident = str(b.get("appendix", "")).strip()
+        head = str(b.get("heading", "")).strip()
+        text = str(b.get("text", "")).strip()
+        if ident and head and text:
+            out.append({"id": ident, "heading": head, "text": text,
+                        "image": str(b.get("image", "")).strip(),
+                        "anchor": appendix_anchor(ident)})
     return out
 
 
@@ -375,9 +379,9 @@ def render(sheet, linked, video_url, base=OUT, dl=""):
         head = ap["heading"]
         if linked:
             anchor = re.sub(r"[^a-z0-9]+", "-", head.lower()).strip("-")
-            add(f"{ap['letter']}. [{head}](#{anchor})")
+            add(f"{ap['id']}. [{head}](#{anchor})")
         else:
-            add(f"{ap['letter']}. {head}")
+            add(f"{ap['id']}. {head}")
     add("")
     add("---")
     add("")
@@ -463,7 +467,7 @@ def render(sheet, linked, video_url, base=OUT, dl=""):
     for ap in appendices(sheet):
         add(f"## {ap['heading']}")
         add("")
-        add(f"*Appendix {ap['letter']}*")
+        add(f"*Appendix {ap['id']}*")
         add("")
         add(ap["text"])
         add("")
@@ -595,9 +599,9 @@ def render_html(sheet, video_url, posters=None, staging=False):
         stamp = (f'<span class="tc">{mmss(at)}</span>' if at is not None else "")
         add(f'  <li><span class="num">{n}</span>'
             f'<a href="#c{n}">{html.escape(t)}</a>{stamp}</li>')
-    for i, ap in enumerate(apps, 1):
-        add(f'  <li><span class="num">{ap["letter"]}</span>'
-            f'<a href="#a{i}">{html.escape(ap["heading"])}</a></li>')
+    for ap in apps:
+        add(f'  <li><span class="num">{html.escape(ap["id"])}</span>'
+            f'<a href="#{ap["anchor"]}">{html.escape(ap["heading"])}</a></li>')
     add("</ol></nav>")
 
     open_sec = False
@@ -704,10 +708,10 @@ def render_html(sheet, video_url, posters=None, staging=False):
     if open_sec:
         add("</section>")
 
-    for i, ap in enumerate(apps, 1):
-        add(f'<section class="chapter appendix" id="a{i}">')
+    for ap in apps:
+        add(f'<section class="chapter appendix" id="{ap["anchor"]}">')
         add(f'  <h2>{html.escape(ap["heading"])}</h2>')
-        add(f'  <p class="meta">appendix {ap["letter"]}</p>')
+        add(f'  <p class="meta">appendix {html.escape(ap["id"])}</p>')
         for para in ap["text"].split("\n\n"):
             if para.strip():
                 add(f"  <p>{inline_md(para.strip())}</p>")
@@ -1113,7 +1117,9 @@ def convert():
 
 def main():
     ap = argparse.ArgumentParser(description="Build the written rubric.")
-    ap.add_argument("--sheet", default="annotations.yaml")
+    ap.add_argument("--sheet", default=default_sheet(),
+                    help="the edit sheet: the annotations/ directory, "
+                         "or a single .yaml file")
     ap.add_argument("--video", default="", metavar="URL",
                     help="video URL; chapter timecodes become links to it")
     ap.add_argument("--staging", action="store_true",
