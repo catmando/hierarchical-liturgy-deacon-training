@@ -39,10 +39,55 @@ SRC="${1:-Roles for Concelebrating Deacons.pdf}"
 OUT="${2:-art/roles_card.pdf}"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 
-# The table's ink box in the source, in points, origin bottom-left. Measured
-# from a 200 dpi render by grouping rows that carry ink into bands: the table
-# is the tall band, the page number the 8.6pt one near the foot.
-TX0=50.0 TY0=208.1 TW=322.6 TH=530.3
+# The table's ink box in the source, in points, origin bottom-left. MEASURED,
+# not hardcoded: the chart gets revised, and stale geometry would crop or
+# shrink it silently. A 200 dpi render is scanned for rows carrying ink and
+# those are grouped into bands; the table is the tall one, and the page number
+# a small band by itself near the foot, which is excluded by the gap test.
+read -r TX0 TY0 TW TH <<< "$(python3 - "$SRC" "$TMP" <<'PY'
+import subprocess, sys, glob
+from PIL import Image, ImageChops
+src, tmp = sys.argv[1], sys.argv[2]
+DPI, PH = 200, 792.0
+subprocess.run(["pdftoppm", "-png", "-r", str(DPI), src, tmp + "/m"], check=True)
+im = Image.open(sorted(glob.glob(tmp + "/m*.png"))[0]).convert("L")
+W, H = im.size
+ink = ImageChops.invert(im).point(lambda v: 255 if v > 40 else 0)
+cols = ink.load()
+rows = [any(cols[x, y] for x in range(0, W, 2)) for y in range(H)]
+bands, start = [], None
+for y, on in enumerate(rows + [False]):
+    if on and start is None:
+        start = y
+    elif not on and start is not None:
+        if y - start > 2:
+            bands.append((start, y))
+        start = None
+if not bands:
+    sys.exit("no ink found in " + src)
+# start from the tallest band and absorb neighbours that are close to it, so a
+# table broken by a blank row stays whole while a lone page number does not
+# drag the box down the sheet
+GAP = 40 * DPI / 72
+a, b = max(bands, key=lambda p: p[1] - p[0])
+grew = True
+while grew:
+    grew = False
+    for c, d in bands:
+        if c >= a and d <= b:
+            continue
+        if c - b < GAP and d > b:
+            b, grew = d, True
+        elif a - d < GAP and c < a:
+            a, grew = c, True
+bb = ink.crop((0, a, W, b)).getbbox()
+k = 72.0 / DPI
+x0, x1 = bb[0] * k, bb[2] * k
+top, bot = (a + bb[1]) * k, (a + bb[3]) * k
+print(f"{x0:.1f} {PH-bot:.1f} {x1-x0:.1f} {bot-top:.1f}")
+PY
+)"
+echo "  table measured at ${TW} x ${TH} pt, origin ${TX0},${TY0}"
 
 # --- pass 1: the table becomes the whole page ------------------------------
 gs -q -o "$TMP/table.pdf" -sDEVICE=pdfwrite \
