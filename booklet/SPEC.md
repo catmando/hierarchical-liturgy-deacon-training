@@ -64,7 +64,10 @@ pages: printed side to the reader, blank side to the book.
 That means there is **no duplex and no imposition to get wrong** — the thing
 that makes the roles card fiddly does not arise here.
 
-    cd booklet && weasyprint --encoding utf-8 insert.html insert.pdf
+    cd booklet && python3 make_insert.py        # pages/136.txt + 137.txt
+    cd booklet && python3 make_insert.py 140 141
+
+`insert.html` is generated — edit `pages/*.txt`, not it.
 
 Output is a US Letter sheet with the 7¼ × 5⅞ spread centred, a dashed cut
 border, a dashed fold line down the centre, and a caption outside the cut so
@@ -95,3 +98,36 @@ Content classes, all matching the book's own devices:
 enough that the old text does not ghost through — ordinary 20 lb copier paper
 probably will show. The current placeholder for page 137 is invented text and
 must be replaced.
+
+## Writing the pages — `pages/136.txt`
+
+The text lives in a plain file per page, one paragraph per block, wrapped over
+as many lines as you like. **A blank line starts a new paragraph.** Lines
+beginning `#` are comments.
+
+| written | comes out as |
+|---|---|
+| `head:` | the running head |
+| `folio:` | the page number |
+| *(no prefix)* | body paragraph, first line indented |
+| `flush:` | body paragraph, no indent |
+| `rubric:` | the whole paragraph in red |
+| `label:` | centred red italic — *The priest prays:* |
+| `small:` | the choir's smaller type |
+| `note:` | a footnote |
+| `{red}` | red inside black text — `{N.}` for a name |
+| `{*red italic*}` | an opening like *Exclamation:* |
+| `*italic*`, `**bold**` | as everywhere else in this project |
+| `[1]` | a red superior figure |
+
+That is the whole of it. It is deliberately the same `**bold**` / `*italic*`
+the annotations sheet uses, so there is one set of conventions to remember.
+
+**Why not a word processor.** Styled text exports badly, every edit is a
+manual round trip, and none of it versions with the repo — a diff would show
+"the file changed" and nothing more. A plain file diffs line by line, travels
+with the clone, and cannot lose a rubric's colour in an export.
+
+**Page 136 is transcribed from the scan and checked against `tesseract` OCR**,
+which agreed word for word. Proofread it anyway before it is glued into a
+book.

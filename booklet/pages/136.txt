@@ -1,0 +1,46 @@
+# Page 136 — the text as it stands in the book, transcribed from the scan and
+# checked against OCR. Edit freely; this is the source the insert is built from.
+#
+#   MARKUP, all of it
+#     head:    the running head            folio:   the page number
+#     rubric:  whole paragraph in red      label:   centred red italic
+#     small:   the choir's smaller type    note:    a footnote
+#     (no prefix)  an ordinary body paragraph, first line indented
+#     flush:   a body paragraph with no indent
+#
+#     {red}        red inside black text — {N.} for a name
+#     *italic*     **bold**      {*red italic*}   for an opening like
+#                                                 {*Exclamation:*}
+#     [1]          a superior figure, red
+#
+#   A line starting with # is a comment. Blank lines separate paragraphs.
+
+head: THE DIVINE LITURGY
+folio: 136
+
+Again we offer unto thee this rational worship for those who have fallen
+asleep in the faith: ancestors, fathers, patriarchs, prophets, apostles,
+preachers, evangelists, martyrs, confessors, ascetics, and every righteous
+spirit made perfect in faith: {The priest takes the censer and says:}
+
+{*Exclamation:*} Especially for our most holy, most pure, most blessed and
+glorious Lady Theotokos and Ever-virgin Mary;
+
+rubric: He censes before the holy table three times. Then the deacon censes
+around the holy table, remembering whom he wishes from among the departed and
+the living.
+
+label: Meanwhile, the singers:[1]
+
+small: It is truly meet to bless thee, O Theotokos, ever-blessed and most pure
+and the Mother of our God. More honorable than the cherubim and more glorious
+beyond compare than the seraphim, without corruption thou gavest birth to God
+the Word: true Theotokos, we magnify thee.
+
+label: The priest prays:
+
+For the holy Prophet, Forerunner, and Baptist John; for the holy, glorious,
+and all-laudable apostles, for Saint {N.}, whose memory we keep this day, and
+for all thy saints, at whose supplications, visit us, O God.
+
+note: [1] For feasts, see pp. 302ff. for the appropriate megalynarion.

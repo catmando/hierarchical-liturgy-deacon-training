@@ -1,0 +1,23 @@
+# Page 137 — REPLACE ALL OF THIS. The text below is invented placeholder so the
+# layout can be checked; none of it is from the book.
+#
+# Markup reference is at the top of 136.txt.
+
+head: THE DIVINE LITURGY
+folio: 137
+
+Remember also, O Lord, all those who have fallen asleep in the hope of
+resurrection unto life eternal, and grant them rest where the light of thy
+countenance shineth.
+
+rubric: The deacon censes, and the hierarch blesses with the dikirion and
+trikirion.
+
+{*And the hierarch:*} Among the first, remember, O Lord, our Metropolitan
+{N.}, and our Archbishop {N.}, whom do thou grant unto thy holy churches in
+peace, safety, honor, health, and length of days, rightly dividing the word of
+thy truth.
+
+label: The deacon, at the holy doors:
+
+flush: And all men and all women.
