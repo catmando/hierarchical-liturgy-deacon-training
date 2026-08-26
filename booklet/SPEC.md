@@ -50,3 +50,48 @@ yardstick, not the deliverable. Compare with:
 **Hyphenation needs `pyphen`** (`pip3 install --break-system-packages pyphen`).
 Without it weasyprint silently sets justified text with no hyphens, and the
 word spacing goes to pieces — which looks like a font problem and is not.
+
+---
+
+## The insert — `insert.html` + `insert.css`
+
+Pages 136 and 137 sit on **different leaves** and face each other across the
+gutter when the book is open. So the replacement is **one sheet, printed on
+one side only**, carrying 136 on the left and 137 on the right. It folds down
+the middle into the gutter, and its blank back is glued over the two existing
+pages: printed side to the reader, blank side to the book.
+
+That means there is **no duplex and no imposition to get wrong** — the thing
+that makes the roles card fiddly does not arise here.
+
+    cd booklet && weasyprint --encoding utf-8 insert.html insert.pdf
+
+Output is a US Letter sheet with the 7¼ × 5⅞ spread centred, a dashed cut
+border, a dashed fold line down the centre, and a caption outside the cut so
+it goes with the offcut. **Print at 100%**, not "fit to page".
+
+Each leaf is a `.leaf`, which carries the book's own furniture: running head
+at 0.115 in, the red rule at 0.29 in, first body line at 0.386 in, folio
+centred at the foot. The rule is a separate absolutely-placed element rather
+than a border on the running head, so it sits where it was measured instead of
+drifting with the head's line box — as a border it landed on the first line of
+text.
+
+Content classes, all matching the book's own devices:
+
+| class | what it is |
+|---|---|
+| `p` | body paragraph, indented 15 pt |
+| `p.flush` | body paragraph, no indent |
+| `p.rubric` | a whole paragraph in red |
+| `p.label` | centred red italic — *The priest prays:* |
+| `span.lead` | red italic opening a black paragraph — *Exclamation:* |
+| `span.red` | red inside black text — the `N.` of a name |
+| `p.small` | the choir's text, 9/11 |
+| `p.note` | footnote, 9/11 |
+| `sup` | red superior figure |
+
+**Paper.** It is glued over existing printed pages, so use something opaque
+enough that the old text does not ghost through — ordinary 20 lb copier paper
+probably will show. The current placeholder for page 137 is invented text and
+must be replaced.

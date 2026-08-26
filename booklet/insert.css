@@ -1,0 +1,80 @@
+/* The replacement spread: one sheet, printed on ONE side, carrying page 136
+   on the left and 137 on the right. It folds down the middle into the gutter
+   and its blank back is glued over the two existing pages, so the printed
+   side faces the reader and there is no duplex to get wrong.
+
+   Everything inside a .leaf is the book's own geometry, measured in SPEC.md. */
+@font-face{ font-family:Junicode; src:url("fonts/Junicode-Cond.ttf"); }
+@font-face{ font-family:Junicode; font-style:italic;
+            src:url("fonts/Junicode-CondItalic.ttf"); }
+
+:root{
+  --red:#d80c18;
+  --leaf-w:3.625in; --leaf-h:5.875in;
+  --side:0.40in;                 /* left and right margin, from the scan */
+  --text-top:0.386in;            /* first body line */
+  --foot:0.36in;                 /* page number sits in here */
+}
+
+@page{ size: letter; margin:0; }
+html,body{ margin:0; padding:0 }
+body{ font-family:Junicode, serif; color:#000; }
+
+.sheet{
+  width:8.5in; height:11in; position:relative;
+}
+.spread{
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  width:calc(var(--leaf-w) * 2); height:var(--leaf-h);
+  display:flex;
+}
+/* the fold, down the middle — printed faint so it can be creased accurately
+   and still disappear into the gutter */
+.spread::after{
+  content:""; position:absolute; left:50%; top:-0.18in; bottom:-0.18in;
+  border-left:0.3pt dashed #bbb;
+}
+.leaf{
+  width:var(--leaf-w); height:var(--leaf-h); position:relative;
+  padding:var(--text-top) var(--side) var(--foot);
+  box-sizing:border-box;
+}
+/* Measured off the scan: the running head sits 0.115in from the head of the
+   page, the red rule at 0.29in, the first body line at 0.386in. The rule is a
+   separate absolutely-placed element rather than a border on the head, so its
+   position is the measured one and does not drift with the head's line box. */
+.leaf > .head{
+  position:absolute; left:var(--side); right:var(--side); top:0.115in;
+  font-size:8.6pt; line-height:1; letter-spacing:.09em; text-align:center;
+}
+.leaf > .head::after{
+  content:""; position:absolute; left:0; right:0; top:0.175in;
+  border-top:0.64pt solid var(--red);
+}
+.leaf > .folio{
+  position:absolute; left:0; right:0; bottom:0.20in;
+  text-align:center; font-style:italic; font-size:9pt;
+}
+.body{ font-size:11.7pt; line-height:14.2pt; text-align:justify; hyphens:auto }
+.body p{ margin:0; text-indent:15pt }
+.body p.flush{ text-indent:0 }
+.body p.rubric{ color:var(--red); text-indent:0 }
+.body p.label{ color:var(--red); font-style:italic; text-align:center;
+               text-indent:0 }
+.red{ color:var(--red) }
+.lead{ color:var(--red); font-style:italic }
+.body p.small{ font-size:9pt; line-height:11pt; text-indent:0 }
+.body p.note{ font-size:9pt; line-height:11pt; text-indent:0; margin-top:6pt }
+sup{ color:var(--red); font-size:.7em; vertical-align:.35em }
+
+/* cut line for the sheet, outside the spread so it goes with the offcut */
+.cut{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:calc(var(--leaf-w) * 2); height:var(--leaf-h);
+  border:0.5pt dashed #999; pointer-events:none;
+}
+.caption{
+  position:absolute; left:0; right:0; bottom:0.75in; text-align:center;
+  font-size:7.5pt; color:#777; letter-spacing:.04em;
+}
