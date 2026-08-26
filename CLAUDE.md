@@ -559,6 +559,13 @@ what the written sources are vaguest about.
 
 - **Claude cannot watch video** — only metadata and extracted stills. Never ask
   for the clips.
+- **Fix plain typos on sight, without asking.** The user's instruction,
+  26 Aug 2026: a misspelling like *vidoe* or *simulatenously* is not a
+  judgement call, so just correct it. This does **not** extend to wording,
+  terminology or transliterations — those are the deferred consistency pass
+  of §10, and *Trikiri* vs *Trikirion* is a decision, not a typo. When in
+  doubt about whether something is a spelling or a choice, leave it and say
+  so.
 - **This is OCA / Russian recension.** Do not drift toward Greek or Antiochian
   usage.
 - The user's priest and the footage are authoritative. Where this project
@@ -906,46 +913,48 @@ It works by `break-before:right` on the figure, which starts it on a front
 Verified at 600 dpi: the cut rectangle measures 243.00 × 377.88 pt — 3⅜ × 5¼
 inches, the 0.12 being one pixel.
 
-### The staging page
+### Previewing before publishing — use localhost
 
-`docs/index.html` is the published page and **its link has been emailed out**,
-so it must not move while something is being tried. Staging is a
-subdirectory of the same Pages site, and builds the **whole** deliverable —
-page, PDF and Word file — because the screen and print copies now say
-different things, so checking one is not checking the other:
+There is no staging mode. `make_document.py` writes `docs/`, a local server
+points at `docs/`, and **nothing is public until it is pushed**:
 
 ```bash
-python3 make_document.py --staging --video https://youtu.be/aRs9oqKMCd8
+python3 make_document.py --video https://youtu.be/aRs9oqKMCd8
+cd docs && python3 -m http.server 8000        # then open localhost:8000
 ```
 
-writes **only** into `docs/staging/`. `RUBRIC.md`, `docs/index.html`,
-`docs/rubric.pdf` and `docs/rubric.docx` are left alone. The intermediates go
-through `output/`, which git ignores, so a preview never writes anything that
-is published. It carries a banner and `robots: noindex`.
+Publishing is `git add` of the generated files, commit, push. Throwing a
+preview away is `git checkout -- RUBRIC.md docs/`.
 
-> **Never run `make_document.py` without `--staging` to "just check
-> something".** It writes the published files. Doing it and reverting
-> afterwards worked until an interrupt landed mid-run, leaving `RUBRIC.md`
-> and `docs/index.html` rewritten while the PDF and Word files still matched
-> the old ones. Verify a restore against the **live site**, not against HEAD.
+A `--staging` mode existed for a day, writing a parallel copy under
+`docs/staging/`, and was removed on 26 Aug 2026: once the local server was
+the review path, two URLs differing only by a `/staging/` suffix cost more
+than they protected — the wrong one was opened twice. The old copy is parked
+in `junk/`.
 
-Once committed and pushed it is served at
-`https://catmando.github.io/hierarchical-liturgy-deacon-training/staging/`.
+**Check the printed PDF too, not only the page.** They deliberately say
+different things now (§ *Prose, and the two versions of it*), so looking at
+one is not looking at the other.
 
-**Test it locally first** — a staging push commits ~850 KB of posters, so it
-is not the place to iterate:
+Two things to be careful of, both learned the hard way:
 
-```bash
-python3 make_document.py --staging --video https://youtu.be/aRs9oqKMCd8
-cd docs && python3 -m http.server 8000     # then open localhost:8000/staging/
-```
+- Generating writes the **published files**. That is fine — they only reach
+  the site on a push — but if a run is interrupted part way, some are
+  rewritten and others are not. `for_github()` writes `RUBRIC.md` and
+  `docs/index.html` before the PDF is built, so an interrupt between them
+  leaves a mismatched pair. `git status` shows it; `git checkout` fixes it.
+- **Verify a restore against the live site, not against HEAD.** HEAD is only
+  what was last committed, which is not necessarily what is being served.
 
-Serve from **`docs/`**, not from `docs/staging/` — the download links point
-one level up, which is right on Pages but 404s if the server root is inside
-`staging/`.
+  ```bash
+  curl -s "https://catmando.github.io/hierarchical-liturgy-deacon-training/?cb=$(date +%s)" \
+    | diff - docs/index.html && echo "identical to what is live"
+  ```
 
-When it is right, drop `--staging` to regenerate the real page, and delete
-`docs/staging/`.
+- **Push the code with the output.** The publish of 26 Aug went out while
+  `make_document.py` was still uncommitted, so for a few minutes the site
+  carried a PDF the committed code could not reproduce. Commit the generator
+  and the generated together.
 
 ---
 

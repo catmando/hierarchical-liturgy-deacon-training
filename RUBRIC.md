@@ -32,7 +32,7 @@ Rochester NY.
 Please forgive me for any errors, or omissions, and your corrections
 and input are most welcome.
 
-`generated 26 Aug 2026, 16:35 · 556368e`
+`generated 26 Aug 2026, 16:44 · d57d5eb`
 
 OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
 
@@ -1315,7 +1315,7 @@ our fort.
 
 *Appendix D*
 
-The rubrics and vidoe above have assumed two deacons, which is the normal case
+The rubrics and video above have assumed two deacons, which is the normal case
 at a hierarchical liturgy. Where fewer are available the duties do
 not disappear; they are reassigned.
 
@@ -1324,7 +1324,7 @@ the litanies that would alternate fall to him.
 
 *Consult the Bishop or your*
 *Dean to determine how to handle the "washing of the hands", and censing*
-*during the Cherubic Hymn, which are normally done simulatenously with the
+*during the Cherubic Hymn, which are normally done simultaneously with the
 second Deacon*
 
 Where there are more than two deacons, the third and fourth deacons are given

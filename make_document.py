@@ -605,10 +605,8 @@ def chapter_sections(sheet):
     return out
 
 
-def render_html(sheet, video_url, posters=None, staging=False,
-                medium="screen"):
+def render_html(sheet, video_url, posters=None, medium="screen"):
     posters = posters or {}
-    up = ""     # every copy of the page keeps its downloads beside it
     durs, chap_at = clip_durations(), video_chapter_starts()
     spans = {t: (st, en) for t, st, en in video_chapters() if en and en > st}
     H = []
@@ -625,8 +623,6 @@ def render_html(sheet, video_url, posters=None, staging=False,
     add('<meta charset="utf-8">')
     add('<meta name="viewport" content="width=device-width, initial-scale=1">')
     add('<title>Serving a Hierarchical Liturgy</title>')
-    if staging:
-        add('<meta name="robots" content="noindex">')
     add('<link rel="preconnect" href="https://fonts.googleapis.com">')
     add('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>')
     add('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
@@ -634,8 +630,6 @@ def render_html(sheet, video_url, posters=None, staging=False,
         '&display=swap">')
     add("<style>" + CSS + "</style>")
 
-    if staging:
-        add('<p class="staging">Staging &middot; not the published page</p>')
     add('<header class="masthead">')
     fm = front(sheet)
     if fm.get("subtitle"):
@@ -645,8 +639,8 @@ def render_html(sheet, video_url, posters=None, staging=False,
     if video_url:
         add('  <p class="actions">'
             f'<a href="{html.escape(video_url)}">Watch the whole video</a>'
-            f'<a href="{up}rubric.pdf">Download PDF</a>'
-            f'<a href="{up}rubric.docx">Download Word</a></p>')
+            '<a href="rubric.pdf">Download PDF</a>'
+            '<a href="rubric.docx">Download Word</a></p>')
     add(f'  <p class="build">{html.escape(build_stamp())}</p>')
     add('  <p class="colophon">OCA, Russian recension &middot; Diocese of New '
         'York and New Jersey &middot; Filmed 20 June 2026. Times are positions '
@@ -1094,12 +1088,6 @@ blockquote.card p{margin:0}
 .appendix figure{max-width:20rem;margin:0 auto 1.8rem}
 .appendix figcaption{display:none}
 .appendix p.meta{margin-bottom:1.4rem}
-.staging{
-  background:var(--gold);color:#12100e;text-align:center;
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
-  padding:.55rem 1rem;margin:0;
-}
 .player noscript a{position:absolute;inset:0;display:grid;place-items:center;
   color:var(--gold);font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:.8rem;letter-spacing:.05em}
@@ -1224,10 +1212,9 @@ def for_github(sheet, video_url, posters=None):
 def convert(dest="docs"):
     """PDF and Word, when the tools for them are on the machine.
 
-    `dest` is where the finished files are copied for serving — docs/ for the
-    published site, docs/staging/ for a preview. Both are built out of
-    output/, which git ignores, so a preview never writes anything that is
-    published.
+    `dest` is where the finished files are copied for serving. They are built
+    in output/, which git ignores, and copied into docs/ so the site — and a
+    local server pointed at docs/ — can reach them.
     """
     made = []
 
@@ -1272,9 +1259,6 @@ def main():
                          "or a single .yaml file")
     ap.add_argument("--video", default="", metavar="URL",
                     help="video URL; chapter timecodes become links to it")
-    ap.add_argument("--staging", action="store_true",
-                    help="write only docs/staging/index.html, leaving the "
-                         "published page and the downloads untouched")
     a = ap.parse_args()
 
     if not os.path.exists(a.sheet):
@@ -1285,29 +1269,6 @@ def main():
     spans = {t: (st, en) for t, st, en in video_chapters() if en and en > st}
     jobs = poster_plan(chapter_sections(a.sheet), spans,
                        declared_thumbnails(), card_spans())
-
-    if a.staging:
-        d = os.path.join("docs", "staging")
-        os.makedirs(d, exist_ok=True)
-        doc = render_html(a.sheet, a.video, poster_frames(jobs, d),
-                          staging=True)
-        with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as f:
-            f.write(doc)
-        print(f"  {d}/index.html   {len(doc) / 1024:.0f} KB   (staging)")
-
-        # The printed document as well. The screen and the print copies now
-        # differ in what they say, so checking one is not checking the other,
-        # and it must be possible to look at the PDF without running the
-        # command that writes the published files.
-        with open(os.path.join(OUT, "rubric_print.md"), "w",
-                  encoding="utf-8") as f:
-            f.write(render(a.sheet, False, a.video))
-        with open(os.path.join(OUT, "rubric.html"), "w", encoding="utf-8") as f:
-            f.write(render_html(a.sheet, a.video, medium="print"))
-        convert(dest=d)
-        print("  RUBRIC.md, docs/index.html and the published downloads "
-              "were not touched.")
-        return
 
     for linked, name in ((True, "rubric_online.md"), (False, "rubric_print.md")):
         text = render(a.sheet, linked, a.video)
