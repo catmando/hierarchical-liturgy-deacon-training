@@ -1071,14 +1071,18 @@ blockquote.card p{margin:0}
 /* The row is always here, occupying its height whether the button shows or
    not, so starting a section does not shove the page around. */
 .pctl{min-height:1.6rem;margin:.55rem 0 1.5rem;display:flex}
+/* This has to read as a control. In muted grey on a hairline --rule border
+   it did not: the frame came out at 1.33:1 against the page, so all a reader
+   saw was a scrap of small grey text under the video, and it was reported
+   missing when it was in fact right there. The accent colour carries it. */
 .reset{
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--muted);background:none;border:1px solid var(--rule);
-  border-radius:2px;padding:.3rem .7rem;cursor:pointer;
-  transition:color .15s ease,border-color .15s ease;
+  color:var(--gold);background:none;border:1px solid var(--gold);
+  border-radius:2px;padding:.34rem .8rem;cursor:pointer;
+  transition:color .15s ease,background .15s ease;
 }
-.reset:hover{color:var(--gold);border-color:var(--gold)}
+.reset:hover{color:var(--ground);background:var(--gold)}
 .reset:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .appendix p{margin:0 0 1rem;max-width:38rem}
 /* An appendix image is an illustration beside the prose, not the document.

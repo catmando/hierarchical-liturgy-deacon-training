@@ -32,7 +32,7 @@ Rochester NY.
 Please forgive me for any errors, or omissions, and your corrections
 and input are most welcome.
 
-`generated 26 Aug 2026, 16:44 · d57d5eb`
+`generated 26 Aug 2026, 17:49 · 6ee9933`
 
 OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
 
