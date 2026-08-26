@@ -19,7 +19,7 @@ Times shown beside each heading are positions within that clip,
 so they match the moment in the footage rather than the running
 time of the whole service.
 
-There are also useful appendixes at the end of the document (see the
+There are also useful appendices at the end of the document (see the
 table of contents)
 
 ## Help us Make this better!
@@ -27,12 +27,12 @@ table of contents)
 This site came out of the 2026 Diocese of NY and NJ Deaconal 
 Retreat.  The video was recorded at the retreat, and was edited
 and annotated by Dn. Mitch VanDuyn, of St. John the Baptist 
-Rochester NY.  
+Rochester NY.
 
 Please forgive me for any errors, or omissions, and your corrections
 and input are most welcome.
 
-`generated 25 Aug 2026, 14:30 · bb8f6c9`
+`generated 26 Aug 2026, 16:35 · 556368e`
 
 OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
 
@@ -75,8 +75,8 @@ OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2
 36. [Final blessing and Many Years](#final-blessing-and-many-years) · 54:53
 37. [Conclusion](#conclusion) · 59:06
 A. [Glossary](#glossary)
-B. [Assigning The Roles](#assigning-the-roles)
-C. [The role of Altar servers](#the-role-of-altar-servers)
+B. [Assigning Subdeacons and Altar Servers](#assigning-subdeacons-and-altar-servers)
+C. [A Note on the Spiritual role of Altar Servers](#a-note-on-the-spiritual-role-of-altar-servers)
 D. [Serving with More or Less than Two Deacons](#serving-with-more-or-less-than-two-deacons)
 
 ---
@@ -121,7 +121,7 @@ Two additional servers should be in the narthex ready to follow and assist
 
 **0:06** · **SUBDEACONS**
 
-  Subdeacons place the Mantiya
+  place the Mantiya
 
 **0:10** · **DEACONS**
 
@@ -1254,7 +1254,7 @@ one spelling should win before this is published.
 
 ---
 
-## Assigning The Roles
+## Assigning Subdeacons and Altar Servers
 
 *Appendix B*
 
@@ -1264,12 +1264,18 @@ altar servers for the role.  They should be vested and know the
 whole sequence beforehand — this is not a role to hand to someone
 on the day.  Another option is to have deacons act as subdeacons.
 
+Where there are no subdeacons, the two senior altar servers,
+unless blessed to do so
+do not vest as subdeacons
+and do not handle the dikirion and trikirion at the blessing.
+
 Another important role, is the altar server who will bring out the
 bowl, pitcher and towel for the washing of the Bishops hands.
 Usually this is a junior server who will be greatly encouraged by
 playing this important role.
 
-Having two more adult servers who will keep an eye on things on
+Optimally you will have at least two more adult servers who will carry
+the fans, and who will keep an eye on things on
 the north and south sides of the altar is a good idea.  They should
 watch the subdeacons for direction, and can be a great help in 
 keeping things running smoothly by paying attention.
@@ -1282,7 +1288,7 @@ the larger boy should be in the middle.
 
 ---
 
-## The role of Altar servers
+## A Note on the Spiritual role of Altar Servers
 
 *Appendix C*
 
@@ -1309,20 +1315,35 @@ our fort.
 
 *Appendix D*
 
-The rubrics throughout assume two deacons, which is the normal case
+The rubrics and vidoe above have assumed two deacons, which is the normal case
 at a hierarchical liturgy. Where fewer are available the duties do
 not disappear; they are reassigned.
 
-With one deacon, he takes the first deacon's part throughout, and
+With one deacon, he takes the first and second deacon's part throughout, and
 the litanies that would alternate fall to him.
 
-Where there are no subdeacons, two senior altar servers should be
-appointed to their duties, though they do not vest as subdeacons
-and do not handle the dikirion and trikirion at the blessing.
+*Consult the Bishop or your*
+*Dean to determine how to handle the "washing of the hands", and censing*
+*during the Cherubic Hymn, which are normally done simulatenously with the
+second Deacon*
 
-Where there are more than two deacons, the third and fourth deacons have
-take some of the roles of the second deacon as well.
+Where there are more than two deacons, the third and fourth deacons are given
+some of the roles of the second deacon, and subdeacons as well.
 
-*TBD:  the excellent pocket sized deacons role chart here.*
+The following chart shows the typical roles for 2-8 Deacons serving at a 
+liturgy.  Read across for each liturgical action, and stop at the column 
+for the number of deacons serving.  That will determine which deacon(s) 
+perform that role.
+
+*Note: If there are less than 4 deacons, the Trikiri and Dikiri are carried
+by Subdeacons, and the Fans by either subdeacons or altar servers.*
+
+![Roles for concelebrating deacons](art/roles_chart.png "card")
+
+A version sized to be cut out and kept in a service book is available
+as a printable sheet: [download the card](https://catmando.github.io/hierarchical-liturgy-deacon-training/roles_card.pdf).
+
+Note: Print it at **100 percent** — not "fit to page", which would shrink it — and
+cut along the dashed line.
 
 ---
