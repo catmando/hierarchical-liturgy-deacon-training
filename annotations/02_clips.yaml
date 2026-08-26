@@ -129,7 +129,7 @@
     - at: 6
       for: 4
       role: SUBDEACONS
-      text: Subdeacons place the Mantiya
+      text: place the Mantiya
       notes: If inexperienced, placing the Mantiya should be practiced the night before
 
     # No `at:` → picks up 0.2s after the one above ends.

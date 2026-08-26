@@ -10,7 +10,7 @@ turns the rest of your sentence into a key instead of failing.
 
 Exits non-zero if anything is wrong, so it can gate a build.
 """
-import sys, os
+import sys, os, re
 
 try:
     import yaml
@@ -305,6 +305,13 @@ def validate(path):
             img = str(b.get("image", "")).strip()
             if img and not os.path.exists(img):
                 err(where, f"image not found: {img}")
+            # a mistyped @screen/@print would silently show in both, which is
+            # exactly the failure the marker exists to prevent
+            for para in str(b.get("text", "")).split("\n\n"):
+                m = re.match(r"^@(\w+)", para.strip())
+                if m and m.group(1).lower() not in ("screen", "print"):
+                    err(where, f"paragraph starts with @{m.group(1)} — "
+                               f"the only markers are @screen and @print")
             continue
         if not isinstance(b, dict):
             err(where, f"expected a clip block, got {type(b).__name__}"); continue

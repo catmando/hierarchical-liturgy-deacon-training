@@ -288,11 +288,60 @@ def front(sheet):
     return {}
 
 
+IMG_PARA = re.compile(r'^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)$')
+
+
 def appendix_anchor(ident):
     """The id is a label — A, 1, IV — so it is slugged before it can be an
     HTML id."""
     return "appendix-" + (re.sub(r"[^a-z0-9]+", "-", str(ident).lower()).strip("-")
                           or "x")
+
+
+MEDIA = ("screen", "print")
+MEDIA_TAG = re.compile(r"^@(\w+)\b[ \t]*")
+
+
+def for_medium(text, medium):
+    """Drop the paragraphs written for the other medium.
+
+    The web page and the printed document say slightly different things in a
+    few places — a download link is useful on screen and useless on paper,
+    where the same thing is a page you can already cut out. A paragraph may
+    therefore open with @screen or @print, and is kept only for that one.
+    Unmarked paragraphs, which is nearly all of them, appear in both.
+
+        @screen  A printable version is available: [download it](…).
+        @print   The chart is reproduced overleaf at its true size.
+
+    Marking a paragraph is a content decision, so it lives in the sheet with
+    the words rather than as a rule in here that a rewording would silently
+    break.
+    """
+    out = []
+    for para in text.split("\n\n"):
+        body = para.strip()
+        if not body:
+            continue
+        m = MEDIA_TAG.match(body)
+        if m and m.group(1).lower() in MEDIA:
+            if m.group(1).lower() != medium:
+                continue
+            body = body[m.end():]
+        out.append(body)
+    return "\n\n".join(out)
+
+
+def rebase_images(text, base):
+    """Point an inline ![](art/x.png) at the right place for the file being
+    written: the markdown copies live in different directories."""
+    def fix(m):
+        path, title = m.group(2), m.group(3)
+        if re.match(r"^[a-z]+:", path) or not os.path.exists(path):
+            return m.group(0)
+        tail = f' "{title}"' if title else ""
+        return f"![{m.group(1)}]({os.path.relpath(path, base)}{tail})"
+    return re.sub(r'!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)', fix, text)
 
 
 def appendices(sheet):
@@ -336,11 +385,12 @@ def render(sheet, linked, video_url, base=OUT, dl=""):
             f"[Download PDF]({dl}rubric.pdf) · "
             f"[Download Word]({dl}rubric.docx)")
         add("")
+    medium = "screen" if linked else "print"
     for sec in fm.get("sections") or []:
         if sec.get("heading"):
             add("## " + str(sec["heading"]).strip())
             add("")
-        add(str(sec.get("text", "")).strip())
+        add(for_medium(str(sec.get("text", "")), medium))
         add("")
     add(f"`{build_stamp()}`")
     add("")
@@ -469,7 +519,7 @@ def render(sheet, linked, video_url, base=OUT, dl=""):
         add("")
         add(f"*Appendix {ap['id']}*")
         add("")
-        add(ap["text"])
+        add(rebase_images(for_medium(ap["text"], medium), base))
         add("")
         if ap["image"] and os.path.exists(ap["image"]):
             add(f"![{md_escape(ap['heading'])}]"
@@ -508,13 +558,25 @@ def data_uri(path):
         return f"data:{mime};base64," + base64.b64encode(f.read()).decode()
 
 
-def inline_md(t):
+def inline_md(t, breaks=True):
     """The sheet's **bold**, *italic*, _underline_ and [links](to.pdf), as HTML.
 
     Links are set aside before the emphasis passes run and put back after, so
     an underscore inside a URL cannot be mistaken for an underline.
+
+    `breaks` decides what a newline inside the text means. On a card or an
+    annotation it is a line break the writer intended, and the video shows it
+    that way, so it becomes <br>. In prose — the introduction, the appendices,
+    the notes — a newline is only where the line happened to be wrapped in the
+    editor, and turning it into <br> reproduces that wrapping on screen: a
+    paragraph ends up broken mid-sentence, with the last word stranded on its
+    own line. There the lines are joined instead, and the paragraph reflows to
+    whatever width the reader has.
     """
-    t = html.escape(str(t))
+    t = str(t)
+    if not breaks:
+        t = " ".join(t.split())
+    t = html.escape(t)
     links = []
 
     def stash(m):
@@ -543,9 +605,10 @@ def chapter_sections(sheet):
     return out
 
 
-def render_html(sheet, video_url, posters=None, staging=False):
+def render_html(sheet, video_url, posters=None, staging=False,
+                medium="screen"):
     posters = posters or {}
-    up = "../" if staging else ""      # staging shares the live downloads
+    up = ""     # every copy of the page keeps its downloads beside it
     durs, chap_at = clip_durations(), video_chapter_starts()
     spans = {t: (st, en) for t, st, en in video_chapters() if en and en > st}
     H = []
@@ -554,6 +617,13 @@ def render_html(sheet, video_url, posters=None, staging=False):
     secs = chapter_sections(sheet)
     apps = appendices(sheet)
 
+    # First, and before anything with a non-ASCII byte in it. Without this the
+    # page depends on the server sending a charset: GitHub Pages does, but
+    # python -m http.server sends a bare `text/html`, and the browser then
+    # falls back to Windows-1252 and every em dash renders as â€”. The same
+    # applies to anyone who saves the page and opens it from disk.
+    add('<meta charset="utf-8">')
+    add('<meta name="viewport" content="width=device-width, initial-scale=1">')
     add('<title>Serving a Hierarchical Liturgy</title>')
     if staging:
         add('<meta name="robots" content="noindex">')
@@ -588,9 +658,9 @@ def render_html(sheet, video_url, posters=None, staging=False):
         add('<section class="intro">')
         if sec.get("heading"):
             add(f'  <h2>{html.escape(str(sec["heading"]).strip())}</h2>')
-        for para in str(sec.get("text", "")).strip().split("\n\n"):
+        for para in for_medium(str(sec.get("text", "")), medium).split("\n\n"):
             if para.strip():
-                add(f"  <p>{inline_md(para.strip())}</p>")
+                add(f"  <p>{inline_md(para.strip(), breaks=False)}</p>")
         add("</section>")
 
     add('<nav class="toc" aria-label="Contents"><h2>Contents</h2><ol>')
@@ -683,7 +753,8 @@ def render_html(sheet, video_url, posters=None, staging=False):
         note = _first(b, "notes", "note")
         for item in (note if isinstance(note, list) else [note] if note else []):
             if str(item).strip():
-                add(f'  <p class="note">{inline_md(str(item).strip())}</p>')
+                add(f'  <p class="note">'
+                    f'{inline_md(str(item).strip(), breaks=False)}</p>')
 
         entries = as_list(_first(b, "annotations", "annotation"))
         anns = [e for e in entries if isinstance(e, dict) and not is_span(e)]
@@ -712,9 +783,35 @@ def render_html(sheet, video_url, posters=None, staging=False):
         add(f'<section class="chapter appendix" id="{ap["anchor"]}">')
         add(f'  <h2>{html.escape(ap["heading"])}</h2>')
         add(f'  <p class="meta">appendix {html.escape(ap["id"])}</p>')
-        for para in ap["text"].split("\n\n"):
-            if para.strip():
-                add(f"  <p>{inline_md(para.strip())}</p>")
+        for para in for_medium(ap["text"], medium).split("\n\n"):
+            para = para.strip()
+            if not para:
+                continue
+            # An image on a line of its own is placed where it is written,
+            # which is the only way to get it next to the sentence that
+            # introduces it. The image: key still hangs one off the end.
+            m = IMG_PARA.match(" ".join(para.split()))
+            if m:
+                uri = data_uri(m.group(2))
+                if uri:
+                    # `"card"` after the path means: on paper this is a thing
+                    # to cut out, so print it at its true size on a page of
+                    # its own, with the back of that sheet left blank.
+                    card = (m.group(3) or "").strip().lower() == "card"
+                    if card:
+                        add(f'  <figure class="cardfig"><div class="cut">'
+                            f'<img src="{uri}" alt="{html.escape(m.group(1))}">'
+                            f'</div><figcaption>Cut on the dashed line '
+                            f'&mdash; 3&frac38; &times; 5&frac14; in, to fit a '
+                            f'liturgy book.</figcaption></figure>')
+                        add('  <div class="blankpage"><p>This page is '
+                            'intentionally blank, so the chart overleaf can '
+                            'be cut out.</p></div>')
+                    else:
+                        add(f'  <figure><img src="{uri}" '
+                            f'alt="{html.escape(m.group(1))}"></figure>')
+                continue
+            add(f"  <p>{inline_md(para, breaks=False)}</p>")
         if ap["image"]:
             uri = data_uri(ap["image"])
             if uri:
@@ -993,6 +1090,12 @@ blockquote.card p{margin:0}
 .reset:hover{color:var(--gold);border-color:var(--gold)}
 .reset:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .appendix p{margin:0 0 1rem;max-width:38rem}
+/* An appendix image is an illustration beside the prose, not the document.
+   The roles chart is a tall, narrow table: at full column width it towers
+   over everything around it, and the detail belongs in the card PDF anyway.
+   Widen this if a future appendix wants a diagram to fill the column. */
+.appendix figure{max-width:20rem;margin:0 auto 1.8rem}
+.appendix figcaption,.blankpage{display:none}
 .appendix p.meta{margin-bottom:1.4rem}
 .staging{
   background:var(--gold);color:#12100e;text-align:center;
@@ -1026,7 +1129,11 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   .toc li .tc{grid-column:2}
 }
 @media print{
-  @page{ margin:16mm 15mm; }
+  /* US Letter, said out loud. WeasyPrint defaults to A4, and a US printer
+     asked to fit A4 onto Letter scales it by about 94% — which would leave
+     the cut-out card the wrong size, silently, which is the whole point of
+     it being a card. */
+  @page{ size:letter; margin:16mm 15mm; }
   body{background:#fff;color:#000;font-size:10.5pt;line-height:1.5;padding:0}
   .masthead{padding:0 0 1.2rem;border-bottom:1px solid #bbb}
   .masthead,.toc,.chapter{max-width:none}
@@ -1052,6 +1159,38 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   .tc{color:#333}
   figure img{border:1px solid #999}
   .player,.pctl{display:none}
+
+  /* A card is printed to be cut out, so it gets a sheet to itself: the chart
+     at its true size inside the cut line, and the back of that sheet blank,
+     so removing it takes nothing else with it.
+       break-before:right  starts it on a front (odd) page
+       the blank page then falls on the back of that same sheet
+       break-after:right   returns the text to the next front page  */
+  .appendix figure.cardfig{
+    max-width:none; margin:0; break-before:right; page-break-before:right;
+  }
+  .cardfig .cut{
+    width:243pt; height:378pt;         /* 3 3/8 x 5 1/4 in */
+    border:.7pt dashed #888; margin:1.5rem auto 0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  /* fitted inside the cut line with a 4pt margin, exactly as roles_card.pdf
+     does it, and by max-* so the aspect ratio is the image's own */
+  .cardfig .cut img{max-width:235pt; max-height:370pt; width:auto;
+                    height:auto; border:0}
+  .cardfig figcaption{
+    display:block; text-align:center; margin:.7rem auto 0;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:8pt; color:#555;
+  }
+  .blankpage{
+    display:block; break-before:page; page-break-before:always;
+    break-after:right; page-break-after:right;
+  }
+  .blankpage p{
+    margin-top:45vh; text-align:center; color:#999; font-size:8pt;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+  }
 }
 """
 
@@ -1077,8 +1216,14 @@ def for_github(sheet, video_url, posters=None):
     print(f"  docs/index.html   {len(doc) / 1024:.0f} KB   (GitHub Pages)")
 
 
-def convert():
-    """PDF and Word, when the tools for them are on the machine."""
+def convert(dest="docs"):
+    """PDF and Word, when the tools for them are on the machine.
+
+    `dest` is where the finished files are copied for serving — docs/ for the
+    published site, docs/staging/ for a preview. Both are built out of
+    output/, which git ignores, so a preview never writes anything that is
+    published.
+    """
     made = []
 
     if shutil.which("weasyprint"):
@@ -1110,9 +1255,9 @@ def convert():
     # there — output/ is ignored by git and never reaches the site.
     for f in made:
         print(f"  {f}   {os.path.getsize(f) / 1024:.0f} KB")
-        if os.path.isdir("docs"):
-            shutil.copy2(f, os.path.join("docs", os.path.basename(f)))
-            print(f"    -> docs/{os.path.basename(f)}")
+        if os.path.isdir(dest):
+            shutil.copy2(f, os.path.join(dest, os.path.basename(f)))
+            print(f"    -> {dest}/{os.path.basename(f)}")
 
 
 def main():
@@ -1144,7 +1289,18 @@ def main():
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as f:
             f.write(doc)
         print(f"  {d}/index.html   {len(doc) / 1024:.0f} KB   (staging)")
-        print("  RUBRIC.md, docs/index.html and the downloads "
+
+        # The printed document as well. The screen and the print copies now
+        # differ in what they say, so checking one is not checking the other,
+        # and it must be possible to look at the PDF without running the
+        # command that writes the published files.
+        with open(os.path.join(OUT, "rubric_print.md"), "w",
+                  encoding="utf-8") as f:
+            f.write(render(a.sheet, False, a.video))
+        with open(os.path.join(OUT, "rubric.html"), "w", encoding="utf-8") as f:
+            f.write(render_html(a.sheet, a.video, medium="print"))
+        convert(dest=d)
+        print("  RUBRIC.md, docs/index.html and the published downloads "
               "were not touched.")
         return
 
@@ -1161,8 +1317,11 @@ def main():
 
     # output/ sits beside docs/, so the print copy points at the same posters
     # rather than keeping a second set of them.
+    # output/rubric.html is what weasyprint turns into the PDF, so it is the
+    # printed document, not a second copy of the web page.
     doc = render_html(a.sheet, a.video,
-                      {k: "../docs/" + v for k, v in docs_posters.items()})
+                      {k: "../docs/" + v for k, v in docs_posters.items()},
+                      medium="print")
     path = os.path.join(OUT, "rubric.html")
     with open(path, "w", encoding="utf-8") as f:
         f.write(doc)

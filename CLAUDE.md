@@ -830,20 +830,104 @@ Autoplay after the click is the browser's decision. It works in Chrome and
 usually in Safari; if a browser refuses, the reader sees a loaded, paused
 player and clicks once more. Nothing breaks.
 
+### Prose, and the two versions of it
+
+Text in `intro:` and `appendix:` blocks is **prose**, and differs from a card
+or an annotation in three ways that all cost time to discover:
+
+- **Line breaks reflow.** A newline in prose is only where the line was
+  wrapped in the editor, so the lines are joined and the paragraph flows to
+  the reader's width. On a card or an annotation a newline is deliberate —
+  the video shows it that way — so it stays a `<br>`. Getting this wrong
+  reproduces the editor's wrapping on screen and strands the last word of a
+  line by itself.
+- **Emphasis may span lines**, because the lines are joined before the
+  `*italic*` pass runs. It still may not on a card.
+- **Images can sit inline**, written as ordinary markdown on a line of their
+  own. `image:` on the block only ever hangs one off the end, which is no
+  use when a sentence says "the following chart".
+
+```yaml
+![Roles for concelebrating deacons](art/roles_chart.png "card")
+```
+
+The `"card"` after the path means: on paper this is a thing to cut out. See
+below. Paths are rewritten per output — `art/…` in `RUBRIC.md`, `../art/…`
+in the `output/` copies, a data URI in the web page.
+
+**A paragraph may open with `@screen` or `@print`** and is kept only for that
+one; unmarked paragraphs, nearly all of them, appear in both. This exists
+because a download link is useful on screen and pointless on paper, where the
+same thing is a page you can already cut out:
+
+```yaml
+@screen A printable version is available: [download the card](…).
+
+@print The chart is repeated overleaf at the size it should be cut to.
+```
+
+The alternative — code that knows which sentence to drop — breaks silently
+the first time the sentence is reworded. `check_sheet.py` rejects a mistyped
+marker, so `@sceen` is an error rather than a paragraph that quietly appears
+in both.
+
+Which copy is which medium: `docs/index.html` and staging are **screen**;
+`output/rubric.html` is **print**, because weasyprint turns it into the PDF;
+`rubric_online.md` and `RUBRIC.md` are screen, `rubric_print.md` and so the
+Word file are print.
+
+### ⚠ The printed PDF is US Letter, and was A4 for months
+
+`@page{ size:letter }` is load-bearing. **WeasyPrint defaults to A4**, and the
+stylesheet never said otherwise, so every PDF built before 26 Aug 2026 was
+A4. A US printer asked to fit A4 onto Letter scales it by about 94% — which
+would have made the cut-out card the wrong size with nothing to indicate why.
+This is a US parish; the document is Letter.
+
+The page also declares **`<meta charset="utf-8">`**. Without it the page
+depends on the server sending a charset: GitHub Pages does, but
+`python -m http.server` sends a bare `text/html`, so a locally-served page
+falls back to Windows-1252 and every em dash renders as `â€"` — a fault that
+appears only when reviewing locally and vanishes on publishing, which is the
+worst way round. Same family as the weasyprint mojibake that needs
+`--encoding utf-8` spelled out: **UTF-8 in the file is not enough, every
+consumer has to be told.**
+
+### A card to cut out of the printed document
+
+An inline image marked `"card"` gets a sheet to itself when printed: the
+image at its true size inside a dashed cut line, caption below it and outside
+the line so it goes with the offcut, and **the back of that sheet blank** —
+"This page is intentionally blank, so the chart overleaf can be cut out."
+Printed duplex, that sheet can be pulled and cut without losing anything.
+
+It works by `break-before:right` on the figure, which starts it on a front
+(odd) page; the blank page then falls on the back of that same sheet.
+Verified at 600 dpi: the cut rectangle measures 243.00 × 377.88 pt — 3⅜ × 5¼
+inches, the 0.12 being one pixel.
+
 ### The staging page
 
 `docs/index.html` is the published page and **its link has been emailed out**,
 so it must not move while something is being tried. Staging is a
-subdirectory of the same Pages site:
+subdirectory of the same Pages site, and builds the **whole** deliverable —
+page, PDF and Word file — because the screen and print copies now say
+different things, so checking one is not checking the other:
 
 ```bash
 python3 make_document.py --staging --video https://youtu.be/aRs9oqKMCd8
 ```
 
-writes **only** `docs/staging/index.html` and its posters. `RUBRIC.md`,
-`docs/index.html`, `docs/rubric.pdf` and `docs/rubric.docx` are left alone;
-the staging page links up to the live PDF and Word files rather than keeping
-a second copy. It carries a banner and `robots: noindex`.
+writes **only** into `docs/staging/`. `RUBRIC.md`, `docs/index.html`,
+`docs/rubric.pdf` and `docs/rubric.docx` are left alone. The intermediates go
+through `output/`, which git ignores, so a preview never writes anything that
+is published. It carries a banner and `robots: noindex`.
+
+> **Never run `make_document.py` without `--staging` to "just check
+> something".** It writes the published files. Doing it and reverting
+> afterwards worked until an interrupt landed mid-run, leaving `RUBRIC.md`
+> and `docs/index.html` rewritten while the PDF and Word files still matched
+> the old ones. Verify a restore against the **live site**, not against HEAD.
 
 Once committed and pushed it is served at
 `https://catmando.github.io/hierarchical-liturgy-deacon-training/staging/`.
