@@ -94,10 +94,14 @@ Content classes, all matching the book's own devices:
 | `p.note` | footnote, 9/11 |
 | `sup` | red superior figure |
 
-**Paper.** It is glued over existing printed pages, so use something opaque
-enough that the old text does not ghost through — ordinary 20 lb copier paper
-probably will show. The current placeholder for page 137 is invented text and
-must be replaced.
+**Why this exists.** Pasting corrections into a service book is ordinary
+practice in the parish — for personal notes and for the way the local priest
+has things said. It is usually done by hand on paper; this only makes a
+printed one instead. So the fitting, the paper and the glue are the user's
+own well-trodden ground: **don't offer advice about them.** The job here is
+the typography and the words.
+
+The current page 137 is invented placeholder text and must be replaced.
 
 ## Writing the pages — `pages/136.txt`
 
