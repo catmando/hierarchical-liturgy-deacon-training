@@ -804,9 +804,6 @@ def render_html(sheet, video_url, posters=None, staging=False,
                             f'</div><figcaption>Cut on the dashed line '
                             f'&mdash; 3&frac38; &times; 5&frac14; in, to fit a '
                             f'liturgy book.</figcaption></figure>')
-                        add('  <div class="blankpage"><p>This page is '
-                            'intentionally blank, so the chart overleaf can '
-                            'be cut out.</p></div>')
                     else:
                         add(f'  <figure><img src="{uri}" '
                             f'alt="{html.escape(m.group(1))}"></figure>')
@@ -1095,7 +1092,7 @@ blockquote.card p{margin:0}
    over everything around it, and the detail belongs in the card PDF anyway.
    Widen this if a future appendix wants a diagram to fill the column. */
 .appendix figure{max-width:20rem;margin:0 auto 1.8rem}
-.appendix figcaption,.blankpage{display:none}
+.appendix figcaption{display:none}
 .appendix p.meta{margin-bottom:1.4rem}
 .staging{
   background:var(--gold);color:#12100e;text-align:center;
@@ -1134,6 +1131,16 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
      the cut-out card the wrong size, silently, which is the whole point of
      it being a card. */
   @page{ size:letter; margin:16mm 15mm; }
+  /* Any page the pagination leaves empty says so, rather than looking like a
+     printing fault. This covers the back of the card's sheet and the filler
+     that appears when the text before it happens to end on a front page. */
+  @page :blank{
+    @top-center{
+      content:"This page is left intentionally blank.";
+      font-family:"IBM Plex Mono",ui-monospace,monospace;
+      font-size:8pt; color:#999;
+    }
+  }
   body{background:#fff;color:#000;font-size:10.5pt;line-height:1.5;padding:0}
   .masthead{padding:0 0 1.2rem;border-bottom:1px solid #bbb}
   .masthead,.toc,.chapter{max-width:none}
@@ -1166,8 +1173,14 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
        break-before:right  starts it on a front (odd) page
        the blank page then falls on the back of that same sheet
        break-after:right   returns the text to the next front page  */
+  /* break-before:right puts the card on a front (odd) page; break-after:right
+     sends the text that follows to the NEXT front page, which leaves the back
+     of the card's own sheet empty. Both together are what make the sheet
+     removable: chart on one side, nothing on the other. */
   .appendix figure.cardfig{
-    max-width:none; margin:0; break-before:right; page-break-before:right;
+    max-width:none; margin:0;
+    break-before:right; page-break-before:right;
+    break-after:right;  page-break-after:right;
   }
   .cardfig .cut{
     width:243pt; height:378pt;         /* 3 3/8 x 5 1/4 in */
@@ -1182,14 +1195,6 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
     display:block; text-align:center; margin:.7rem auto 0;
     font-family:"IBM Plex Mono",ui-monospace,monospace;
     font-size:8pt; color:#555;
-  }
-  .blankpage{
-    display:block; break-before:page; page-break-before:always;
-    break-after:right; page-break-after:right;
-  }
-  .blankpage p{
-    margin-top:45vh; text-align:center; color:#999; font-size:8pt;
-    font-family:"IBM Plex Mono",ui-monospace,monospace;
   }
 }
 """
