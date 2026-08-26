@@ -1,0 +1,40 @@
+/* Measured off the scan of p.136 — see CLAUDE.md. Sizes are in points because
+   that is how the original was set; the page is 3 5/8 x 5 7/8 in. */
+@font-face{ font-family:Junicode; src:url("fonts/Junicode-Cond.ttf"); }
+@font-face{ font-family:Junicode; font-style:italic;
+            src:url("fonts/Junicode-CondItalic.ttf"); }
+@font-face{ font-family:Junicode; font-weight:bold;
+            src:url("fonts/Junicode-Bold.ttf"); }
+
+:root{ --red:#d80c18; }
+
+@page{
+  size: 3.625in 5.875in;
+  margin: 0.386in 0.40in 0.36in 0.40in;   /* measure comes out at 203.5pt */
+  @top-center{
+    content: "THE DIVINE LITURGY";
+    font-family:Junicode, serif; font-size:8.6pt; letter-spacing:.09em;
+    color:#000; width:100%; text-align:center;
+    border-bottom:0.64pt solid var(--red);
+    padding-bottom:6.8pt; vertical-align:bottom;
+  }
+  @bottom-center{
+    content: counter(page);
+    font-family:Junicode, serif; font-style:italic; font-size:9pt; color:#000;
+  }
+}
+
+body{
+  font-family:Junicode, serif; font-size:11.7pt; line-height:14.2pt;
+  color:#000; margin:0; text-align:justify; hyphens:auto;
+}
+p{ margin:0; text-indent:15pt; }
+p.flush{ text-indent:0 }
+.red{ color:var(--red) }
+p.rubric{ color:var(--red); text-indent:0 }
+p.label{ color:var(--red); font-style:italic; text-align:center;
+         text-indent:0 }
+.lead{ color:var(--red); font-style:italic }         /* Exclamation: */
+p.small{ font-size:9pt; line-height:11pt; text-indent:0; text-align:justify }
+p.note{ font-size:9pt; line-height:11pt; text-indent:0; margin-top:6pt }
+sup{ color:var(--red); font-size:.7em; vertical-align:.35em }

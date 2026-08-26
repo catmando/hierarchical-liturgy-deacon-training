@@ -1,0 +1,52 @@
+# The service-book page, measured
+
+Everything here was measured off `source/scan-000.jpg`, a ~450 ppi scan of
+page 136 of the parish Divine Liturgy book, not guessed. The numbers drive
+`booklet.css`; change them there.
+
+| | measured | in `booklet.css` |
+|---|---|---|
+| Page | 3.625 × 5.875 in (261 × 423 pt) | `@page size` |
+| Measure | 203.5 pt (2.83 in) | margins 0.40 in |
+| Body x-height | 4.55 pt | → 11.7 pt Junicode-Cond |
+| Body leading | 14.2 pt | `line-height` |
+| Paragraph indent | 15 pt (~1.4 em) | `text-indent` |
+| Choir / small text | x-height 3.49 pt, leading 11.0 pt | 9 pt / 11 pt |
+| Footnote | as the small text | 9 pt |
+| Running head | caps, letterspaced, cap height 5.24 pt | 8.6 pt, `.09em` |
+| Rule under the head | 0.64 pt, full measure, 6.8 pt below / 6.7 pt above | `border-bottom` |
+| Page number | centred at the foot, italic | 9 pt italic |
+| Red | `#d80c18` | `--red` |
+| Black | `#000000` | |
+
+## The typeface
+
+The original is in the **Jenson/Centaur** family — humanist, a calligraphic
+`e`, an `ff` ligature, and an Arrighi-style chancery italic. Most likely Adobe
+Jenson. Nothing in that family was on the machine, so the build uses
+**Junicode**, which is free (OFL, licence in `fonts/`) and modelled on Jenson.
+
+Two things had to be corrected, and both were measured rather than eyeballed:
+
+- **Junicode's x-height is smaller** for a given nominal size, so 10.5 pt set
+  visibly small. The body is therefore **11.7 pt**, which puts the x-height at
+  4.56 pt against the measured 4.55.
+- **At that size the regular cut sets about 11% wide**, so a page held fewer
+  words than the book's. The **condensed** cut restores it: the opening
+  paragraph sets in 6 lines, exactly as the book does.
+
+Nothing here needs to be exact — the user's words — but matching the x-height
+and the density is what makes an insert sit convincingly next to a real page.
+
+## Building
+
+    cd booklet && weasyprint --encoding utf-8 test_p136.html test_p136.pdf
+
+`test_p136.html` reproduces the scanned page for comparison only; it is the
+yardstick, not the deliverable. Compare with:
+
+    pdftoppm -png -r 300 test_p136.pdf /tmp/mine   # then look beside the scan
+
+**Hyphenation needs `pyphen`** (`pip3 install --break-system-packages pyphen`).
+Without it weasyprint silently sets justified text with no hyphens, and the
+word spacing goes to pieces — which looks like a font problem and is not.
