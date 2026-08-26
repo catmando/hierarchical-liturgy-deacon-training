@@ -274,8 +274,12 @@ def validate(path):
                         "expected heading and text")
                     continue
                 for k in sec:
-                    if k not in ("heading", "text"):
+                    if k not in ("heading", "text", "image"):
                         err(f"{where} {kind} section {j}", f"unknown key {k!r}")
+                img = str(sec.get("image", "")).strip()
+                if img and not os.path.exists(img):
+                    err(f"{where} {kind} section {j}",
+                        f"image not found: {img}")
                 if not str(sec.get("text", "")).strip():
                     err(f"{where} {kind} section {j}", "no text")
                 # an appendix section is a chapter in its own right, so it

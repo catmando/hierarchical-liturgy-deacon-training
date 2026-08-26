@@ -309,7 +309,9 @@ def appendices(sheet):
             head = str(sec.get("heading", "")).strip()
             text = str(sec.get("text", "")).strip()
             if head and text:
-                out.append((chr(ord("A") + len(out)), head, text))
+                out.append({"letter": chr(ord("A") + len(out)),
+                            "heading": head, "text": text,
+                            "image": str(sec.get("image", "")).strip()})
     return out
 
 
@@ -369,12 +371,13 @@ def render(sheet, linked, video_url, base=OUT, dl=""):
             add(f"{n}. [{title}](#{anchor}){stamp}")
         else:
             add(f"{n}. {title}{stamp}")
-    for letter, head, _t in appendices(sheet):
+    for ap in appendices(sheet):
+        head = ap["heading"]
         if linked:
             anchor = re.sub(r"[^a-z0-9]+", "-", head.lower()).strip("-")
-            add(f"{letter}. [{head}](#{anchor})")
+            add(f"{ap['letter']}. [{head}](#{anchor})")
         else:
-            add(f"{letter}. {head}")
+            add(f"{ap['letter']}. {head}")
     add("")
     add("---")
     add("")
@@ -457,13 +460,17 @@ def render(sheet, linked, video_url, base=OUT, dl=""):
                 '<div style="page-break-after: always"></div>')
             add("")
 
-    for letter, head, text in appendices(sheet):
-        add(f"## {head}")
+    for ap in appendices(sheet):
+        add(f"## {ap['heading']}")
         add("")
-        add(f"*Appendix {letter}*")
+        add(f"*Appendix {ap['letter']}*")
         add("")
-        add(text)
+        add(ap["text"])
         add("")
+        if ap["image"] and os.path.exists(ap["image"]):
+            add(f"![{md_escape(ap['heading'])}]"
+                f"({os.path.relpath(ap['image'], base)})")
+            add("")
         add("---" if linked else
             '<div style="page-break-after: always"></div>')
         add("")
@@ -498,11 +505,24 @@ def data_uri(path):
 
 
 def inline_md(t):
-    """The sheet's **bold**, *italic* and _underline_, as HTML."""
+    """The sheet's **bold**, *italic*, _underline_ and [links](to.pdf), as HTML.
+
+    Links are set aside before the emphasis passes run and put back after, so
+    an underscore inside a URL cannot be mistaken for an underline.
+    """
     t = html.escape(str(t))
+    links = []
+
+    def stash(m):
+        links.append((m.group(1), m.group(2)))
+        return f"\x00{len(links) - 1}\x00"
+
+    t = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", stash, t)
     t = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", t)
     t = re.sub(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)", r"<em>\1</em>", t)
     t = re.sub(r"(?<!\w)_(.+?)_(?!\w)", r"<u>\1</u>", t)
+    for i, (label, url) in enumerate(links):
+        t = t.replace(f"\x00{i}\x00", f'<a href="{url}">{label}</a>')
     return t.replace("\n", "<br>")
 
 
@@ -575,9 +595,9 @@ def render_html(sheet, video_url, posters=None, staging=False):
         stamp = (f'<span class="tc">{mmss(at)}</span>' if at is not None else "")
         add(f'  <li><span class="num">{n}</span>'
             f'<a href="#c{n}">{html.escape(t)}</a>{stamp}</li>')
-    for i, (letter, head, _t) in enumerate(apps, 1):
-        add(f'  <li><span class="num">{letter}</span>'
-            f'<a href="#a{i}">{html.escape(head)}</a></li>')
+    for i, ap in enumerate(apps, 1):
+        add(f'  <li><span class="num">{ap["letter"]}</span>'
+            f'<a href="#a{i}">{html.escape(ap["heading"])}</a></li>')
     add("</ol></nav>")
 
     open_sec = False
@@ -684,13 +704,18 @@ def render_html(sheet, video_url, posters=None, staging=False):
     if open_sec:
         add("</section>")
 
-    for i, (letter, head, text) in enumerate(apps, 1):
+    for i, ap in enumerate(apps, 1):
         add(f'<section class="chapter appendix" id="a{i}">')
-        add(f'  <h2>{html.escape(head)}</h2>')
-        add(f'  <p class="meta">appendix {letter}</p>')
-        for para in text.split("\n\n"):
+        add(f'  <h2>{html.escape(ap["heading"])}</h2>')
+        add(f'  <p class="meta">appendix {ap["letter"]}</p>')
+        for para in ap["text"].split("\n\n"):
             if para.strip():
                 add(f"  <p>{inline_md(para.strip())}</p>")
+        if ap["image"]:
+            uri = data_uri(ap["image"])
+            if uri:
+                add(f'  <figure><img src="{uri}" '
+                    f'alt="{html.escape(ap["heading"])}"></figure>')
         add("</section>")
 
     if video_id(video_url):
@@ -1036,6 +1061,12 @@ def for_github(sheet, video_url, posters=None):
     print(f"  RUBRIC.md   {len(md.splitlines())} lines   (GitHub renders this)")
 
     os.makedirs("docs", exist_ok=True)
+    # Pages serves docs/, so anything an appendix links to has to be there.
+    card = os.path.join("art", "roles_card.pdf")
+    if os.path.exists(card):
+        shutil.copy2(card, os.path.join("docs", "roles_card.pdf"))
+        print(f"  docs/roles_card.pdf   "
+              f"{os.path.getsize(card) / 1024:.0f} KB   (print and cut)")
     doc = render_html(sheet, video_url, posters)
     with open(os.path.join("docs", "index.html"), "w", encoding="utf-8") as f:
         f.write(doc)

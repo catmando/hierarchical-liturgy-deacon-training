@@ -32,7 +32,7 @@ what to hold, which hand, what to say, and what cues trigger movement.
 | `master.mp4` | built, 1:03:23, now at `output/master.mp4` |
 | Annotation timings | **FIRST DRAFT COMPLETE, all 37 clips, 24 Aug 2026** |
 | Roles vocabulary | evolving by design (§6) |
-| Roles chart | **still not uploaded** (§6) |
+| Roles chart | **ARRIVED 26 Aug 2026** (§6) |
 | Chapter titles in MKV | **VERIFIED WORKING** on real footage (§8) |
 | Edit sheet format | **DONE.** `annotations.yaml`; CSV removed entirely (§4) |
 
@@ -140,6 +140,39 @@ in sheet order across every appendix block.
         text: |
           …
 ```
+
+An appendix section may also carry an **`image:`**, embedded the way the plan
+diagrams are, and its `text:` supports **`[links](https://…)`** as well as the
+usual emphasis. Links are set aside before the emphasis passes run, so an
+underscore inside a URL is not mistaken for an underline.
+
+### The roles card — `make_roles_card.sh`
+
+Turns `Roles for Concelebrating Deacons.pdf` into `art/roles_card.pdf`: the
+chart on a Letter sheet inside a dashed 3⅜ × 5¼ in rectangle, to print at
+**100%** and cut out to fit a service book. It also writes
+`art/roles_chart.png` for the page and the printed document.
+`make_document.py` copies the card into `docs/` so the site can serve it.
+
+Three things that cost time and would cost it again:
+
+- **The source page paints an opaque white rectangle over the whole sheet**
+  before drawing anything (`0 0 612 792 re W n … 1 1 1 sc … f`). Anything drawn
+  *under* the page content is therefore invisible.
+- **Ghostscript's `/Install` procedure silently discards painting operators**
+  with `pdfwrite`, while they still count towards the file's bounding box — so
+  `gs -sDEVICE=bbox` reports marks that render nowhere. `/BeginPage` and
+  `/EndPage` both paint properly. The cut marks go in `/EndPage`, which runs
+  after the page content and so cannot be painted over.
+- **`/Install` sets the device's DEFAULT matrix**, so an `initgraphics` inside
+  `/EndPage` returns to it and marks inherit the content's scale. The content
+  transform therefore goes in `/BeginPage`, leaving `/EndPage` in true page
+  points.
+
+The chart's own page number sits alone near the foot of the sheet. Including
+it in the fit forced the table down to 53%; excluding it puts the table at
+70%, a third larger. The script drops it by shrinking the media box to the
+table alone in a first pass.
 
 Both prose blocks are skipped by `build.py`, which is a thing to be careful
 about: a block with no `clip:` used to be fatal, and that is exactly how the
@@ -272,9 +305,16 @@ roles are worth highlighting. Seen so far: `D1`, `D2`, `AS1+2`, `AS3+4`,
 `DEACONS` should be `D1+D2` for consistency, and whether long codes should
 render smaller, since the role is a bold prefix that eats width.
 
-**⚠ The user has a diocesan roles chart** for one, two, three and four
-deacons. **Still not uploaded.** It resolves every `[verify]` and is the one
-outstanding item that could change annotation *text* rather than timings.
+**✅ The diocesan roles chart arrived 26 Aug 2026** —
+`Roles for Concelebrating Deacons.pdf`, in the repo. It covers **two through
+eight** deacons (not one through four as expected), which means it answers
+"more than two" thoroughly and says nothing about serving with one.
+
+It is appendix E of the rubric, shown as `art/roles_chart.png` and offered as
+a card to print and cut out. **It still has to be read against the
+annotations**: it is the thing that could change annotation *text* rather than
+timings, and that pass has not been done. Source line on the chart itself:
+Pdn. K. Sokolov, revised 1 June 2008.
 
 ---
 
@@ -463,8 +503,8 @@ The Great Entrance diagram shows this arrangement, with the swap noted.
 Entrance they cross — before setting out, on the solea, or as he turns. The
 user is confident the crossing always happens and cannot see it himself from
 behind the Holy Table; he is asking **an experienced subdeacon in the
-diocese**. That person is also the obvious route to the roles chart of §6,
-still outstanding.
+diocese**. (That person was the expected route to the roles chart of §6,
+which has since arrived by another path.)
 
 Worth showing in the Great Entrance diagram once confirmed, as arrows for Di
 and Tr exchanging sides — it is precisely what the footage cannot show and
@@ -510,6 +550,7 @@ what the written sources are vaguest about.
 | `check_sheet.py` | validate the edit sheet without building |
 | `make_document.py` | build the written rubric — markdown and HTML |
 | `make_manifest.sh` | regenerate `raw_clips.tsv` |
+| `make_roles_card.sh` | the roles chart → a card to print and cut out |
 | `README.md` | recovery runbook: bare Mac → finished video |
 | `CLAUDE.md` | this file |
 
