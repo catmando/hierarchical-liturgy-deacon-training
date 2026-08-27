@@ -18,17 +18,14 @@
 head: THE DIVINE LITURGY
 folio: 136
 
-Again we offer unto thee this rational worship for those who have fallen
-asleep in the faith: ancestors, fathers, patriarchs, prophets, apostles,
-preachers, evangelists, martyrs, confessors, ascetics, and every righteous
-spirit made perfect in faith: {The priest takes the censer and says:}
+Again we offer unto thee this rational .... made perfect in faith: {The priest or bishop takes the censer and says:}
 
 {*Exclamation:*} Especially for our most holy, most pure, most blessed and
 glorious Lady Theotokos and Ever-virgin Mary;
 
-rubric: He censes before the holy table three times. Then the deacon censes
-around the holy table, remembering whom he wishes from among the departed and
-the living.
+rubric: He censes before the holy table three times. Then the 2nd deacon censes
+around the holy table, returning the west side, censing it three times, and 
+going to the SE corner censing the priest or bishop 3 times.
 
 label: Meanwhile, the singers:[1]
 
@@ -37,10 +34,67 @@ and the Mother of our God. More honorable than the cherubim and more glorious
 beyond compare than the seraphim, without corruption thou gavest birth to God
 the Word: true Theotokos, we magnify thee.
 
-label: The priest prays:
+rubric: As they sing, the first deacon goes to the high place,
+makes the usual reverences, and kissing the altar as
+he passes, goes out through the Royal doors.
 
-For the holy Prophet, Forerunner, and Baptist John; for the holy, glorious,
-and all-laudable apostles, for Saint {N.}, whose memory we keep this day, and
-for all thy saints, at whose supplications, visit us, O God.
+rubric: As the choir finishes the first Deacon standing in front of the Icon of 
+Christ says:
 
-note: [1] For feasts, see pp. 302ff. for the appropriate megalynarion.
+{* FIRST DEACON *} For All Mankind!
+
+{* CHOIR *} For All Mankind!
+
+{* BISHOP *} Among the first ....
+
+{* PRIEST *} Among the first ....
+
+{* FIRST DEACON *} For His Eminence, The Most Reverend Michael, Archbishop of
+New York, of the Diocese of New York, and New Jersey, who here offers
+
+rubric: The deacon now continues the prayer, while returning to the high place saying
+and pointing to the Diskos and Chalice as he passes:
+
+These Holy Gifts
+
+rubric: Continuing to the High Place
+
+Unto the Lord our God
+
+rubric: And reverencing the High Place and the Bishop continues:
+
+For the most blessed Tikhon, Archbishop of Washington
+Metropolitan of all America and Canada.
+
+rubric: And continuing returns to the arch of the Royal doors.
+
+For the holy synod of Bishops, the Most Reverend Metropolitans,
+Archbishops and Bishops
+
+For the honorable priesthood the diaconate in Christ
+
+For every priestly and monastic order.
+
+For this land, its civil authorities and armed forces.
+
+For peace of the whole world
+For the good estate of God's Holy Churches
+
+For the salvation and assistance of all those
+who diligently labor and serve
+
+For the healing of the sick, for the repose, pardon,
+blessed memory, and forgiveness of sins of all
+Orthodox who have fallen asleep.
+
+For the salvation of all the people here present, and
+for those they have in mind.
+
+And for all mankind!
+
+rubric: The First Deacon returns to the high place, makes the usual reverences,
+and receives a blessing from the Bishop, kissing His
+hand and shoulder saying:
+
+Is Polla Eti Despota
+

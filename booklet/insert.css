@@ -27,7 +27,6 @@ body{ font-family:Junicode, serif; color:#000; }
   position:absolute; left:50%; top:50%;
   transform:translate(-50%,-50%);
   width:calc(var(--leaf-w) * 2); height:var(--leaf-h);
-  display:flex;
 }
 /* the fold, down the middle — printed faint so it can be creased accurately
    and still disappear into the gutter */
@@ -35,11 +34,35 @@ body{ font-family:Junicode, serif; color:#000; }
   content:""; position:absolute; left:50%; top:-0.18in; bottom:-0.18in;
   border-left:0.3pt dashed #bbb;
 }
+/* The text is ONE stream flowing across both leaves rather than two files
+   split by hand. Two columns of exactly the book's measure —
+   (7.25in - 0.8in gap) / 2 = 2.825in = the 203.5pt measured off the page —
+   and column-fill:balance divides it evenly between them, so an edit
+   redistributes itself instead of shoving a hand-made break along. The gap is
+   the two facing margins, 0.40in each. */
+.flow{
+  /* STATIC, deliberately. WeasyPrint does not apply multi-column layout to an
+     absolutely positioned box — it silently lays the text out in one column
+     the full width of the element, which here ran straight across both leaves.
+     Tested: static + auto height and static + fixed height both column; the
+     same rule with position:absolute does not, with or without a height.
+     Padding rather than margin for the top offset, so it cannot collapse. */
+  margin:0 var(--side);
+  box-sizing:border-box;
+  padding-top:var(--text-top);
+  height:calc(var(--leaf-h) - var(--foot));
+  column-count:2; column-gap:calc(var(--side) * 2); column-fill:balance;
+  font-size:11.7pt; line-height:14.2pt; text-align:justify; hyphens:auto;
+}
+/* the running head, rule and folio sit OVER each half — they are page
+   furniture, not part of the flow */
 .leaf{
-  width:var(--leaf-w); height:var(--leaf-h); position:relative;
-  padding:var(--text-top) var(--side) var(--foot);
+  position:absolute; top:0;
+  width:var(--leaf-w); height:var(--leaf-h);
   box-sizing:border-box;
 }
+.leaf.left{ left:0 }
+.leaf.right{ left:var(--leaf-w) }
 /* Measured off the scan: the running head sits 0.115in from the head of the
    page, the red rule at 0.29in, the first body line at 0.386in. The rule is a
    separate absolutely-placed element rather than a border on the head, so its
@@ -56,16 +79,18 @@ body{ font-family:Junicode, serif; color:#000; }
   position:absolute; left:0; right:0; bottom:0.20in;
   text-align:center; font-style:italic; font-size:9pt;
 }
-.body{ font-size:11.7pt; line-height:14.2pt; text-align:justify; hyphens:auto }
-.body p{ margin:0; text-indent:15pt }
-.body p.flush{ text-indent:0 }
-.body p.rubric{ color:var(--red); text-indent:0 }
-.body p.label{ color:var(--red); font-style:italic; text-align:center;
+.flow p{ margin:0; text-indent:15pt }
+.flow p.flush{ text-indent:0 }
+/* a list of petitions: each on its own line, no indent, not justified — a
+   short petition stretched across the measure looks like an error */
+.flow p.lines{ text-indent:0; text-align:left }
+.flow p.rubric{ color:var(--red); text-indent:0 }
+.flow p.label{ color:var(--red); font-style:italic; text-align:center;
                text-indent:0 }
 .red{ color:var(--red) }
 .lead{ color:var(--red); font-style:italic }
-.body p.small{ font-size:9pt; line-height:11pt; text-indent:0 }
-.body p.note{ font-size:9pt; line-height:11pt; text-indent:0; margin-top:6pt }
+.flow p.small{ font-size:9pt; line-height:11pt; text-indent:0 }
+.flow p.note{ font-size:9pt; line-height:11pt; text-indent:0; margin-top:6pt }
 sup{ color:var(--red); font-size:.7em; vertical-align:.35em }
 
 /* cut line for the sheet, outside the spread so it goes with the offcut */
