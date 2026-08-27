@@ -4,9 +4,23 @@
    side faces the reader and there is no duplex to get wrong.
 
    Everything inside a .leaf is the book's own geometry, measured in SPEC.md. */
-@font-face{ font-family:Junicode; src:url("fonts/Junicode-Cond.ttf"); }
+/* MEDIUM, not the regular cut. Junicode is a Jenson revival and its regular
+   weight is very fine — on paper the black text came out washed out, which is
+   the hairlines being thinned by the printer rather than anything wrong with
+   the file. Measured at 9pt on the book's measure: regular 12.0% ink coverage,
+   medium 13.7%, semibold 15.4% — and all three set the same passage in the
+   same 7 lines, so the weight costs nothing in layout. */
+@font-face{ font-family:Junicode; src:url("fonts/Junicode-CondMedium.ttf"); }
 @font-face{ font-family:Junicode; font-style:italic;
-            src:url("fonts/Junicode-CondItalic.ttf"); }
+            src:url("fonts/Junicode-CondMediumItalic.ttf"); }
+/* **bold** had nothing to switch to: only the roman and the italic were
+   declared, so <strong> rendered identically to the body. Junicode's
+   condensed family tops out at SemiBold, which is the right weight for a
+   book face anyway — a true bold would shout. */
+@font-face{ font-family:Junicode; font-weight:bold;
+            src:url("fonts/Junicode-CondSemiBold.ttf"); }
+@font-face{ font-family:Junicode; font-weight:bold; font-style:italic;
+            src:url("fonts/Junicode-CondSemiBoldItalic.ttf"); }
 
 :root{
   --red:#d80c18;
@@ -79,11 +93,23 @@ body{ font-family:Junicode, serif; color:#000; }
   position:absolute; left:0; right:0; bottom:0.20in;
   text-align:center; font-style:italic; font-size:9pt;
 }
-.flow p{ margin:0; text-indent:15pt }
+/* no first-line indent — the user's choice for this insert */
+.flow p{ margin:0; text-indent:0 }
 .flow p.flush{ text-indent:0 }
 /* a list of petitions: each on its own line, no indent, not justified — a
    short petition stretched across the measure looks like an error */
 .flow p.lines{ text-indent:0; text-align:left }
+/* `blank:` — an empty line at whatever leading is in force around it */
+.flow p.blank{ text-indent:0 }
+/* `break:` — force what follows onto the second leaf. Balance normally picks
+   the fold on height alone, which can part a rubric from its response. */
+.flow p.brk{ break-before:column }
+/* `size: small` in the page file sets the whole spread in the smaller type;
+   `normal:` on a paragraph brings it back to body size for the part that has
+   to be read aloud continuously. */
+.flow.small-body{ font-size:9pt; line-height:11pt }
+.flow.small-body p.normal{ font-size:11.7pt; line-height:14.2pt }
+.flow p.normal{ font-size:11.7pt; line-height:14.2pt }
 .flow p.rubric{ color:var(--red); text-indent:0 }
 .flow p.label{ color:var(--red); font-style:italic; text-align:center;
                text-indent:0 }
