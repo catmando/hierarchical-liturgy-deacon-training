@@ -28,14 +28,14 @@ body{ font-family:Junicode, serif; color:#000 }
 .tag p{ margin:0 }
 /* the words themselves — bold, as everywhere else for what is said aloud */
 .tag p.say{
-  font-size:7pt; line-height:8.3pt;
+  font-size:8.4pt; line-height:10pt;
   font-variation-settings:"wght" var(--w-bold), "wdth" 75;
 }
 .tag p.label{
-  color:var(--red); font-style:italic; font-size:5.8pt; line-height:7pt;
+  color:var(--red); font-style:italic; font-size:6.6pt; line-height:8pt;
   margin-top:2.5pt;
 }
-.tag p.lines{ font-size:6.2pt; line-height:7.4pt }
+.tag p.lines{ font-size:7.4pt; line-height:8.8pt }
 .caption{
   position:absolute; left:0; right:0; top:calc(50% + 1.1in);
   text-align:center; font-size:7.5pt; color:#777; letter-spacing:.04em;
