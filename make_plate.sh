@@ -1,20 +1,25 @@
 #!/usr/bin/env bash
-# The insert spread, as an image, so the printed rubric can carry it at true
-# size on a page of its own — the same idea as the roles card.
+# A cut-out piece, as an image, so the printed rubric can carry it at true size
+# on a page of its own — the same idea as the roles card.
 #
-# Only the spread is taken, not the whole sheet: the cut line, fold line and
-# caption are redrawn by the rubric's own stylesheet, so they sit where that
-# page needs them rather than where insert.pdf put them.
+#   ./make_plate.sh booklet/insert.pdf art/insert_136_137.png 7.25 5.875
+#   ./make_plate.sh booklet/label_is_polla.pdf art/label_is_polla.png 1.625 1.25
+#
+# Only the piece is taken, not the whole sheet: the cut line and caption are
+# redrawn by the rubric's stylesheet, so they sit where that page needs them.
 set -euo pipefail
 SRC="${1:-booklet/insert.pdf}"
 OUT="${2:-art/insert_136_137.png}"
+PW="${3:-7.25}"
+PH="${4:-5.875}"
 DPI=400
-# the spread is centred on a Letter sheet: 7.25 x 5.875 in
-python3 - "$SRC" "$OUT" "$DPI" <<'PY'
+# the piece is centred on a Letter sheet
+python3 - "$SRC" "$OUT" "$DPI" "$PW" "$PH" <<'PY'
 import subprocess, sys, glob, tempfile, os
 src, out, dpi = sys.argv[1], sys.argv[2], int(sys.argv[3])
-x = round((8.5 - 7.25) / 2 * dpi); y = round((11 - 5.875) / 2 * dpi)
-w = round(7.25 * dpi);             h = round(5.875 * dpi)
+pw, ph = float(sys.argv[4]), float(sys.argv[5])
+x = round((8.5 - pw) / 2 * dpi); y = round((11 - ph) / 2 * dpi)
+w = round(pw * dpi);             h = round(ph * dpi)
 with tempfile.TemporaryDirectory() as t:
     subprocess.run(["pdftoppm", "-png", "-r", str(dpi), "-x", str(x), "-y", str(y),
                     "-W", str(w), "-H", str(h), src, os.path.join(t, "p")], check=True)

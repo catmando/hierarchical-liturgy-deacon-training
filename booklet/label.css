@@ -1,0 +1,42 @@
+/* A glue-on label: one to a sheet, centred, with the dashed cut line the rest
+   of this project uses. Same face, weights and red as the insert. */
+@font-face{ font-family:Junicode; src:url("fonts/JunicodeVF-Roman.ttf"); }
+@font-face{ font-family:Junicode; font-style:italic;
+            src:url("fonts/JunicodeVF-Italic.ttf"); }
+
+:root{
+  --red:#d80c18;
+  --w-body:600; --w-bold:700;
+  --pad:0.07in;            /* room inside the cut, so nothing sits on the line */
+}
+@page{ size:letter; margin:0 }
+html,body{ margin:0; padding:0 }
+body{ font-family:Junicode, serif; color:#000 }
+
+.sheet{ width:8.5in; height:11in; position:relative }
+/* `.tag`, not `.label` — the paragraph kind `label:` also produces class
+   "label", and when the container shared the name the red cue inherited its
+   absolute centring and printed on top of the words. */
+.tag{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  box-sizing:border-box; padding:var(--pad);
+  border:0.6pt dashed #999;
+  text-align:center; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:center;
+  font-variation-settings:"wght" var(--w-body), "wdth" 75;
+}
+.tag p{ margin:0 }
+/* the words themselves — bold, as everywhere else for what is said aloud */
+.tag p.say{
+  font-size:7pt; line-height:8.3pt;
+  font-variation-settings:"wght" var(--w-bold), "wdth" 75;
+}
+.tag p.label{
+  color:var(--red); font-style:italic; font-size:5.8pt; line-height:7pt;
+  margin-top:2.5pt;
+}
+.tag p.lines{ font-size:6.2pt; line-height:7.4pt }
+.caption{
+  position:absolute; left:0; right:0; top:calc(50% + 1.1in);
+  text-align:center; font-size:7.5pt; color:#777; letter-spacing:.04em;
+}

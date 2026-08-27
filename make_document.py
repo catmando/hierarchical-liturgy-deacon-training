@@ -1236,7 +1236,9 @@ def for_github(sheet, video_url, posters=None):
             (os.path.join("art", "roles_card.pdf"), "roles_card.pdf",
              "print and cut"),
             (os.path.join("booklet", "insert.pdf"), "insert_136_137.pdf",
-             "print, cut and paste in")):
+             "print, cut and paste in"),
+            (os.path.join("booklet", "label_is_polla.pdf"),
+             "label_is_polla.pdf", "the greeting, for page 65")):
         if os.path.exists(src):
             shutil.copy2(src, os.path.join("docs", name))
             print(f"  docs/{name}   "
