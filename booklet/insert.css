@@ -4,26 +4,32 @@
    side faces the reader and there is no duplex to get wrong.
 
    Everything inside a .leaf is the book's own geometry, measured in SPEC.md. */
-/* MEDIUM, not the regular cut. Junicode is a Jenson revival and its regular
-   weight is very fine — on paper the black text came out washed out, which is
-   the hairlines being thinned by the printer rather than anything wrong with
-   the file. Measured at 9pt on the book's measure: regular 12.0% ink coverage,
-   medium 13.7%, semibold 15.4% — and all three set the same passage in the
-   same 7 lines, so the weight costs nothing in layout. */
-@font-face{ font-family:Junicode; src:url("fonts/Junicode-CondMedium.ttf"); }
+/* Junicode's VARIABLE font, so the weight is a dial rather than three fixed
+   steps. It is a Jenson revival with very fine hairlines, and at 9pt the black
+   text printed washed out — the printer thinning the strokes, not a fault in
+   the file.
+
+   wdth 75 is the condensed width, and reproduces the static condensed cut
+   exactly: 13.79% ink against 13.74%, the same passage in the same 7 lines.
+   Every weight from 500 to 700 also sets in 7 lines, so darkness costs nothing
+   in layout. Measured ink at 9pt on the book's measure:
+
+       wght 500  13.8%   (was CondMedium)
+       wght 550  14.7%
+       wght 600  15.5%   (was CondSemiBold)
+       wght 650  16.3%
+       wght 700  17.2%   (the axis maximum)
+
+   Turn --w-body up if it still prints light. --w-bold has to stay clear of it,
+   which is the reason for the variable font: with the static cuts, bold was
+   SemiBold and any darker body collided with it. */
+@font-face{ font-family:Junicode; src:url("fonts/JunicodeVF-Roman.ttf"); }
 @font-face{ font-family:Junicode; font-style:italic;
-            src:url("fonts/Junicode-CondMediumItalic.ttf"); }
-/* **bold** had nothing to switch to: only the roman and the italic were
-   declared, so <strong> rendered identically to the body. Junicode's
-   condensed family tops out at SemiBold, which is the right weight for a
-   book face anyway — a true bold would shout. */
-@font-face{ font-family:Junicode; font-weight:bold;
-            src:url("fonts/Junicode-CondSemiBold.ttf"); }
-@font-face{ font-family:Junicode; font-weight:bold; font-style:italic;
-            src:url("fonts/Junicode-CondSemiBoldItalic.ttf"); }
+            src:url("fonts/JunicodeVF-Italic.ttf"); }
 
 :root{
   --red:#d80c18;
+  --w-body:600; --w-bold:700;   /* the weight dial, see above */
   --leaf-w:3.625in; --leaf-h:5.875in;
   --side:0.40in;                 /* left and right margin, from the scan */
   --text-top:0.386in;            /* first body line */
@@ -67,7 +73,12 @@ body{ font-family:Junicode, serif; color:#000; }
   height:calc(var(--leaf-h) - var(--foot));
   column-count:2; column-gap:calc(var(--side) * 2); column-fill:balance;
   font-size:11.7pt; line-height:14.2pt; text-align:justify; hyphens:auto;
+  font-variation-settings:"wght" var(--w-body), "wdth" 75;
 }
+/* font-weight is left alone and the axis does the work, so <strong> cannot be
+   synthesised into a smeared fake bold */
+.flow strong{ font-weight:normal;
+              font-variation-settings:"wght" var(--w-bold), "wdth" 75 }
 /* the running head, rule and folio sit OVER each half — they are page
    furniture, not part of the flow */
 .leaf{
@@ -108,6 +119,10 @@ body{ font-family:Junicode, serif; color:#000; }
    `normal:` on a paragraph brings it back to body size for the part that has
    to be read aloud continuously. */
 .flow.small-body{ font-size:9pt; line-height:11pt }
+/* `small:` has to be smaller than whatever surrounds it. With the spread set
+   small it was 9pt — the same as the body — so it was not small at all. The
+   choir's hymn is printed for reference; they sing from their own music. */
+.flow.small-body p.small{ font-size:7.4pt; line-height:9pt }
 .flow.small-body p.normal{ font-size:11.7pt; line-height:14.2pt }
 .flow p.normal{ font-size:11.7pt; line-height:14.2pt }
 .flow p.rubric{ color:var(--red); text-indent:0 }

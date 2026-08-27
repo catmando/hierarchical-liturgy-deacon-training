@@ -40,7 +40,7 @@ the Word: true Theotokos, we magnify thee.
 
 blank:
 
-label: For a Hierarchical Liturgy:
+label: At a Hierarchical Liturgy:
 
 {As they sing, the first deacon goes to the high place,
 makes the usual reverences, and kissing the altar as
@@ -54,35 +54,39 @@ exclaims:}
 blank:
 {FIRST DEACON} **For All Mankind!**
 
+blank:
+
 {CHOIR RESPONDS} For All Mankind!
 
 {BISHOP} Among the first ....etc
 
 {PRIEST RESPONDS} Among the first ....etc
 
-{FIRST DEACON} For His Eminence, The Most Reverend Michael, Archbishop of
-New York, of the Diocese of New York, and New Jersey, who here offers...
+blank:
+
+{FIRST DEACON} **For His Eminence, The Most Reverend Michael, Archbishop of
+New York, of the Diocese of New York, and New Jersey, who here offers**...
 
 break:
 
 {The deacon now continues the prayer, while returning to the high place saying
 and pointing to the Diskos and Chalice as he passes}
 
-...these Holy Gifts...
+...**these Holy Gifts**...
 
 {Continuing to the High Place}
 
-...unto the Lord our God!
+...**unto the Lord our God!**
 
 {And reverencing the High Place and the Bishop continues:}
 
-For the most blessed Tikhon, Archbishop of Washington
-Metropolitan of all America and Canada.
+**For the most blessed Tikhon, Archbishop of Washington
+Metropolitan of all America and Canada.**
 
 blank:
-For the holy synod of Bishops, the Most Reverend Metropolitans,
+**For the holy synod of Bishops, the Most Reverend Metropolitans,
 Archbishops and Bishops. For the honorable priesthood the diaconate in Christ.
-For every priestly and monastic order. 
+For every priestly and monastic order.**
 
 {And continuing returns to the arch of the Royal doors saying:}
 
@@ -108,5 +112,5 @@ blank:
 
 {The First Deacon returns to the high place, makes the usual reverences,
 and receives a blessing from the Bishop, kissing His
-hand and shoulder saying:} Is Polla Eti Despota
+hand and shoulder saying:} **Is Polla Eti Despota!**
 
