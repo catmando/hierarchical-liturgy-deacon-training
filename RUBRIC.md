@@ -32,7 +32,7 @@ Rochester NY.
 Please forgive me for any errors, or omissions, and your corrections
 and input are most welcome.
 
-`generated 26 Aug 2026, 17:49 · 6ee9933`
+`generated 27 Aug 2026, 09:50 · 865b177`
 
 OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
 
@@ -78,6 +78,7 @@ A. [Glossary](#glossary)
 B. [Assigning Subdeacons and Altar Servers](#assigning-subdeacons-and-altar-servers)
 C. [A Note on the Spiritual role of Altar Servers](#a-note-on-the-spiritual-role-of-altar-servers)
 D. [Serving with More or Less than Two Deacons](#serving-with-more-or-less-than-two-deacons)
+E. [Pages to Cut Out and Add to the Liturgy Book](#pages-to-cut-out-and-add-to-the-liturgy-book)
 
 ---
 
@@ -1345,5 +1346,25 @@ as a printable sheet: [download the card](https://catmando.github.io/hierarchica
 
 Note: Print it at **100 percent** — not "fit to page", which would shrink it — and
 cut along the dashed line.
+
+---
+
+## Pages to Cut Out and Add to the Liturgy Book
+
+*Appendix E*
+
+Where a hierarchical liturgy departs from the ordinary one, the difference
+is easier to keep in the book than in the head. The pages below are set to
+the size and type of the service book itself, so a printed one can take the
+place of the handwritten note most of us end up making.
+
+Print at **100 percent** — not "fit to page", which shrinks it just enough
+to be wrong — and cut on the dashed line. Each is a single sheet printed on
+one side: fold it down the middle, and paste the blank side over the two
+facing pages it replaces.
+
+**Pages 136–137, at a hierarchical liturgy.** The great
+commemoration, from the offering through *Is Polla Eti Despota*:
+[download the sheet](https://catmando.github.io/hierarchical-liturgy-deacon-training/insert_136_137.pdf).
 
 ---

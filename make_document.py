@@ -288,6 +288,17 @@ def front(sheet):
     return {}
 
 
+def frac(x):
+    """3.375 -> 3 3/8, for a caption a reader can hold a ruler against."""
+    whole = int(x)
+    rest = round((x - whole) * 8)
+    if rest == 0:
+        return str(whole)
+    from math import gcd
+    g = gcd(rest, 8)
+    return f"{whole}&nbsp;{rest//g}/{8//g}"
+
+
 IMG_PARA = re.compile(r'^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)$')
 
 
@@ -791,13 +802,26 @@ def render_html(sheet, video_url, posters=None, medium="screen"):
                     # `"card"` after the path means: on paper this is a thing
                     # to cut out, so print it at its true size on a page of
                     # its own, with the back of that sheet left blank.
-                    card = (m.group(3) or "").strip().lower() == "card"
+                    # `"card"` — or `"card 7.25x5.875"` for something other
+                    # than the 3 3/8 x 5 1/4 in service-book card. The size is
+                    # the CUT size, and the caption states it, so a reader can
+                    # check the print came out true before taking scissors to
+                    # it.
+                    t3 = (m.group(3) or "").strip().lower()
+                    card = t3.startswith("card")
                     if card:
-                        add(f'  <figure class="cardfig"><div class="cut">'
+                        dims = re.match(r"card\s+([\d.]+)\s*x\s*([\d.]+)", t3)
+                        cw, ch = ((float(dims.group(1)), float(dims.group(2)))
+                                  if dims else (3.375, 5.25))
+                        fold = ' data-fold="1"' if cw > 5 else ""
+                        add(f'  <figure class="cardfig"><div class="cut"'
+                            f'{fold} style="width:{cw*72:.1f}pt;'
+                            f'height:{ch*72:.1f}pt">'
                             f'<img src="{uri}" alt="{html.escape(m.group(1))}">'
                             f'</div><figcaption>Cut on the dashed line '
-                            f'&mdash; 3&frac38; &times; 5&frac14; in, to fit a '
-                            f'liturgy book.</figcaption></figure>')
+                            f'&mdash; {frac(cw)} &times; {frac(ch)} in'
+                            f'{", and fold down the middle" if fold else ""}.'
+                            f'</figcaption></figure>')
                     else:
                         add(f'  <figure><img src="{uri}" '
                             f'alt="{html.escape(m.group(1))}"></figure>')
@@ -1174,14 +1198,20 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
     break-before:right; page-break-before:right;
     break-after:right;  page-break-after:right;
   }
+  /* the size comes from the sheet — see the `card` image title */
   .cardfig .cut{
-    width:243pt; height:378pt;         /* 3 3/8 x 5 1/4 in */
     border:.7pt dashed #888; margin:1.5rem auto 0;
     display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  /* a spread wide enough to need folding gets its fold line */
+  .cardfig .cut[data-fold]::after{
+    content:""; position:absolute; left:50%; top:0; bottom:0;
+    border-left:.4pt dashed #bbb;
   }
   /* fitted inside the cut line with a 4pt margin, exactly as roles_card.pdf
      does it, and by max-* so the aspect ratio is the image's own */
-  .cardfig .cut img{max-width:235pt; max-height:370pt; width:auto;
+  .cardfig .cut img{max-width:100%; max-height:100%; width:auto;
                     height:auto; border:0}
   .cardfig figcaption{
     display:block; text-align:center; margin:.7rem auto 0;
@@ -1202,11 +1232,15 @@ def for_github(sheet, video_url, posters=None):
 
     os.makedirs("docs", exist_ok=True)
     # Pages serves docs/, so anything an appendix links to has to be there.
-    card = os.path.join("art", "roles_card.pdf")
-    if os.path.exists(card):
-        shutil.copy2(card, os.path.join("docs", "roles_card.pdf"))
-        print(f"  docs/roles_card.pdf   "
-              f"{os.path.getsize(card) / 1024:.0f} KB   (print and cut)")
+    for src, name, what in (
+            (os.path.join("art", "roles_card.pdf"), "roles_card.pdf",
+             "print and cut"),
+            (os.path.join("booklet", "insert.pdf"), "insert_136_137.pdf",
+             "print, cut and paste in")):
+        if os.path.exists(src):
+            shutil.copy2(src, os.path.join("docs", name))
+            print(f"  docs/{name}   "
+                  f"{os.path.getsize(src) / 1024:.0f} KB   ({what})")
     doc = render_html(sheet, video_url, posters)
     with open(os.path.join("docs", "index.html"), "w", encoding="utf-8") as f:
         f.write(doc)
