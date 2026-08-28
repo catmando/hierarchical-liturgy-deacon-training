@@ -32,7 +32,7 @@ Rochester NY.
 Please forgive me for any errors, or omissions, and your corrections
 and input are most welcome.
 
-`generated 28 Aug 2026, 10:38 · a4a0036`
+`generated 28 Aug 2026, 15:17 · df18ac2`
 
 OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
 
@@ -1359,19 +1359,26 @@ the size and type of the service book itself, so a printed one can take the
 place of the handwritten note most of us end up making.
 
 Print at **100 percent** — not "fit to page", which shrinks it just enough
-to be wrong — and cut on the dashed line. Each is a single sheet printed on
-one side: fold it down the middle, and paste the blank side over the two
-facing pages it replaces.
+to be wrong — and cut on the dashed line. Each is printed on one side only:
+paste the blank side over the page it replaces, and where a piece spans two
+facing pages, fold it down the middle into the gutter first.
 
-**Pages 136–137, at a hierarchical liturgy.** The great
-commemoration, from the offering through *Is Polla Eti Despota*:
-[download the sheet](https://catmando.github.io/hierarchical-liturgy-deacon-training/insert_136_137.pdf).
+**Page 56 — the completion of the vesting.** This page adds rubrics for the
+completion of the vesting of the Bishop; it is pasted over page 56.
+
+[Download the page](https://catmando.github.io/hierarchical-liturgy-deacon-training/page_56.pdf).
 
 **The hierarch's greeting, for page 65.** *Ton Despótēn* is answered so
 often, and mispronounced so easily, that it is worth having in front of
-you rather than in memory. This one is a strip rather than a page
-— and goes in the blank space at the foot of page 65.
+you rather than in memory. This one is a strip rather than a page, and goes
+in the blank space at the foot of page 65.
 
 [Download the label](https://catmando.github.io/hierarchical-liturgy-deacon-training/label_is_polla.pdf).
+
+**Pages 136–137 — the great commemoration.** From the offering through
+*Is Polla Eti Despota*. This one spans the open book, so it folds into the
+gutter and is pasted over both facing pages.
+
+[Download the sheet](https://catmando.github.io/hierarchical-liturgy-deacon-training/insert_136_137.pdf).
 
 ---

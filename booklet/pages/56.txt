@@ -1,0 +1,73 @@
+# Page 56 — transcribed from the scan and checked against OCR, which got the
+# words but not the devices: it read PROTOD'N as PROTODN, the response mark
+# ℞ as "lv.", and the drop cap of IN PEACE as a stray quote.
+#
+# Same book and same setting as 136-137: the prose leading here measures
+# 14.01pt against that page's 14.20, which is within the error of measuring a
+# photograph. So the spec in SPEC.md applies unchanged.
+#
+#   MARKUP — as the other pages, plus three this page needs
+#     speaker:   a red small-cap name, then what is said:  MITER: The Lord...
+#     dialogue:  several speakers with their text aligned in a column
+#     title:     a centred letterspaced heading, as AT ORDINATIONS
+#     dropcap:   a paragraph opening with a large red initial
+#     ℞          the response mark, typed as itself
+
+head: HIERARCHICAL LITURGY
+folio: 56
+leaves: 1
+margins: 0.32
+trim: 0.320 0.28
+
+# a fiftieth of an em off the letter spacing. Justified text cannot fix a
+# stranded last word by resizing — smaller type just stretches the same
+# words wider — but tightening the tracking will, and at this size it is
+# invisible except that the "Amen." comes up onto the line above.
+tracking: -0.020em
+
+# 0.90 of the book's own type size, on margins narrowed from the book's
+# 0.40in to 0.32in. At full size and the book's margins this page overflows
+# by 11 lines; this is the largest that fits with the added rubrics.
+scale: 0.90
+
+flush: King, always, now and ever and unto ages of ages. Amen.]
+
+speaker: MITER: The Lord has set upon thy head a crown of precious stones;
+thou didst ask life of him, and he gave thee length of days, always, now and
+ever and unto ages of ages. Amen.
+
+speaker: DIKIRION & TRIKIRION: May thy light so shine before men that they may
+see thy good works and glorify thy Father, who is in heaven, always, now and
+ever and unto ages of ages. Amen.
+
+rubric: The deacons both cense the Bishop rapidly.
+
+rubric: Subdeacons take the Dikiri and Trikir, and return to the Ambo.
+
+rubric: As the Bishop blesses the deacons they cense him **nine** times.
+turn and 
+reverence the altar, then turn and reverence the Bishop, and return to the front
+and side of the Bishop.
+
+title: AT ORDINATIONS
+
+rubric: When the candidate is kneeling at the corner of the holy table and the
+bishop is ready:
+
+dialogue: PROTOD'N: Let us attend.
+BISHOP: The grace divine, which always heals…
+CLERGY: Kyrie, eleison. {(thrice)}
+PROTOD'N: Let us pray to the Lord. {(in a low voice)}
+
+rubric: As the bishop prays, the protodeacon (at a diaconal ordination) or the
+first priest (at a priestly ordination) reads this litany from within the
+sanctuary, the clergy near him making the responses:
+
+dropcap: IN PEACE let us pray to the Lord.
+
+flush: {℞.} Lord, have mercy. {(after each petition)}
+
+For the peace from above and for the salvation of our souls, let us pray to
+the Lord. {℞.}
+
+For the peace of the whole world, for the welfare

@@ -1328,8 +1328,10 @@ def for_github(sheet, video_url, posters=None):
     for src, name, what in (
             (os.path.join("art", "roles_card.pdf"), "roles_card.pdf",
              "print and cut"),
-            (os.path.join("booklet", "insert.pdf"), "insert_136_137.pdf",
+            (os.path.join("booklet", "insert_136.pdf"), "insert_136_137.pdf",
              "print, cut and paste in"),
+            (os.path.join("booklet", "insert_56.pdf"), "page_56.pdf",
+             "the completion of the vesting"),
             (os.path.join("booklet", "label_is_polla.pdf"),
              "label_is_polla.pdf", "the greeting, for page 65")):
         if os.path.exists(src):

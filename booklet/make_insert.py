@@ -40,7 +40,12 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 KINDS = {"rubric": "rubric", "label": "label", "small": "small",
          "note": "note", "flush": "flush", "lines": "lines",
-         "normal": "normal", "blank": "blank"}
+         "normal": "normal", "blank": "blank",
+         # page 56's devices
+         "speaker": "speaker",     # NAME: then what is said
+         "dialogue": "dialogue",   # several speakers, text aligned
+         "title": "title",         # a centred letterspaced heading
+         "dropcap": "dropcap"}     # a large red initial
 # `lines:` keeps the line breaks as written — a list of petitions is a list,
 # and joining it into a paragraph runs two of them together. Everywhere else a
 # newline is only where the line was wrapped in the editor.
@@ -63,6 +68,11 @@ def read_page(path):
     head, folio, size, blocks = "", "", "", []
     para = []
     brk = [False]          # a `break:` seen, waiting for the next block
+    leaves = [2]           # a spread by default; `leaves: 1` for one page
+    scale = [1.0]          # 1 matches the book's type size exactly
+    side = [0.40]          # the book's own left and right margin, in inches
+    track = ["0"]          # letter spacing, for pulling up a widow
+    trim = [0.386, 0.36]   # first body line, and the foot — the book's own
     warn = []              # markers that look mistyped
 
     def flush():
@@ -89,7 +99,31 @@ def read_page(path):
                 blocks.append(("blank" + (" brk" if nonlocal_break and not i
                                           else ""), "&nbsp;"))
             return
-        if kind == "lines":
+        if kind == "speaker":
+            # the name runs up to the first colon and is set in red small caps
+            whole = inline(" ".join(para))
+            nm, _, rest = whole.partition(":")
+            body = (f'<span class="who">{nm}</span>' + rest) if rest else whole
+        elif kind == "dialogue":
+            out = []
+            for l in para:
+                if not l.strip():
+                    continue
+                nm, _, rest = inline(l).partition(":")
+                out.append(f'<span class="who">{nm}</span>'
+                           f'<span class="said">{rest.strip()}</span>'
+                           if rest else f"<span>{nm}</span>")
+            body = "".join(out)
+        elif kind == "dropcap":
+            # the initial, then the rest of that word and the next in small
+            # caps — the book sets "IN PEACE" and no further
+            whole = inline(" ".join(para))
+            parts = whole.split(" ")
+            opening = " ".join(parts[:2])
+            body = (f'<span class="initial">{opening[:1]}</span>'
+                    f'<span class="opening">{opening[1:]}</span>'
+                    f' {" ".join(parts[2:])}' if whole else "")
+        elif kind == "lines":
             body = "<br>".join(inline(l) for l in para if l.strip())
         else:
             body = inline(" ".join(para))
@@ -131,18 +165,35 @@ def read_page(path):
             for _ in range(max(1, n)):
                 blocks.append(("blank", "&nbsp;"))
             continue
-        m = re.match(r"^(head|folio|size):\s*(.*)$", line.strip(), re.I)
+        m = re.match(r"^(head|folio|size|leaves|scale|margins|tracking|trim):\s*(.*)$", line.strip(), re.I)
         if m and not para:
             k = m.group(1).lower()
             if k == "head":
                 head = m.group(2).strip()
             elif k == "folio":
                 folio = m.group(2).strip()
+            elif k == "leaves":
+                leaves[0] = int(m.group(2).strip() or 2)
+            elif k == "scale":
+                scale[0] = float(m.group(2).strip() or 1)
+            elif k == "margins":
+                side[0] = float(m.group(2).strip() or 0.40)
+            elif k == "tracking":
+                track[0] = m.group(2).strip() or "0"
+            elif k == "trim":
+                bits = m.group(2).split()
+                if len(bits) == 2:
+                    trim[0], trim[1] = float(bits[0]), float(bits[1])
             else:
                 size = m.group(2).strip().lower()
             continue
         para.append(line.strip())
     flush()
+    globals()['LEAVES'] = leaves[0]
+    globals()['SCALE'] = scale[0]
+    globals()['SIDE'] = side[0]
+    globals()['TRACK'] = track[0]
+    globals()['TRIM'] = tuple(trim)
     for w in warn:
         print(f"  ⚠ {w!r} looks like a mistyped marker — the colon goes "
               f"after the word, as in `blank:`. It will print as text.")
@@ -180,9 +231,27 @@ def main():
     except ValueError:
         second = ""
 
-    doc = f"""<!-- built by make_insert.py from pages/{first}.txt -->
+    one = globals().get("LEAVES", 2) == 1
+    if one:
+        doc = f"""<!-- built by make_insert.py from pages/{first}.txt -->
 <meta charset="utf-8"><html lang="en">
 <link rel="stylesheet" href="insert.css">
+<style>:root{{ --scale:{globals().get("SCALE", 1)}; --side:{globals().get("SIDE", 0.40)}in; --track:{globals().get("TRACK", "0")}; --text-top:{globals().get("TRIM",(0.386,0.36))[0]}in; --foot:{globals().get("TRIM",(0.386,0.36))[1]}in; --head-top:{max(0.06, globals().get("TRIM",(0.386,0.36))[0]-0.27):.3f}in; --rule-top:{max(0.10, globals().get("TRIM",(0.386,0.36))[0]-0.21):.3f}in; --folio-up:{max(0.10, globals().get("TRIM",(0.386,0.36))[1]-0.16):.3f}in; }}</style>
+<div class="sheet">
+  <div class="spread one">
+{furniture(head, folio, "left")}
+{flow_html(blocks, size)}
+  </div>
+  <div class="cut one"></div>
+  <div class="caption">Cut on the dashed border &middot; glue the blank side
+    over page {folio}</div>
+</div>
+"""
+    else:
+        doc = f"""<!-- built by make_insert.py from pages/{first}.txt -->
+<meta charset="utf-8"><html lang="en">
+<link rel="stylesheet" href="insert.css">
+<style>:root{{ --scale:{globals().get("SCALE", 1)}; --side:{globals().get("SIDE", 0.40)}in; --track:{globals().get("TRACK", "0")}; --text-top:{globals().get("TRIM",(0.386,0.36))[0]}in; --foot:{globals().get("TRIM",(0.386,0.36))[1]}in; --head-top:{max(0.06, globals().get("TRIM",(0.386,0.36))[0]-0.27):.3f}in; --rule-top:{max(0.10, globals().get("TRIM",(0.386,0.36))[0]-0.21):.3f}in; --folio-up:{max(0.10, globals().get("TRIM",(0.386,0.36))[1]-0.16):.3f}in; }}</style>
 <div class="sheet">
   <div class="spread">
 {furniture(head, folio, "left")}
@@ -194,20 +263,48 @@ def main():
     line &middot; glue the blank side over pages {folio}&ndash;{second}</div>
 </div>
 """
-    out_html = os.path.join(HERE, "insert.html")
+    out_html = os.path.join(HERE, f"insert_{first}.html")
     with open(out_html, "w", encoding="utf-8") as f:
         f.write(doc)
-    print(f"  insert.html   pages {folio} and {second}, "
+    globals()["OUT_HTML"] = out_html
+    print(f"  insert_{first}.html   "
+          f"{'page ' + folio if one else 'pages ' + folio + ' and ' + second}, "
           f"{len(blocks)} paragraphs")
 
-    pdf = os.path.join(HERE, "insert.pdf")
+    pdf = os.path.join(HERE, f"insert_{first}.pdf")
     r = subprocess.run(["weasyprint", "--encoding", "utf-8", out_html, pdf],
                        capture_output=True, text=True, cwd=HERE)
     if r.returncode != 0:
         sys.exit("  weasyprint failed: " + (r.stderr or "").strip()[:300])
-    print(f"  insert.pdf    {os.path.getsize(pdf)/1024:.0f} KB   "
+    print(f"  insert_{first}.pdf    {os.path.getsize(pdf)/1024:.0f} KB   "
           f"— print at 100%, do not fit to page")
     check_fit(pdf)
+
+
+def ink_outside(pdf, leaves):
+    """Anything printed beyond the leaf, described, or None."""
+    try:
+        from PIL import Image, ImageChops
+    except ImportError:
+        return None
+    import glob
+    import tempfile
+    with tempfile.TemporaryDirectory() as t:
+        subprocess.run(["pdftoppm", "-png", "-r", "150", pdf,
+                        os.path.join(t, "o")], check=True)
+        im = Image.open(sorted(glob.glob(os.path.join(t, "o*.png")))[0]).convert("L")
+    W, H = im.size
+    ppi = W / 8.5
+    side = globals().get("SIDE", 0.40)
+    leaf_w = 3.625 * leaves
+    x_right = (8.5 + leaf_w) / 2 * ppi
+    ink = ImageChops.invert(im).point(lambda v: 255 if v > 60 else 0)
+    px = ink.load()
+    n = sum(1 for x in range(int(x_right) + 6, W)
+            for y in range(0, H, 2) if px[x, y])
+    if n > 40:
+        return f"about {n} marks of text"
+    return None
 
 
 def measure_height():
@@ -217,15 +314,24 @@ def measure_height():
     import glob
     import tempfile
     css = open(os.path.join(HERE, "insert.css"), encoding="utf-8").read()
-    doc = open(os.path.join(HERE, "insert.html"), encoding="utf-8").read()
+    doc = open(globals().get("OUT_HTML",
+                                 os.path.join(HERE, "insert.html")),
+               encoding="utf-8").read()
     m = re.search(r'<div class="flow[^"]*">(.*?)\n  </div>', doc, re.S)
     if not m:
         return None
     cls = re.search(r'<div class="(flow[^"]*)"', doc).group(1)
     probe = ('<meta charset="utf-8"><html lang="en"><style>' + css +
+             f"\n:root{{ --scale:{globals().get('SCALE', 1)};"
+             f" --side:{globals().get('SIDE', 0.40)}in;"
+             f" --track:{globals().get('TRACK', '0')};"
+             f" --text-top:{globals().get('TRIM',(0.386,0.36))[0]}in;"
+             f" --foot:{globals().get('TRIM',(0.386,0.36))[1]}in }}"
              "\n@page{ size:3.2in 200in; margin:0 }\n</style>"
              f'<div class="{cls}" style="column-count:1;height:auto;'
-             'padding:0;margin:0;width:203.5pt">' + m.group(1) + "</div>")
+             f'padding:0;margin:0;'
+             f'width:{(3.625 - 2*globals().get("SIDE", 0.40))*72:.1f}pt">'
+             + m.group(1) + "</div>")
     with tempfile.TemporaryDirectory() as tmp:
         ph = os.path.join(tmp, "probe.html")
         pp = os.path.join(tmp, "probe.pdf")
@@ -258,20 +364,35 @@ def check_fit(pdf):
     with room over. The honest test is to set the same text in one tall column
     of the book's measure and compare its height with what two columns hold.
     """
-    col = 5.875 - 0.386 - 0.36
+    t = globals().get('TRIM', (0.386, 0.36))
+    col = 5.875 - t[0] - t[1]
+    leaves = globals().get("LEAVES", 2)
+    # First, the ground truth: is there ink outside the leaf? Text that will
+    # not fit spills into a further column beyond the sheet's trim and is
+    # simply lost — silently, which is the whole reason for checking. The
+    # height sum below can say "fits" while this is happening, because a
+    # floated drop cap takes room the sum does not know about.
+    spilled = ink_outside(pdf, leaves)
+    if spilled:
+        print(f"  ⚠ TOO LONG — {spilled} is running off the sheet and will "
+              f"not print. Lower `scale:` or cut a line.")
+        return
     runs = measure_height()
     if runs is None:
         print("  (could not measure the fit)")
         return
     lines = runs * 72 / 14.2
     per = col * 72 / 14.2
-    if runs > col * 2:
-        print(f"  ⚠ TOO LONG — the text runs {runs:.2f}in and two pages hold "
-              f"{col*2:.2f}in: about {lines - 2*per:.0f} lines too many.")
+    if runs > col * leaves:
+        print(f"  ⚠ TOO LONG — the text runs {runs:.2f}in and "
+              f"{'one page holds' if leaves == 1 else 'two pages hold'} "
+              f"{col*leaves:.2f}in: about {lines - leaves*per:.0f} lines too "
+              f"many.")
     else:
-        spare = (col * 2 - runs) * 72 / 14.2
-        print(f"  fits — {runs:.2f}in of the {col*2:.2f}in available "
-              f"({runs/(col*2)*100:.0f}% full, about {spare:.0f} lines spare).")
+        spare = (col * leaves - runs) * 72 / 14.2
+        print(f"  fits — {runs:.2f}in of the {col*leaves:.2f}in available "
+              f"({runs/(col*leaves)*100:.0f}% full, about {spare:.0f} lines "
+              f"spare).")
 
 
 if __name__ == "__main__":

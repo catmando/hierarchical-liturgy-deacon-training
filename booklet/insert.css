@@ -31,8 +31,23 @@
   --red:#d80c18;
   --w-body:600; --w-bold:700;   /* the weight dial, see above */
   --leaf-w:3.625in; --leaf-h:5.875in;
+  /* How much of the book's own type size this page uses. 1 matches the
+     facing pages exactly, which is what an insert wants; below that it is
+     visibly smaller, and the only reason to go there is that the words will
+     not otherwise fit. Set per page with `scale:`. */
+  --scale:1;
+  /* Tracking, for pulling up a widow. Justified text cannot fix a last word
+     stranded on its own line by resizing — smaller type simply stretches the
+     same words wider — but a percent of an em taken off the letter spacing
+     will do it, and is invisible at that size. Set per page with `tracking:`. */
+  --track:0;
+  /* The head and folio sit where the book puts them by default. A page whose
+     text will not otherwise fit can move them toward the trim and take the
+     difference as text — set with `trim:`, per page, so a change here cannot
+     reach a page that was already settled. */
+  --head-top:0.115in; --rule-top:0.175in; --folio-up:0.20in;
   --side:0.40in;                 /* left and right margin, from the scan */
-  --text-top:0.386in;            /* first body line */
+  --text-top:0.386in;            /* first body line — the book's own */
   --foot:0.36in;                 /* page number sits in here */
 }
 
@@ -50,6 +65,11 @@ body{ font-family:Junicode, serif; color:#000; }
 }
 /* the fold, down the middle — printed faint so it can be creased accurately
    and still disappear into the gutter */
+/* one leaf: no fold, and the flow is a single column */
+.spread.one{ width:var(--leaf-w) }
+.spread.one::after{ display:none }
+.spread.one .flow{ column-count:1 }
+.cut.one{ width:var(--leaf-w) }
 .spread::after{
   content:""; position:absolute; left:50%; top:-0.18in; bottom:-0.18in;
   border-left:0.3pt dashed #bbb;
@@ -72,8 +92,11 @@ body{ font-family:Junicode, serif; color:#000; }
   padding-top:var(--text-top);
   height:calc(var(--leaf-h) - var(--foot));
   column-count:2; column-gap:calc(var(--side) * 2); column-fill:balance;
-  font-size:11.7pt; line-height:14.2pt; text-align:justify; hyphens:auto;
+  font-size:calc(11.7pt * var(--scale));
+  line-height:calc(14.2pt * var(--scale));
+  text-align:justify; hyphens:auto;
   font-variation-settings:"wght" var(--w-body), "wdth" 75;
+  letter-spacing:var(--track);
 }
 /* font-weight is left alone and the axis does the work, so <strong> cannot be
    synthesised into a smeared fake bold */
@@ -93,15 +116,15 @@ body{ font-family:Junicode, serif; color:#000; }
    separate absolutely-placed element rather than a border on the head, so its
    position is the measured one and does not drift with the head's line box. */
 .leaf > .head{
-  position:absolute; left:var(--side); right:var(--side); top:0.115in;
+  position:absolute; left:var(--side); right:var(--side); top:var(--head-top);
   font-size:8.6pt; line-height:1; letter-spacing:.09em; text-align:center;
 }
 .leaf > .head::after{
-  content:""; position:absolute; left:0; right:0; top:0.175in;
+  content:""; position:absolute; left:0; right:0; top:var(--rule-top);
   border-top:0.64pt solid var(--red);
 }
 .leaf > .folio{
-  position:absolute; left:0; right:0; bottom:0.20in;
+  position:absolute; left:0; right:0; bottom:var(--folio-up);
   text-align:center; font-style:italic; font-size:9pt;
 }
 /* no first-line indent — the user's choice for this insert */
@@ -112,13 +135,37 @@ body{ font-family:Junicode, serif; color:#000; }
 .flow p.lines{ text-indent:0; text-align:left }
 /* `blank:` — an empty line at whatever leading is in force around it */
 .flow p.blank{ text-indent:0 }
+
+/* ---- page 56's devices ------------------------------------------------ */
+/* a speaker's name, red small caps, running into what is said */
+.who{ color:var(--red); font-variant:small-caps; letter-spacing:.03em }
+.who::after{ content:":" }
+.flow p.speaker{ text-indent:0 }
+/* several speakers with their words aligned in a column of their own */
+.flow p.dialogue{
+  text-indent:0; display:grid; grid-template-columns:max-content 1fr;
+  column-gap:.5em; row-gap:0; text-align:left;
+}
+/* a centred letterspaced heading, as AT ORDINATIONS */
+.flow p.title{
+  text-indent:0; text-align:center; letter-spacing:.22em;
+  margin:.55em 0 .35em;
+}
+/* a paragraph opening with a large red initial, the first words in small caps */
+.flow p.dropcap{ text-indent:0 }
+.initial{
+  color:var(--red); float:left; font-size:2.05em; line-height:.86;
+  padding:0 .06em 0 0;
+}
+.opening{ font-variant:small-caps; letter-spacing:.02em }
 /* `break:` — force what follows onto the second leaf. Balance normally picks
    the fold on height alone, which can part a rubric from its response. */
 .flow p.brk{ break-before:column }
 /* `size: small` in the page file sets the whole spread in the smaller type;
    `normal:` on a paragraph brings it back to body size for the part that has
    to be read aloud continuously. */
-.flow.small-body{ font-size:9pt; line-height:11pt }
+.flow.small-body{ font-size:calc(9pt * var(--scale));
+                  line-height:calc(11pt * var(--scale)) }
 /* `small:` has to be smaller than whatever surrounds it. With the spread set
    small it was 9pt — the same as the body — so it was not small at all. The
    choir's hymn is printed for reference; they sing from their own music. */
