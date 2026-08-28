@@ -237,6 +237,18 @@ silently dropped.
   thumbnail:    # the moment to use as this section's poster on the web page
 ```
 
+**`frame:`** on an annotation. The printed PDF shows the video frame beside
+each cue, taken at the moment the annotation appears. `frame: no` leaves it
+out — several cues in a row often share one unmoving camera, and a picture
+that repeats the one above it costs a lot of page and says nothing. The Word
+file and the web page carry no frames: the page has the video itself.
+
+`build.py` writes `output/annotation_times.tsv`, keyed by clip and **position
+in the sheet** — not by the text, which changes often, and not by position in
+the time-sorted list, which agrees with sheet order only while the sheet is in
+time order. A mismatch there puts the wrong frame beside the right words and
+says nothing about it.
+
 **`thumbnail:`** picks the still shown for this section on the written-rubric
 page — one bare time, in **original clip time** like everything else, so
 `--timecode` shows you exactly what to type. Leave it out and a frame is

@@ -136,7 +136,8 @@ def as_list(v):
 # An entry in the annotations list is a span if it says so; spans may also be
 # written in their own speed:/cuts: blocks.
 ANN_KEYS   = {"at", "from", "for", "to", "role", "text", "speed", "cut",
-              "mute", "audio", "hold", "notes", "note", "todos", "todo"}
+              "mute", "audio", "hold", "notes", "note", "todos", "todo",
+              "frame"}
 AUDIO_MODES = ("mute", "fast", "normal")
 LONG_HOLD = 30.0    # an INFERRED length past this is probably not intended
 
@@ -375,6 +376,10 @@ def validate(path):
                             err(w, f"speed: {e['speed']!r} — rate must be positive")
                     except ValueError as ex:
                         err(w, f"speed: {ex}")
+                if "frame" in e:
+                    v = str(e["frame"]).strip().lower()
+                    if v not in ("yes", "no", "true", "false", "none", "0", "1"):
+                        err(w, f"frame: {e['frame']!r} — use yes or no")
                 if "mute" in e and not isinstance(e["mute"], bool):
                     err(w, f"mute: {e['mute']!r} — use true or false")
                 if "audio" in e:

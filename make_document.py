@@ -196,6 +196,79 @@ def poster_frames(jobs, outdir):
     return made
 
 
+FRAME_W = 360          # px; about 1.6in on paper, so ~230ppi
+FRAME_DIR = os.path.join("art", "frames")
+
+
+def annotation_times(path=os.path.join(OUT, "annotation_times.tsv")):
+    """(clip, index) -> seconds into master.mp4, from build.py.
+
+    Keyed by position rather than by text: an annotation's wording changes far
+    more often than its place in the clip, and a mismatch here would put the
+    wrong frame beside the right words without saying so.
+    """
+    out = {}
+    if not os.path.exists(path):
+        return out
+    for i, line in enumerate(open(path, encoding="utf-8")):
+        if i == 0:
+            continue
+        bits = line.rstrip("\n").split("\t")
+        if len(bits) < 3:
+            continue
+        try:
+            out[(int(bits[0]), int(bits[1]))] = float(bits[2])
+        except ValueError:
+            pass
+    return out
+
+
+def annotation_frames(times):
+    """Grab a still for each annotation. name -> path, relative to the repo.
+
+    Same incremental trick as the posters: a sidecar records which moment each
+    frame came from, so a rebuild after an edit re-grabs only what moved.
+    """
+    if not times:
+        return {}
+    if not os.path.exists(MASTER):
+        print(f"  frames skipped — {MASTER} not found (run build.py)")
+        return {}
+    os.makedirs(FRAME_DIR, exist_ok=True)
+    idx_path = os.path.join(FRAME_DIR, "index.tsv")
+    have = {}
+    if os.path.exists(idx_path):
+        for line in open(idx_path, encoding="utf-8"):
+            b = line.rstrip("\n").split("\t")
+            if len(b) == 2:
+                have[b[0]] = b[1]
+
+    made, fresh = {}, 0
+    for (clip, i), secs in sorted(times.items()):
+        name = f"c{clip:02d}_{i:02d}"
+        fn = os.path.join(FRAME_DIR, f"{name}.jpg")
+        made[(clip, i)] = fn
+        stamp = f"{secs:.3f}"
+        if have.get(name) == stamp and os.path.exists(fn):
+            continue
+        r = subprocess.run(
+            ["ffmpeg", "-v", "error", "-y", "-ss", stamp, "-i", MASTER,
+             "-frames:v", "1", "-vf", f"scale={FRAME_W}:-2", "-q:v", "6", fn],
+            capture_output=True, text=True)
+        if r.returncode != 0 or not os.path.exists(fn):
+            made.pop((clip, i), None)
+            continue
+        have[name] = stamp
+        fresh += 1
+    with open(idx_path, "w", encoding="utf-8") as f:
+        for (clip, i) in sorted(made):
+            f.write(f"c{clip:02d}_{i:02d}\t{have[f'c{clip:02d}_{i:02d}']}\n")
+    kb = sum(os.path.getsize(v) for v in made.values()) / 1024
+    print(f"  {FRAME_DIR}/   {len(made)} frames, {kb/1024:.1f} MB "
+          f"({fresh} freshly grabbed)")
+    return made
+
+
 def card_spans(path=os.path.join(OUT, "boundaries.tsv")):
     """[(start, end)] of the title cards inside master.mp4.
 
@@ -379,9 +452,10 @@ def appendices(sheet):
     return out
 
 
-def render(sheet, linked, video_url, base=OUT, dl=""):
+def render(sheet, linked, video_url, base=OUT, dl="", frames=None):
     durs = clip_durations()
     chap_at = video_chapter_starts()
+    frames = frames or {}
     L = []
     add = L.append
 
@@ -505,7 +579,7 @@ def render(sheet, linked, video_url, base=OUT, dl=""):
         anns = [e for e in entries if isinstance(e, dict) and not is_span(e)]
         if anns:
             spans = resolve(anns, durs.get(n))
-            for (st, _en), e in zip(spans, anns):
+            for i, ((st, _en), e) in enumerate(zip(spans, anns)):
                 text = str(e.get("text", "")).strip()
                 if not text:
                     continue
@@ -519,6 +593,10 @@ def render(sheet, linked, video_url, base=OUT, dl=""):
                 for line in text.split("\n"):
                     add(f"  {line}" if line.strip() else "")
                 add("")
+                shot = frames.get((n, i))
+                if shot and os.path.exists(shot):
+                    add(f"![]({os.path.relpath(shot, base)})")
+                    add("")
 
         if not joined:
             add("---" if linked else
@@ -616,8 +694,10 @@ def chapter_sections(sheet):
     return out
 
 
-def render_html(sheet, video_url, posters=None, medium="screen"):
+def render_html(sheet, video_url, posters=None, medium="screen",
+                frames=None):
     posters = posters or {}
+    frames = frames or {}
     durs, chap_at = clip_durations(), video_chapter_starts()
     spans = {t: (st, en) for t, st, en in video_chapters() if en and en > st}
     H = []
@@ -765,12 +845,14 @@ def render_html(sheet, video_url, posters=None, medium="screen"):
         anns = [e for e in entries if isinstance(e, dict) and not is_span(e)]
         if anns:
             add('  <ol class="cues">')
-            for (st, _e), e in zip(resolve(anns, durs.get(n)), anns):
+            for i, ((st, _e), e) in enumerate(zip(resolve(anns, durs.get(n)),
+                                                  anns)):
                 text = str(e.get("text", "")).strip()
                 if not text:
                     continue
                 role = str(e.get("role", "")).strip()
-                add('    <li>')
+                shot = frames.get((n, i))
+                add(f'    <li{" class=\"shot\"" if shot else ""}>')
                 add(f'      <span class="tc">{mmss(st) if st is not None else "&mdash;"}</span>')
                 add('      <div class="cue">')
                 if role:
@@ -778,6 +860,10 @@ def render_html(sheet, video_url, posters=None, medium="screen"):
                         f'{html.escape(role)}</span>')
                 add(f'        <p>{inline_md(text)}</p>')
                 add("      </div>")
+                if shot:
+                    uri = data_uri(shot)
+                    if uri:
+                        add(f'      <img class="frame" src="{uri}" alt="">')
                 add("    </li>")
             add("  </ol>")
 
@@ -1123,6 +1209,13 @@ figure{margin:0 0 1.6rem;overflow-x:auto}
 figure img{width:100%;height:auto;display:block;border:1px solid var(--rule);border-radius:3px}
 ol.cues{list-style:none;margin:0;padding:0;display:grid;gap:1.35rem}
 ol.cues li{display:grid;grid-template-columns:4.2rem 1fr;gap:1rem;align-items:baseline}
+/* a cue with its frame: the picture is a third column, small and to the side,
+   so the page still holds several cues and the eye stays on the words */
+ol.cues li.shot{grid-template-columns:4.2rem 1fr 1.6in}
+ol.cues li.shot .frame{
+  width:1.6in;height:auto;border:1px solid var(--rule);border-radius:2px;
+  align-self:start;
+}
 .tc{
   font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.82rem;
   color:var(--muted); font-variant-numeric:tabular-nums; letter-spacing:.02em;
@@ -1299,6 +1392,8 @@ def main():
                          "or a single .yaml file")
     ap.add_argument("--video", default="", metavar="URL",
                     help="video URL; chapter timecodes become links to it")
+    ap.add_argument("--no-frames", action="store_true",
+                    help="leave the video frames out of the PDF")
     a = ap.parse_args()
 
     if not os.path.exists(a.sheet):
@@ -1324,10 +1419,14 @@ def main():
     # output/ sits beside docs/, so the print copy points at the same posters
     # rather than keeping a second set of them.
     # output/rubric.html is what weasyprint turns into the PDF, so it is the
-    # printed document, not a second copy of the web page.
+    # printed document, not a second copy of the web page. The PDF carries the
+    # video frame beside each cue; the Word file does not, and neither does the
+    # web page, which has the video itself. An annotation can opt out with
+    # `frame: no` where the picture adds nothing to the words.
+    frames = {} if a.no_frames else annotation_frames(annotation_times())
     doc = render_html(a.sheet, a.video,
                       {k: "../docs/" + v for k, v in docs_posters.items()},
-                      medium="print")
+                      medium="print", frames=frames)
     path = os.path.join(OUT, "rubric.html")
     with open(path, "w", encoding="utf-8") as f:
         f.write(doc)

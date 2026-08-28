@@ -169,6 +169,13 @@ figure{margin:0 0 1.6rem;overflow-x:auto}
 figure img{width:100%;height:auto;display:block;border:1px solid var(--rule);border-radius:3px}
 ol.cues{list-style:none;margin:0;padding:0;display:grid;gap:1.35rem}
 ol.cues li{display:grid;grid-template-columns:4.2rem 1fr;gap:1rem;align-items:baseline}
+/* a cue with its frame: the picture is a third column, small and to the side,
+   so the page still holds several cues and the eye stays on the words */
+ol.cues li.shot{grid-template-columns:4.2rem 1fr 1.6in}
+ol.cues li.shot .frame{
+  width:1.6in;height:auto;border:1px solid var(--rule);border-radius:2px;
+  align-self:start;
+}
 .tc{
   font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.82rem;
   color:var(--muted); font-variant-numeric:tabular-nums; letter-spacing:.02em;
@@ -270,7 +277,7 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   <p class="eyebrow">For deacons, subdeacons and altar servers</p>
   <h1>Rubrics for Serving at a Hierarchical Liturgy</h1>
   <p class="actions"><a href="https://youtu.be/aRs9oqKMCd8">Watch the whole video</a><a href="rubric.pdf">Download PDF</a><a href="rubric.docx">Download Word</a></p>
-  <p class="build">generated 27 Aug 2026, 10:18 · 55103c8</p>
+  <p class="build">generated 28 Aug 2026, 10:38 · a4a0036</p>
   <p class="colophon">OCA, Russian recension &middot; Diocese of New York and New Jersey &middot; Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.</p>
 </header>
 <section class="intro">

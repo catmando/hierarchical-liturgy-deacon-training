@@ -11,6 +11,8 @@ Reads a single YAML edit sheet and writes into output/:
     boundaries.tsv      for reference
     thumbnails.tsv      poster moments, mapped into master.mp4 time, for
                         make_document.py
+    annotation_times.tsv  where each annotation lands in master.mp4, so the
+                        written rubric can show the frame beside the cue
 
 USAGE
     python3 build.py                    # full build
@@ -740,6 +742,11 @@ def read_sheet(path):
                 "type": "annotation", "clip": str(n),
                 "start": f"{st:.6f}", "dur": f"{dur:.6f}",
                 "role": _text(e.get("role")), "text": _text(e.get("text")),
+                # the position in the sheet, and whether the written rubric
+                # should show the video frame for this cue
+                "_i": ai - 1,
+                "_frame": str(e.get("frame", "")).strip().lower()
+                          not in ("no", "false", "none", "0"),
             }))
 
         for k, e in enumerate(spans, 1):
@@ -1107,7 +1114,8 @@ def main():
         last_end[n] = en
         role = row.get("role", "").strip().upper()
         if role and role not in seen_roles: seen_roles.append(role)
-        anns[n].append((st, en, role, text))
+        anns[n].append((st, en, role, text,
+                        row.get("_i", 0), row.get("_frame", True)))
 
     # ---------------- apply cuts and speed changes ----------------
     seg_map = {}          # clip -> segment list, for remapping annotations
@@ -1286,6 +1294,7 @@ def main():
     # ---------------- annotations ----------------
     events = []
     skip_events = []
+    ann_rows = []          # (clip, index, master_s, role, text)
     for n, items in anns.items():
         if n in skips:
             warnings.append(f"clip {n:02d}: skipped, so its annotations were dropped")
@@ -1295,7 +1304,7 @@ def main():
         segs = seg_map.get(n)
         if segs:
             remapped = []
-            for st, en, role, text in items:
+            for st, en, role, text, si, want in items:
                 m_st = time_map(st, segs)
                 if m_st is None:
                     warnings.append(f"clip {n:02d}: annotation at {st:.1f}s "
@@ -1312,16 +1321,23 @@ def main():
                 m_en = time_map(en, segs)
                 if m_en is None or m_en <= m_st:
                     m_en = m_st + 1.0
-                remapped.append((m_st, m_en, role, text))
+                remapped.append((m_st, m_en, role, text, si, want))
             items = remapped
         items.sort()
-        for i, (st, en, role, text) in enumerate(items):
+        for i, (st, en, role, text, si, want) in enumerate(items):
             if i + 1 < len(items) and items[i+1][0] < en:
                 warnings.append(f"clip {n:02d}: annotations overlap near {st:.0f}s")
             body = "\\N".join(md_inline(ln) if ln else ""
                               for ln in split_lines(text, keep_blanks=True))
             events.append((base + st, base + en,
                            role_prefix(role, seen_roles) + body))
+            # Where this annotation lands in master.mp4, so the written rubric
+            # can pull the matching frame. Keyed by clip and position within
+            # the clip, which is what make_document.py has to hand — matching
+            # on the text would break the moment a word is changed, and would
+            # do it silently: the wrong frame beside the right words.
+            if want:
+                ann_rows.append((n, si, base + st, role, text))
     # label each sped-up span. Same screen position as the ordinary
     # annotations, distinguished by the italic Skip style.
     for n, o_st, o_en, srole, lbl in skip_spans:
@@ -1337,6 +1353,13 @@ def main():
 
     events.sort()
     skip_events.sort()
+
+    with open(out("preview_annotation_times.tsv" if only
+                  else "annotation_times.tsv"), "w", encoding="utf-8") as f:
+        f.write("clip\tindex\tmaster_s\trole\ttext\n")
+        for n, i, ms, role, text in sorted(ann_rows):
+            flat = " ".join(str(text).split())
+            f.write(f"{n}\t{i}\t{ms:.3f}\t{role}\t{flat}\n")
 
     with open(OUT_ASS, "w", encoding="utf-8") as f:
         f.write(f"""[Script Info]
