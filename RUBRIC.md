@@ -32,7 +32,7 @@ Rochester NY.
 Please forgive me for any errors, or omissions, and your corrections
 and input are most welcome.
 
-`generated 28 Aug 2026, 15:17 · df18ac2`
+`generated 28 Aug 2026, 23:38 · b834ee6`
 
 OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
 
@@ -1368,12 +1368,13 @@ completion of the vesting of the Bishop; it is pasted over page 56.
 
 [Download the page](https://catmando.github.io/hierarchical-liturgy-deacon-training/page_56.pdf).
 
-**The hierarch's greeting, for page 65.** *Ton Despótēn* is answered so
-often, and mispronounced so easily, that it is worth having in front of
-you rather than in memory. This one is a strip rather than a page, and goes
-in the blank space at the foot of page 65.
+**Pages 64–65 — the entrance prayers.** The ordinary entrance prayers, with
+the hierarchical addition set where it belongs: after the priest's prayer
+the deacon and choir intone *Ton Despótēn*, which is answered often and
+mispronounced easily, so it is given here with its pronunciation. The
+ordinary rite then resumes on page 65, undisturbed.
 
-[Download the label](https://catmando.github.io/hierarchical-liturgy-deacon-training/label_is_polla.pdf).
+[Download the sheet](https://catmando.github.io/hierarchical-liturgy-deacon-training/pages_64_65.pdf).
 
 **Pages 136–137 — the great commemoration.** From the offering through
 *Is Polla Eti Despota*. This one spans the open book, so it folds into the

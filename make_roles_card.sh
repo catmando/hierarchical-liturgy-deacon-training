@@ -89,18 +89,25 @@ PY
 )"
 echo "  table measured at ${TW} x ${TH} pt, origin ${TX0},${TY0}"
 
+# The measured table, rounded up to whole points. Both passes use it: pass 1
+# as its page size, pass 2 to work out the scale. These were hardcoded once,
+# and a table that lost a row then printed smaller than it needed to, the
+# difference showing as blank inside the cut line.
+read -r PGW PGH <<< "$(python3 -c "import math,sys; print(math.ceil(float(sys.argv[1])), math.ceil(float(sys.argv[2])))" "$TW" "$TH")"
+
 # --- pass 1: the table becomes the whole page ------------------------------
 gs -q -o "$TMP/table.pdf" -sDEVICE=pdfwrite \
-   -dDEVICEWIDTHPOINTS=323 -dDEVICEHEIGHTPOINTS=531 -dFIXEDMEDIA \
+   -dDEVICEWIDTHPOINTS=$PGW -dDEVICEHEIGHTPOINTS=$PGH -dFIXEDMEDIA \
    -dCompatibilityLevel=1.5 \
    -c "<</Install{ -$TX0 -$TY0 translate }>> setpagedevice" \
    -f "$SRC" 2>&1 | grep -v "Annotation destination" || true
 
 # --- pass 2: impose it on Letter, with cut marks ---------------------------
-read -r S TXX TYY CX CY CW CH <<< "$(python3 - <<'PY'
+read -r S TXX TYY CX CY CW CH <<< "$(python3 - "$PGW" "$PGH" <<'PY'
+import sys
 PW, PH = 612.0, 792.0
 CW, CH = 3.375 * 72, 5.25 * 72     # 243 x 378
-PGW, PGH = 323.0, 531.0            # pass 1 page
+PGW, PGH = float(sys.argv[1]), float(sys.argv[2])   # the page from pass 1
 M = 4.0                            # inner margin, so a hand cut has room
 s = min((CW - 2*M) / PGW, (CH - 2*M) / PGH)
 cx, cy = (PW - CW) / 2, (PH - CH) / 2

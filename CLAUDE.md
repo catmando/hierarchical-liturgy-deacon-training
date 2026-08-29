@@ -724,6 +724,19 @@ Give a diagram ~10s, not the 6 a title card gets — it has to be studied.
 | `church_plan.svg` | bare architecture, the starting point for new diagrams |
 | `great_entrance_plan.svg` | the procession once outside the altar |
 
+**The greeting plan was wrong until 28 Aug 2026** and is now corrected against
+**experienced subdeacons of the diocese**, who is the authority for it:
+
+- **D1 stands on the south line, D2 on the north** — they were the other way
+  round.
+- **Seniority runs toward the bishop, not toward the altar.** The senior
+  priests stand nearest the doors, where the bishop is, and the junior toward
+  the altar. The diagram had it reversed.
+
+Neither is guessable from the footage, which is why it stood wrong for a
+fortnight. The censing annotation's "from senior to junior, and south to
+north" is a different moment on a different axis and does not conflict.
+
 **The Great Entrance plan is confirmed correct by the user**, including the
 inferred architecture. Convention: east at the top, so north is left and
 south is right. Marker colours follow the on-screen role colours.

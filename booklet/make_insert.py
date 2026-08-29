@@ -23,6 +23,9 @@ paragraphs; a paragraph may be wrapped over as many lines as you like.
     flush:   body paragraph, no indent
     lines:   keeps the line breaks — for a list of petitions
     blank:   one empty line;  `blank: 2`  for two
+    halfblank:  half a line, where a whole one opens too big a gap
+    rule:    a thin divider across the measure
+    <<CAPS>> small caps inside a sentence
     break:   force what follows onto the second page
     (no prefix)  an ordinary body paragraph, first line indented
 
@@ -40,7 +43,8 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 KINDS = {"rubric": "rubric", "label": "label", "small": "small",
          "note": "note", "flush": "flush", "lines": "lines",
-         "normal": "normal", "blank": "blank",
+         "normal": "normal", "blank": "blank", "rule": "rule",
+         "halfblank": "halfblank",
          # page 56's devices
          "speaker": "speaker",     # NAME: then what is said
          "dialogue": "dialogue",   # several speakers, text aligned
@@ -60,6 +64,10 @@ def inline(t):
     t = re.sub(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)", r"<em>\1</em>",
                t, flags=re.S)
     t = re.sub(r"\[(\d+)\]", r"<sup>\1</sup>", t)
+    # <<PRIEST>> — small caps inside a sentence, as the book sets a name or
+    # office mid-rubric. Explicit rather than inferred from capitals: "O God"
+    # and "Ps." are not small caps, and guessing would be wrong silently.
+    t = re.sub(r"&lt;&lt;(.+?)&gt;&gt;", r'<span class="sc">\1</span>', t)
     return " ".join(t.split())
 
 
@@ -86,6 +94,10 @@ def read_page(path):
             para[0] = m.group(2)
         nonlocal_break = brk[0]
         brk[0] = False
+        if kind == "rule":
+            para.clear()
+            blocks.append(("rule", "&nbsp;"))
+            return
         if kind == "blank":
             # `blank:` on its own is one empty line; `blank: 2` is two. A
             # non-breaking space gives the line its height, so it takes the
@@ -115,14 +127,18 @@ def read_page(path):
                            if rest else f"<span>{nm}</span>")
             body = "".join(out)
         elif kind == "dropcap":
-            # the initial, then the rest of that word and the next in small
-            # caps — the book sets "IN PEACE" and no further
-            whole = inline(" ".join(para))
-            parts = whole.split(" ")
-            opening = " ".join(parts[:2])
-            body = (f'<span class="initial">{opening[:1]}</span>'
-                    f'<span class="opening">{opening[1:]}</span>'
-                    f' {" ".join(parts[2:])}' if whole else "")
+            # Split the RAW text, not the marked-up HTML: slicing the HTML cut
+            # through a <span> and printed class="sc"> onto the page. The
+            # initial, then the rest of that word and the next in small caps —
+            # the book sets "IN PEACE" and "O LORD" and no further.
+            raw = " ".join(para)
+            words = raw.split(" ")
+            initial = words[0][:1]
+            opening = (words[0][1:] + (" " + words[1] if len(words) > 1 else ""))
+            tail = " ".join(words[2:])
+            body = (f'<span class="initial">{inline(initial)}</span>'
+                    f'<span class="opening">{inline(opening)}</span> '
+                    f'{inline(tail)}' if raw else "")
         elif kind == "lines":
             body = "<br>".join(inline(l) for l in para if l.strip())
         else:
@@ -158,6 +174,10 @@ def read_page(path):
                                                        "size", "break"}:
             if not re.match(r"^(\w+):", line.strip()):
                 warn.append(line.strip())
+        if re.match(r"^halfblank:\s*$", line.strip(), re.I):
+            flush()
+            blocks.append(("halfblank", "&nbsp;"))
+            continue
         mb = re.match(r"^blank:\s*(\d*)\s*$", line.strip(), re.I)
         if mb:
             flush()

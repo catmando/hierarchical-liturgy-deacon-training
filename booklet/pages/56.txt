@@ -19,16 +19,20 @@ leaves: 1
 margins: 0.32
 trim: 0.320 0.28
 
-# a fiftieth of an em off the letter spacing. Justified text cannot fix a
+# Letter spacing, tightened until the widows go. This has to be revisited
+# whenever `scale:` changes: raising the type size re-strands the words the
+# tracking had pulled up, and it does so quietly.
+#
+# A fiftieth of an em off the letter spacing. Justified text cannot fix a
 # stranded last word by resizing — smaller type just stretches the same
 # words wider — but tightening the tracking will, and at this size it is
 # invisible except that the "Amen." comes up onto the line above.
-tracking: -0.020em
+tracking: -0.026em
 
 # 0.90 of the book's own type size, on margins narrowed from the book's
 # 0.40in to 0.32in. At full size and the book's margins this page overflows
 # by 11 lines; this is the largest that fits with the added rubrics.
-scale: 0.90
+scale: 0.88
 
 flush: King, always, now and ever and unto ages of ages. Amen.]
 
@@ -40,9 +44,15 @@ speaker: DIKIRION & TRIKIRION: May thy light so shine before men that they may
 see thy good works and glorify thy Father, who is in heaven, always, now and
 ever and unto ages of ages. Amen.
 
+halfblank:
+
 rubric: The deacons both cense the Bishop rapidly.
 
+halfblank:
+
 rubric: Subdeacons take the Dikiri and Trikir, and return to the Ambo.
+
+halfblank:
 
 rubric: As the Bishop blesses the deacons they cense him **nine** times.
 turn and 

@@ -92,8 +92,9 @@ body{ font-family:Junicode, serif; color:#000; }
   padding-top:var(--text-top);
   height:calc(var(--leaf-h) - var(--foot));
   column-count:2; column-gap:calc(var(--side) * 2); column-fill:balance;
+  --lh:calc(14.2pt * var(--scale));
   font-size:calc(11.7pt * var(--scale));
-  line-height:calc(14.2pt * var(--scale));
+  line-height:var(--lh);
   text-align:justify; hyphens:auto;
   font-variation-settings:"wght" var(--w-body), "wdth" 75;
   letter-spacing:var(--track);
@@ -133,12 +134,20 @@ body{ font-family:Junicode, serif; color:#000; }
 /* a list of petitions: each on its own line, no indent, not justified — a
    short petition stretched across the measure looks like an error */
 .flow p.lines{ text-indent:0; text-align:left }
-/* `blank:` — an empty line at whatever leading is in force around it */
+/* `blank:` — an empty line at whatever leading is in force around it,
+   and `halfblank:` for half of one, where a full line opens too big a gap */
 .flow p.blank{ text-indent:0 }
+.flow p.halfblank{ text-indent:0; line-height:calc(var(--lh) / 2) }
+/* `rule:` — a divider. A row of hyphens sets as hyphens; this is a rule. */
+.flow p.rule{
+  text-indent:0; border:0; border-top:0.5pt solid var(--red);
+  width:38%; margin:0.45em auto; height:0; overflow:hidden; color:transparent;
+}
 
 /* ---- page 56's devices ------------------------------------------------ */
 /* a speaker's name, red small caps, running into what is said */
 .who{ color:var(--red); font-variant:small-caps; letter-spacing:.03em }
+.sc{ font-variant:small-caps; letter-spacing:.03em }
 .who::after{ content:":" }
 .flow p.speaker{ text-indent:0 }
 /* several speakers with their words aligned in a column of their own */
@@ -164,8 +173,9 @@ body{ font-family:Junicode, serif; color:#000; }
 /* `size: small` in the page file sets the whole spread in the smaller type;
    `normal:` on a paragraph brings it back to body size for the part that has
    to be read aloud continuously. */
-.flow.small-body{ font-size:calc(9pt * var(--scale));
-                  line-height:calc(11pt * var(--scale)) }
+.flow.small-body{ --lh:calc(11pt * var(--scale));
+                  font-size:calc(9pt * var(--scale));
+                  line-height:var(--lh) }
 /* `small:` has to be smaller than whatever surrounds it. With the spread set
    small it was 9pt — the same as the body — so it was not small at all. The
    choir's hymn is printed for reference; they sing from their own music. */

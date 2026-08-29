@@ -1,0 +1,61 @@
+# Pages 64-65 — the entrance prayers, transcribed from the scan and checked
+# against OCR. The curlicue ornament at the foot of 65 is deliberately left
+# out.
+#
+# Set at the book's own size and margins: scale 1, the book's 0.40in sides and
+# its own trim. There is room, so nothing needs shrinking to start with.
+#
+# The is-polla label belongs somewhere on 65 — move the rubric to where it
+# should fall and it will flow into place.
+
+head: ENTRANCE PRAYERS
+folio: 64
+leaves: 2
+
+flush: Make us worthy of mercy, O Theotokos, fountain of tenderness. Look upon
+a people that has sinned, and reveal thy power as always, for we have put our
+hope in thee. Rejoice, we cry to thee, as once did Gabriel, the leader of the
+bodiless hosts.
+
+speaker: DEACON: Let us pray to the Lord.
+
+rubric: Standing before the holy doors, with bowed head the <<PRIEST>> says
+this prayer:
+
+dropcap: O <<LORD>>, stretch forth thy hand from thy holy dwelling place on
+high, and strengthen me for this thine appointed service, that, standing
+uncondemned before thy dread throne, I may offer the bloodless sacrifice. For
+thine is the power and the glory unto ages of ages. Amen.
+
+rubric: **At this point in a Hierarchical Liturgy the deacon and choir
+intones:**
+
+**Ton Despótēn kaì Archiaréa hēmōn, Kýrie phýlatte: eis pollà étē, Déspota!**
+
+label: Pronunciation:
+
+lines: ton thes-PO-teen keh ar-hee-eh-REH-ah ee-MON,
+KEE-ree-eh FEE-lah-teh: ees poh-LAH EH-tee, THES-poh-tah!
+
+break:
+
+rubric: The non-hierarchical entrance continues here: They turn and bow to each other and, turning west, they bow to the
+people. They enter the sanctuary as the <<DEACON>> says:
+
+dropcap: I <<WILL>> enter thy house; I will worship toward thy holy temple in
+the fear of thee. Lead me, O Lord, in thy righteousness because of mine
+enemies; make my way straight before thee. For there is no truth in their
+mouth, their heart is destruction, their throat is an open sepulcher, they
+flatter with their tongue. Judge them, O God, let them fall by their own
+counsels; because of their many transgressions cast them out, for they have
+rebelled against thee. But let all who take refuge in thee rejoice, let them
+always sing for joy; and do thou dwell in them, that those who love thy Name
+may exult in thee. For thou blessest the righteous, O Lord; thou coverest us
+with good will as with a shield. {(Ps. 5 : 8–13)}
+
+rubric: Then they bow three times before the holy table (or they make
+prostrations when appointed), and the priest kisses the holy Gospel and the
+holy table while the deacon kisses only the holy table. Then each takes his
+sticharion and bows three times towards the east, saying within himself:
+
+flush: O God, cleanse me, a sinner, and have mercy on me.

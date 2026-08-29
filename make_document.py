@@ -1332,8 +1332,13 @@ def for_github(sheet, video_url, posters=None):
              "print, cut and paste in"),
             (os.path.join("booklet", "insert_56.pdf"), "page_56.pdf",
              "the completion of the vesting"),
+            (os.path.join("booklet", "insert_64.pdf"), "pages_64_65.pdf",
+             "the entrance prayers"),
+            # the standalone greeting label is superseded by the 64-65 spread,
+            # which carries the same text in its place in the rite. Still
+            # copied, so a link already handed out does not break.
             (os.path.join("booklet", "label_is_polla.pdf"),
-             "label_is_polla.pdf", "the greeting, for page 65")):
+             "label_is_polla.pdf", "superseded by the 64-65 spread")):
         if os.path.exists(src):
             shutil.copy2(src, os.path.join("docs", name))
             print(f"  docs/{name}   "
