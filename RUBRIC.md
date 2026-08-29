@@ -32,7 +32,7 @@ Rochester NY.
 Please forgive me for any errors, or omissions, and your corrections
 and input are most welcome.
 
-`generated 28 Aug 2026, 23:38 · b834ee6`
+`generated 28 Aug 2026, 23:52 · bcba74b`
 
 OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
 
@@ -1358,10 +1358,9 @@ is easier to keep in the book than in the head. The pages below are set to
 the size and type of the service book itself, so a printed one can take the
 place of the handwritten note most of us end up making.
 
-Print at **100 percent** — not "fit to page", which shrinks it just enough
-to be wrong — and cut on the dashed line. Each is printed on one side only:
-paste the blank side over the page it replaces, and where a piece spans two
-facing pages, fold it down the middle into the gutter first.
+Each is printed on one side only: paste the blank side over the page it
+replaces, and where a piece spans two facing pages, fold it down the middle
+into the gutter first.
 
 **Page 56 — the completion of the vesting.** This page adds rubrics for the
 completion of the vesting of the Bishop; it is pasted over page 56.

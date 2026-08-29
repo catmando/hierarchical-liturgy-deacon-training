@@ -757,6 +757,12 @@ def render_html(sheet, video_url, posters=None, medium="screen",
     for ap in apps:
         add(f'  <li><span class="num">{html.escape(ap["id"])}</span>'
             f'<a href="#{ap["anchor"]}">{html.escape(ap["heading"])}</a></li>')
+    # the cut-outs are gathered at the end, so they belong in the contents —
+    # only in print, since on screen each is a download beside its description
+    if medium == "print" and any(
+            re.search(r'\]\([^)]*"card[^"]*"\)', a["text"]) for a in apps):
+        add('  <li><span class="num">&#9986;</span>'
+            '<a href="#cutouts">Pages to Cut Out</a></li>')
     add("</ol></nav>")
 
     open_sec = False
@@ -870,6 +876,7 @@ def render_html(sheet, video_url, posters=None, medium="screen",
     if open_sec:
         add("</section>")
 
+    plates = []          # (title, data uri, width, height) — printed at the end
     for ap in apps:
         add(f'<section class="chapter appendix" id="{ap["anchor"]}">')
         add(f'  <h2>{html.escape(ap["heading"])}</h2>')
@@ -896,18 +903,23 @@ def render_html(sheet, video_url, posters=None, medium="screen",
                     t3 = (m.group(3) or "").strip().lower()
                     card = t3.startswith("card")
                     if card:
+                        # Gathered, not printed here. A plate set beside the
+                        # paragraph that describes it scatters the cut-outs
+                        # through the appendices, and every appendix added
+                        # later scatters them further. They are collected at
+                        # the end of the document instead, so the scissors
+                        # come out once.
                         dims = re.match(r"card\s+([\d.]+)\s*x\s*([\d.]+)", t3)
                         cw, ch = ((float(dims.group(1)), float(dims.group(2)))
                                   if dims else (3.375, 5.25))
-                        fold = ' data-fold="1"' if cw > 5 else ""
-                        add(f'  <figure class="cardfig"><div class="cut"'
-                            f'{fold} style="width:{cw*72:.1f}pt;'
-                            f'height:{ch*72:.1f}pt">'
-                            f'<img src="{uri}" alt="{html.escape(m.group(1))}">'
-                            f'</div><figcaption>Cut on the dashed line '
-                            f'&mdash; {frac(cw)} &times; {frac(ch)} in'
-                            f'{", and fold down the middle" if fold else ""}.'
-                            f'</figcaption></figure>')
+                        if medium == "print":
+                            plates.append((m.group(1), uri, cw, ch))
+                        else:
+                            # on screen there is nothing to cut out: the image
+                            # is just an illustration, and each has its own
+                            # download beside the words that describe it
+                            add(f'  <figure><img src="{uri}" '
+                                f'alt="{html.escape(m.group(1))}"></figure>')
                     else:
                         add(f'  <figure><img src="{uri}" '
                             f'alt="{html.escape(m.group(1))}"></figure>')
@@ -918,6 +930,27 @@ def render_html(sheet, video_url, posters=None, medium="screen",
             if uri:
                 add(f'  <figure><img src="{uri}" '
                     f'alt="{html.escape(ap["heading"])}"></figure>')
+        add("</section>")
+
+    if plates:
+        add('<section class="chapter plates" id="cutouts">')
+        add('  <h2>Pages to Cut Out</h2>')
+        add('  <p class="meta">every sheet in this document, at its true size</p>')
+        add('  <p>Each is printed at the size it should be cut to. Print this '
+            'document at <strong>100 percent</strong> &mdash; not "fit to '
+            'page", which shrinks it just enough to be wrong &mdash; and cut '
+            'on the dashed line. Where a sheet spans two facing pages, fold it '
+            'down the middle into the gutter. Paste the blank side over the '
+            'page it replaces.</p>')
+        for title, uri, cw, ch in plates:
+            fold = ' data-fold="1"' if cw > 5 else ""
+            add(f'  <figure class="cardfig"><div class="cut"{fold} '
+                f'style="width:{cw*72:.1f}pt;height:{ch*72:.1f}pt">'
+                f'<img src="{uri}" alt="{html.escape(title)}">'
+                f'</div><figcaption>{html.escape(title)} &mdash; cut on the '
+                f'dashed line, {frac(cw)} &times; {frac(ch)} in'
+                f'{", and fold down the middle" if fold else ""}.'
+                f'</figcaption></figure>')
         add("</section>")
 
     if video_id(video_url):
@@ -1199,7 +1232,7 @@ blockquote.card p{margin:0}
    The roles chart is a tall, narrow table: at full column width it towers
    over everything around it, and the detail belongs in the card PDF anyway.
    Widen this if a future appendix wants a diagram to fill the column. */
-.appendix figure{max-width:20rem;margin:0 auto 1.8rem}
+.appendix figure,.plates figure{max-width:20rem;margin:0 auto 1.8rem}
 .appendix figcaption{display:none}
 .appendix p.meta{margin-bottom:1.4rem}
 .player noscript a{position:absolute;inset:0;display:grid;place-items:center;
@@ -1286,7 +1319,12 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
      sends the text that follows to the NEXT front page, which leaves the back
      of the card's own sheet empty. Both together are what make the sheet
      removable: chart on one side, nothing on the other. */
-  .appendix figure.cardfig{
+  /* Scoped to figure.cardfig wherever it sits — it used to say
+     `.appendix figure.cardfig`, and when the plates were gathered into their
+     own section the rule stopped matching. They then packed one per page with
+     no blank backs, so cutting a plate out would have punched a hole in the
+     plate on the other side of the same sheet. */
+  figure.cardfig{
     max-width:none; margin:0;
     break-before:right; page-break-before:right;
     break-after:right;  page-break-after:right;
